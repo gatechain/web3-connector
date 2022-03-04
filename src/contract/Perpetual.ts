@@ -9,7 +9,7 @@ export default class Perpetual extends ContractAbstract {
 	//充值合约
 	public getPerpetualContract() {
 		try {
-			return new Contract(this.getContractAddress(this.Contracts.perpetualContract), Abi, this.signer)
+			return new Contract(this.getContractAddress(this.Contracts.perpetualContract), Abi, this.contract.signer)
 		} catch (error) {
 			throw error
 		}
@@ -17,7 +17,7 @@ export default class Perpetual extends ContractAbstract {
 
 	async getGasLimit(contract: Contract, method: string, args: any) {
 		try {
-			const options = { from: this.currAccount }
+			const options = { from: this.contract.currAccount }
 			const gasLimit = await contract.estimateGas[method](...args, options);
 			return gasLimit.toString();
 		} catch (error) {
@@ -29,10 +29,10 @@ export default class Perpetual extends ContractAbstract {
 	async deposit(token: string, amount: string) {
 		try {
 			const contract = this.getPerpetualContract()
-			const erc20 = this.contract.ERC20.getERC20Contract(token, this.provider)
+			const erc20 = this.contract.ERC20.getERC20Contract(token, this.contract.provider)
 			const decimals = await erc20.decimals()
 			const amountBig = fixedToInt(amount, decimals)
-			return await contract.deposit(this.currAccount, token, amountBig)
+			return await contract.deposit(this.contract.currAccount, token, amountBig)
 		} catch (error) {
 			throw error
 		}
@@ -42,7 +42,7 @@ export default class Perpetual extends ContractAbstract {
 	async withdraw(token: string) {
 		try {
 			const contract = this.getPerpetualContract()
-			return await contract.withdraw(this.currAccount, token)
+			return await contract.withdraw(this.contract.currAccount, token)
 		} catch (error) {
 			throw error
 		}
@@ -50,10 +50,14 @@ export default class Perpetual extends ContractAbstract {
 
 	// 获取可提现余额
 	async getWithdrawalBalance(token: string) {
-		const contract = this.getPerpetualContract()
-		const erc20 = this.contract.ERC20.getERC20Contract(token, this.provider)
-		const decimals = await erc20.decimals()
-		const balanceBig = await contract.getWithdrawalBalance(this.currAccount, token)
-		return intToFixed(balanceBig, decimals)
+		try {
+			const contract = this.getPerpetualContract()
+			const erc20 = this.contract.ERC20.getERC20Contract(token, this.contract.provider)
+			const decimals = await erc20.decimals()
+			const balanceBig = await contract.getWithdrawalBalance(this.contract.currAccount, token)
+			return intToFixed(balanceBig, decimals)
+		} catch (error) {
+			throw error	
+		}
 	}
 }
