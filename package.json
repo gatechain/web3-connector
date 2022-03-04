@@ -1,7 +1,7 @@
 {
-  "name": "hipo-sdk",
+  "name": "hipo-wallet",
   "version": "1.0.0",
-  "description": "hipo-sdk  react",
+  "description": "hipo-wallet-react",
   "author": "thorneLew",
   "license": "MIT",
   "type": "commonjs",
@@ -30,7 +30,6 @@
     "@web3-react/url": "8.0.12-beta.0",
     "@web3-react/walletconnect": "8.0.18-beta.0",
     "@web3-react/walletlink": "8.0.18-beta.0",
-    "ahooks": "^3.1.10",
     "walletlink": "^2.4.5"
   },
   "devDependencies": {
