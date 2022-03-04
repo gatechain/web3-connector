@@ -7,7 +7,6 @@ export * from '@web3-react/walletlink'
 export * from '@web3-react/walletconnect'
 export * from '@web3-react/network'
 export * from './metamask'
-export {HipoContract} from './contract'
 
 import { MetaMask } from './metamask'
 import { URLS } from './chains'
