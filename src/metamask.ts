@@ -47,17 +47,20 @@ export class MetaMask extends Connector {
       .then((m) => m.default(this.options))
       .then((ethereum: any) => {
         if (ethereum) {
-		  this.provider = (ethereum.providers ? ethereum.providers.find((provider: any) => provider.isMetaMask): ethereum) as Provider;
+		      this.provider = (ethereum.providers ? ethereum.providers.find((provider: any) => provider.isMetaMask): ethereum) as Provider;
 
           this.provider.on('connect', ({ chainId }: ProviderConnectInfo): void => {
             this.actions.update({ chainId: parseChainId(chainId) })
           })
 
           this.provider.on('disconnect', (error: ProviderRpcError): void => {
-            this.actions.reportError(error)
+            if (error.message.indexOf('Disconnected from chain. Attempting to connect') === -1) {
+              this.actions.reportError(error)
+            }
           })
 
           this.provider.on('chainChanged', (chainId: string): void => {
+            console.log(chainId)
             this.actions.update({ chainId: parseChainId(chainId) })
           })
 
