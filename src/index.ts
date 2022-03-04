@@ -12,11 +12,9 @@ export {HipoContract} from './contract'
 import { MetaMask } from './metamask'
 import { URLS } from './chains'
 import { initializeConnector, Web3ReactHooks } from '@web3-react/core';
-// import { WalletConnect } from '@web3-react/walletconnect';
 import { WalletLink } from '@web3-react/walletlink';
 import { Connector } from '@web3-react/types';
 import { Network } from '@web3-react/network';
-// import { Connector } from '@web3-react/types';
 export const [network, hooks] = initializeConnector<Network>(
 	(actions) => new Network(actions, URLS),
 	Object.keys(URLS).map((chainId) => Number(chainId))
@@ -41,8 +39,6 @@ const walletInstance: any = {
 }
 
 const walletHooks: any = {
-	// metaMask: {...metaMaskHooks, isMetaMask: true},
-	// walletLink: {...walletLinkHooks, isWalletLink: true}
 	metaMask: metaMaskHooks,
 	walletLink: walletLinkHooks
 }
@@ -70,19 +66,7 @@ export function init () {
 	walletLink.connectEagerly()
 }
 
-// const HipoSdkHooks = {
-// 	useDeactivateWallet () {
-// 		const isMetaMaskActive = metaMaskHooks.useIsActive()
-// 		const iswalletlinkActive = walletLinkHooks.useIsActive()
-// 		return () => {
-// 			if (!HipoSdk.connector) return false
-// 			console.log(HipoSdk.connector)
-// 			HipoSdk.connector.deactivate()
-// 		}
-// 	}
-// }
-
-export class HipoSdk {
+export class HipoWallet {
 	static connector: Connector | null = metaMask
 	static getHooks = (walletType: WalletType): Web3ReactHooks => {
 		return walletHooks[walletType] || metaMaskHooks
@@ -90,7 +74,7 @@ export class HipoSdk {
 	static init = init
 	static connect (walletType: WalletType) {
 		const connectorWallet = connectWallet[walletType]() || null
-		HipoSdk.connector = walletInstance[walletType]
+		HipoWallet.connector = walletInstance[walletType]
 		return connectorWallet
 	}
 	static disconnect(walletType: WalletType) {

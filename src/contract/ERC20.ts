@@ -26,23 +26,22 @@ export class ERC20 extends ContractAbstract {
 	public getERC20Contract = getERC20Contract
 
 	public getContractAddress(contractKey: Contracts) {
-		console.log(contractKey)
 		return this.config[this.chainId][contractKey].address
 	}
 
 	// 查授权额度 
 	public async getTokenAllowance(token: string, spender: string): Promise<BigNumber> {
-		const contract = getERC20Contract(token, this.provider);
-		const allowance = await contract.allowance(this.currAccount, spender)
+		const contract = getERC20Contract(token, this.contract.provider);
+		const allowance = await contract.allowance(this.contract.currAccount, spender)
 		return allowance
 	}
 
 	// 授权
 	public async approve(token: string, spender: string, value: string): Promise<any> {
 		try {
-			const { decimals, contract } = await getERC20(token, this.provider);
-			if (this.signer) {
-				const signerContract = contract.connect(this.signer);
+			const { decimals, contract } = await getERC20(token, this.contract.provider);
+			if (this.contract.signer) {
+				const signerContract = contract.connect(this.contract.signer);
 				const tx = await signerContract.approve(spender, fixedToInt(value, decimals));
 				return tx;
 			}
@@ -57,9 +56,8 @@ export class ERC20 extends ContractAbstract {
 	public async getApproveStatus(token: string, spender: string, value: string) {
 		try {
 			const allowance = await this.getTokenAllowance(token, spender)
-			const { decimals } = await getERC20(token, this.provider);
+			const { decimals } = await getERC20(token, this.contract.provider);
 			const bigValue = BigNumber.from(fixedToInt(value, decimals))
-
 			return allowance.gte(bigValue) ? ApproveStatus.dontApprove : ApproveStatus.Approve
 		} catch (error) {
 			throw error

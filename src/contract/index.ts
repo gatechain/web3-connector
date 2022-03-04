@@ -13,6 +13,8 @@ export interface Config {
 
 
 export class HipoContract {
+	public provider: providers.Provider
+	public currAccount: string
 	public signer: Signer
 	public perpetual: Perpetual
 	public ERC20: ERC20
@@ -23,6 +25,8 @@ export class HipoContract {
 			...props,
 			contract: this
 		}
+		this.currAccount = props.currAccount
+		this.provider = props.provider
 		this.signer = props.provider.getSigner()
 		this.perpetual = new Perpetual(resultPorps)
 		this.ERC20 = new ERC20(resultPorps)
@@ -31,5 +35,13 @@ export class HipoContract {
 	
 	public sign (value: string) {
 		return this.signer.signMessage(value)
+	}
+	
+	public setAccount (account: string) {
+		this.currAccount = account
+	}
+	public setProvider (provider: providers.Provider) {
+		this.provider = provider
+		this.signer = (provider as any).getSigner()
 	}
 }
