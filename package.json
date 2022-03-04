@@ -1,6 +1,6 @@
 {
   "name": "hipo-wallet",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "hipo-wallet-react",
   "author": "thorneLew",
   "license": "MIT",
@@ -12,8 +12,7 @@
     "dist/*"
   ],
   "scripts": {
-    "start": "webpack -w",
-    "tsc": "tsc -w"
+    "start": "tsc -w"
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.4.2",
