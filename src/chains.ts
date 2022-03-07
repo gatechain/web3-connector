@@ -1,7 +1,6 @@
 import type { AddEthereumChainParameter } from '@web3-react/types'
 const INFURA_KEY='84842078b09946638c03157f83405213'
 const ALCHEMY_KEY='_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC'
-const MAGIC_KEY='pk_live_1F99B3C570C9B08F'
 
 const ETH: AddEthereumChainParameter['nativeCurrency'] = {
   name: 'Ether',
