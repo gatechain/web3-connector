@@ -60,7 +60,6 @@ export class MetaMask extends Connector {
           })
 
           this.provider.on('chainChanged', (chainId: string): void => {
-            console.log(chainId)
             this.actions.update({ chainId: parseChainId(chainId) })
           })
 

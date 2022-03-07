@@ -14,32 +14,35 @@ import { initializeConnector, Web3ReactHooks } from '@web3-react/core';
 import { WalletLink } from '@web3-react/walletlink';
 import { Connector } from '@web3-react/types';
 import { Network } from '@web3-react/network';
+import { WalletConnect } from '@web3-react/walletconnect';
 export const [network, hooks] = initializeConnector<Network>(
 	(actions) => new Network(actions, URLS),
 	Object.keys(URLS).map((chainId) => Number(chainId))
 )
 export const [metaMask, metaMaskHooks] = initializeConnector<MetaMask>((actions) => new MetaMask(actions))
 export const [walletLink, walletLinkHooks] = initializeConnector<WalletLink>((actions) =>  new WalletLink(actions, {url: URLS[1][0],appName: 'web3-react'}))
-// export const [walletConnect, hooks] = initializeConnector<WalletConnect>((actions) =>
-// 	  new WalletConnect(actions, {
-// 		rpc: URLS,
-// 	  }),
-// 	Object.keys(URLS).map((chainId) => Number(chainId))
-// )
+export const [walletConnect, walletConnecthooks] = initializeConnector<WalletConnect>((actions) =>
+	  new WalletConnect(actions, {
+		rpc: URLS,
+	  }),
+	Object.keys(URLS).map((chainId) => Number(chainId))
+)
 
 
-export type WalletType = 'metaMask' | 'walletLink' | 'WalletConnect'
+export type WalletType = 'metaMask' | 'walletLink' | 'walletConnect'
 
 
 
 const walletInstance: any = {
-	metaMask: metaMask,
-	walletLink: walletLink
+	metaMask,
+	walletLink,
+	walletConnect
 }
 
 const walletHooks: any = {
 	metaMask: metaMaskHooks,
-	walletLink: walletLinkHooks
+	walletLink: walletLinkHooks,
+	walletConnect: walletConnecthooks
 }
 
 const connectWallet: any = {
@@ -48,6 +51,9 @@ const connectWallet: any = {
 	},
 	walletLink () {
 		return walletLink.activate()
+	},
+	walletConnect () {
+		return walletConnect.activate()
 	}
 }
 
@@ -57,12 +63,16 @@ const disConnectWallet: any = {
 	},
 	walletLink () {
 		return walletLink.deactivate()
+	},
+	walletConnect () {
+		return walletConnect.deactivate()
 	}
 }
 
 export function init () {
 	metaMask.connectEagerly()
 	walletLink.connectEagerly()
+	walletConnect.connectEagerly()
 }
 
 export class HipoWallet {
