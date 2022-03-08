@@ -27,7 +27,7 @@
     "@web3-react/network": "8.0.13-beta.0",
     "@web3-react/types": "8.0.10-beta.0",
     "@web3-react/url": "8.0.12-beta.0",
-    "@web3-react/walletconnect": "8.0.18-beta.0",
+    "@web3-react/walletconnect": "8.0.21-beta.0",
     "@web3-react/walletlink": "8.0.18-beta.0",
     "walletlink": "^2.4.5"
   },

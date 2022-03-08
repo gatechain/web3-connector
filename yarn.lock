@@ -900,10 +900,10 @@
     "@ethersproject/providers" "^5.5.1"
     "@web3-react/types" "^8.0.10-beta.0"
 
-"@web3-react/walletconnect@8.0.18-beta.0":
-  version "8.0.18-beta.0"
-  resolved "https://registry.yarnpkg.com/@web3-react/walletconnect/-/walletconnect-8.0.18-beta.0.tgz#c50d31c0ac0fc28f1ae79af44034bf5d2ef78bda"
-  integrity sha512-9kabpz4RFojECvGs+RI29ySmJapfW8KdkXZerSkHpyJtAVz12ga5RR2vW4KVB9Heh4F23qOyHn9Z3pcYxS6YNQ==
+"@web3-react/walletconnect@8.0.21-beta.0":
+  version "8.0.21-beta.0"
+  resolved "https://registry.yarnpkg.com/@web3-react/walletconnect/-/walletconnect-8.0.21-beta.0.tgz#45c03bcd267b9c7f442f57aca19154888e5fa028"
+  integrity sha512-4eb30piLBhNHKMqgSgB/f6T2sWWgAnYntoiZBy2Yui08wzGt8ZF9QrczB+PsjoA+CKxDG17enXqNQJVqhX4KHA==
   dependencies:
     "@web3-react/types" "^8.0.10-beta.0"
     eventemitter3 "^4.0.7"
