@@ -1,5 +1,8 @@
 import * as buffer from 'buffer';
-(window as any).Buffer = buffer.Buffer;
+
+if (!globalThis.Buffer) {
+	(globalThis as any).Buffer = buffer.Buffer;
+}
 
 export * from '@web3-react/core'
 export * from '@web3-react/types';
