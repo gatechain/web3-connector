@@ -99,7 +99,7 @@ export function getConnectors(URLS: URLMap) {
     [web3WalletConnect, web3WalletConnectHooks]
   ] = initConnector(URLS)
 
-  const connectors: [MetaMask | CoinbaseWallet, Web3ReactHooks][] = [
+  const connectors: [MetaMask | CoinbaseWallet | WalletConnect, Web3ReactHooks][] = [
     [web3Injected, web3InjectedHooks],
     [web3CoinbaseWallet, web3CoinbaseWalletHooks],
     [web3WalletConnect, web3WalletConnectHooks]
