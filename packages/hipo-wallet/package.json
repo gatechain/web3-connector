@@ -1,0 +1,34 @@
+{
+  "name": "hipo-wallet",
+  "version": "2.0.0",
+  "description": "This is a tool for connecting Web3 wallets.",
+  "author": "Thone Liu <thorne_lew@126.com>",
+  "homepage": "",
+  "license": "ISC",
+  "main": "./dist/index.js",
+  "exports": [
+    "./dist/index.js"
+  ],
+  "types": "./dist/index.d.ts",
+  "type": "commonjs",
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "start": "tsc --watch"
+  },
+  "dependencies": {
+    "@web3-react/core": "8.0.35-beta.0",
+    "@web3-react/coinbase-wallet": "^8.0.34-beta.0",
+    "@web3-react/walletconnect": "8.0.35-beta.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8"
+  }
+}

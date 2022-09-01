@@ -1,0 +1,19 @@
+0 silly argv {
+0 silly argv   _: [ 'add' ],
+0 silly argv   exact: true,
+0 silly argv   E: true,
+0 silly argv   bootstrap: false,
+0 silly argv   scope: 'example-next',
+0 silly argv   globs: [],
+0 silly argv   lernaVersion: '5.4.3',
+0 silly argv   '$0': '/Users/tong/workFile/demo/hipo-sdk-lerna/node_modules/.bin/lerna',
+0 silly argv   pkg: 'hipo-wallet'
+0 silly argv }
+1 notice cli v5.4.3
+2 verbose rootPath /Users/tong/workFile/demo/hipo-sdk-lerna
+3 info versioning independent
+4 error FetchError: Invalid response body while trying to fetch https://registry.npmjs.org/hipo-wallet: read ECONNRESET
+4 error     at /Users/tong/workFile/demo/hipo-sdk-lerna/node_modules/minipass-fetch/lib/body.js:170:15
+4 error     at processTicksAndRejections (node:internal/process/task_queues:96:5)
+4 error     at async Response.json (/Users/tong/workFile/demo/hipo-sdk-lerna/node_modules/minipass-fetch/lib/body.js:75:17)
+4 error     at async RegistryFetcher.packument (/Users/tong/workFile/demo/hipo-sdk-lerna/node_modules/pacote/lib/registry.js:99:25)
