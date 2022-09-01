@@ -12,11 +12,11 @@ export declare function connect(connector: Connector): Promise<void>;
 export declare function getIsInjected(): boolean;
 export declare function getIsMetaMask(): boolean;
 export declare function getIsCoinbaseWallet(): boolean;
-export declare function getConnection(c: Connector | ConnectionType): {
+export declare function getConnection(c: Connector | ConnectionType): Connection | {
     connector: CoinbaseWallet;
     hooks: Web3ReactHooks;
     type: ConnectionType;
-} | Connection;
+};
 export declare function getConnectionName(connectionType: ConnectionType, isMetaMask?: boolean): "MetaMask" | "Injected" | "Coinbase Wallet" | "WalletConnect";
 export declare function useEagerlyConnect(onError?: Function): void;
 export declare function connectWallet(connectionType: ConnectionType): void;
