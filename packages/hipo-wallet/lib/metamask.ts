@@ -39,7 +39,7 @@ export class MetaMask extends Connector {
 
   private readonly options?: Parameters<typeof detectEthereumProvider>[0]
   private eagerConnection?: Promise<void>
-  private _switchingChains: boolean = false
+  private _switchingChains: boolean = true
 
   constructor({ actions, options, onError }: MetaMaskConstructorArgs) {
     super(actions, onError)
@@ -63,6 +63,11 @@ export class MetaMask extends Connector {
           this.actions.update({ chainId: parseChainId(chainId) })
         })
 
+        this.provider.on('chainChanged', (chainId: string): void => {
+          this._switchingChains = true
+          this.actions.update({ chainId: parseChainId(chainId) })
+        })
+
         this.provider.on('disconnect', (error: ProviderRpcError): void => {
           // We need this as MetaMask can emit the "disconnect" event
           // upon switching chains. This workaround ensures that the
@@ -75,10 +80,6 @@ export class MetaMask extends Connector {
           this.onError?.(error)
         })
 
-        this.provider.on('chainChanged', (chainId: string): void => {
-          this._switchingChains = true
-          this.actions.update({ chainId: parseChainId(chainId) })
-        })
 
         this.provider.on('accountsChanged', (accounts: string[]): void => {
           if (accounts.length === 0) {

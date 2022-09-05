@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
 import { useCallback } from 'react'
 import styles from '../styles/Home.module.css'
-import { connectWallet, ConnectionType, useWeb3React, disconnect } from 'hipo-wallet'
+import { connectWallet, ConnectionType, useWeb3React, disconnect, AddEthereumChainParameter } from 'hipo-wallet'
 
 const Home: NextPage = () => {
   const { connector, provider, account, chainId, isActive, isActivating } = useWeb3React()
@@ -23,6 +23,34 @@ const Home: NextPage = () => {
     })
   }, [account, chainId])
 
+  const changeChain = async (e: any) => {
+    const value = e.target.value
+    try {
+      if (value === 'gt') {
+        const gtItem: AddEthereumChainParameter = {
+          chainId: 85,
+          chainName: 'GateChain',
+          nativeCurrency: {
+            name: "GateChain",
+            symbol: "GT",
+            decimals: 18
+          },
+          rpcUrls: ['https://evm.gatenode.cc']
+        }
+        connector.activate(gtItem)
+      }
+      if (value === 'eth') {
+        await connector.activate(1)
+        console.log('shishsishis ')
+      }
+      if (value === 'bnb') {
+        connector.activate(256)
+      }
+    } catch (error) {
+      console.log(error, 'ahhahah')
+    }
+  }
+
   return (
     <div className={styles.container}>
       <div>
@@ -37,6 +65,12 @@ const Home: NextPage = () => {
       <button onClick={() => {
         disconnect(connector)
       }}>断开钱包</button>
+      <select onChange={changeChain}>
+        <option value=""> </option>
+        <option value="gt">gatechain</option>
+        <option value="eth">ETH</option>
+        <option value="bnb">bnb</option>
+      </select>
     </div>
   )
 }

@@ -48,7 +48,7 @@ function parseChainId(chainId) {
 class MetaMask extends types_1.Connector {
     constructor({ actions, options, onError }) {
         super(actions, onError);
-        this._switchingChains = false;
+        this._switchingChains = true;
         this.options = options;
     }
     isomorphicInitialize() {
@@ -67,6 +67,10 @@ class MetaMask extends types_1.Connector {
                     this.provider.on('connect', ({ chainId }) => {
                         this.actions.update({ chainId: parseChainId(chainId) });
                     });
+                    this.provider.on('chainChanged', (chainId) => {
+                        this._switchingChains = true;
+                        this.actions.update({ chainId: parseChainId(chainId) });
+                    });
                     this.provider.on('disconnect', (error) => {
                         var _a;
                         // We need this as MetaMask can emit the "disconnect" event
@@ -78,10 +82,6 @@ class MetaMask extends types_1.Connector {
                         }
                         this.actions.resetState();
                         (_a = this.onError) === null || _a === void 0 ? void 0 : _a.call(this, error);
-                    });
-                    this.provider.on('chainChanged', (chainId) => {
-                        this._switchingChains = true;
-                        this.actions.update({ chainId: parseChainId(chainId) });
                     });
                     this.provider.on('accountsChanged', (accounts) => {
                         if (accounts.length === 0) {
