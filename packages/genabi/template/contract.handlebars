@@ -1,0 +1,28 @@
+import ContractAbstract from "hipo-contract/dist/contract/ContractAbstract.js";
+import {{contractName}}Abi from 'src/contract/abi/{{contractName}}.json'
+
+type BigNumber = Number
+
+export class {{contractName}}Contract extends ContractAbstract {
+    public static contractName = '{{contractName}}Contract';
+		Abi = {{contractName}}Abi 
+		constructor(props: any) {
+			super(props)
+		}
+		{{#each methods}}
+		{{#ifEquals languageSpecificName "name"}}
+		{{else}}
+		public {{languageSpecificName}}({{> typed_params inputs=this.inputs}}
+		{{#ifEquals this.stateMutability "view" }}
+			const provider = this.getContractProvider()
+			return provider.{{languageSpecificName}}({{#each inputs}}{{name}}{{#unless @last}},{{/unless}}{{/each}})
+		{{else}}
+			const singer = this.getContractSigner()
+			return singer.{{languageSpecificName}}({{#each inputs}}{{name}}{{#unless @last}},{{/unless}}{{/each}})
+		{{/ifEquals}}
+		};
+		{{/ifEquals}}
+		{{/each}}
+}
+
+
