@@ -8,7 +8,7 @@
 yarn add hipo-wallet@2.0.4
 ```
 
-### provider
+### start
 
 ```tsx
 // _app.tsx
