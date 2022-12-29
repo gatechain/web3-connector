@@ -1,7 +1,12 @@
 {
-	"extends": "../../tsconfig.json",
-	"include": ["./lib/**/*"],
+        "extends": "@tsconfig/recommended/tsconfig.json",
 	"compilerOptions": {
-		"outDir": "./dist"
-	}
+	  "module": "CommonJS",
+	  "declaration": true,
+	  "moduleResolution": "Node",
+	  "outDir": "./dist"
+	},
+	"include": ["./lib/**/*"],
+	"exclude": ["**/*.spec.ts"]
 }
+	
