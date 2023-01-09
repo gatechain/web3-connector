@@ -1,14 +1,16 @@
-# `hipo-wallet`
+# `web3-connector`
 
 > This is a tool for connecting Web3 wallets.
 
 ## Usage
 
 ```
-yarn add hipo-wallet@2.0.4
+// package.json
+
+"web3-connector": "https://github.com/gatechain/web3-connector@v2.0.4"
 ```
 
-### start
+### provider
 
 ```tsx
 // _app.tsx
@@ -16,7 +18,7 @@ import {
   getConnectors,
   useEagerlyConnect,
   Web3ReactProvider,
-} from "hipo-wallet";
+} from "web3-connector";
 
 const connectors = getConnectors({ 1: ["https://mainnet.infura.io/v3/"] });
 function MyApp({ Component, pageProps }: AppProps) {
@@ -40,7 +42,7 @@ import {
   ConnectionType,
   useWeb3React,
   disconnect,
-} from "hipo-wallet";
+} from "web3-connector";
 
 const Home: NextPage = () => {
   const { connector, provider, account, chainId, isActive, isActivating } =
