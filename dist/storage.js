@@ -2,11 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createStorage = exports.noopStorage = void 0;
 exports.noopStorage = {
-    getItem: (_key) => '',
+    getItem: (_key) => "",
     setItem: (_key, _value) => null,
     removeItem: (_key) => null,
 };
-function createStorage({ storage, key: prefix = 'hipo', }) {
+function createStorage({ storage, key: prefix = "web3", }) {
     return Object.assign(Object.assign({}, storage), { getItem: (key, defaultState = null) => {
             const value = storage.getItem(`${prefix}.${key}`);
             try {

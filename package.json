@@ -1,6 +1,6 @@
 {
   "name": "web3-connector",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "This is a tool for connecting Web3 wallets.",
   "author": "Thone Liu <thorne_lew@126.com>",
   "homepage": "",
@@ -21,15 +21,21 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "start": "tsc --watch"
+    "start": "tsc --watch",
+    "build": "tsc"
   },
   "dependencies": {
-    "@web3-react/core": "8.0.35-beta.0",
-    "@web3-react/coinbase-wallet": "^8.0.34-beta.0",
-    "@web3-react/walletconnect": "8.0.35-beta.0",
-    "@metamask/detect-provider": "^1.2.0",
     "@coinbase/wallet-sdk": "^3.0.4",
-    "@walletconnect/ethereum-provider": "^1.7.5"
+    "@metamask/detect-provider": "^1.2.0",
+    "@walletconnect/ethereum-provider": "^1.7.5",
+    "@web3-react/coinbase-wallet": "^8.0.34-beta.0",
+    "@web3-react/core": "8.0.35-beta.0",
+    "@web3-react/walletconnect": "8.0.35-beta.0"
+  },
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.1",
+    "@types/react": "^18.0.26",
+    "react": "16"
   },
   "peerDependencies": {
     "react": ">=16.8"

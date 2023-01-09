@@ -1,6 +1,6 @@
-import type detectEthereumProvider from '@metamask/detect-provider';
-import type { Actions, AddEthereumChainParameter, Provider, WatchAssetParameters } from '@web3-react/types';
-import { Connector } from '@web3-react/types';
+import type detectEthereumProvider from "@metamask/detect-provider";
+import type { Actions, AddEthereumChainParameter, Provider, WatchAssetParameters } from "@web3-react/types";
+import { Connector } from "@web3-react/types";
 declare type MetaMaskProvider = Provider & {
     isMetaMask?: boolean;
     isConnected?: () => boolean;
@@ -38,6 +38,6 @@ export declare class MetaMask extends Connector {
      * specified parameters first, before being prompted to switch.
      */
     activate(desiredChainIdOrChainParameters?: number | AddEthereumChainParameter): Promise<void>;
-    watchAsset({ address, symbol, decimals, image }: WatchAssetParameters): Promise<true>;
+    watchAsset({ address, symbol, decimals, image, }: WatchAssetParameters): Promise<true>;
 }
 export {};

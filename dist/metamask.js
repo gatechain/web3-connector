@@ -36,7 +36,7 @@ exports.MetaMask = exports.NoMetaMaskError = void 0;
 const types_1 = require("@web3-react/types");
 class NoMetaMaskError extends Error {
     constructor() {
-        super('MetaMask not installed');
+        super("MetaMask not installed");
         this.name = NoMetaMaskError.name;
         Object.setPrototypeOf(this, NoMetaMaskError.prototype);
     }
@@ -55,23 +55,24 @@ class MetaMask extends types_1.Connector {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.eagerConnection)
                 return;
-            return (this.eagerConnection = Promise.resolve().then(() => __importStar(require('@metamask/detect-provider'))).then((m) => __awaiter(this, void 0, void 0, function* () {
+            return (this.eagerConnection = Promise.resolve().then(() => __importStar(require("@metamask/detect-provider"))).then((m) => __awaiter(this, void 0, void 0, function* () {
                 var _a, _b;
                 const provider = yield m.default(this.options);
                 if (provider) {
                     this.provider = provider;
                     // handle the case when e.g. metamask and coinbase wallet are both installed
                     if ((_a = this.provider.providers) === null || _a === void 0 ? void 0 : _a.length) {
-                        this.provider = (_b = this.provider.providers.find((p) => p.isMetaMask)) !== null && _b !== void 0 ? _b : this.provider.providers[0];
+                        this.provider =
+                            (_b = this.provider.providers.find((p) => p.isMetaMask)) !== null && _b !== void 0 ? _b : this.provider.providers[0];
                     }
-                    this.provider.on('connect', ({ chainId }) => {
+                    this.provider.on("connect", ({ chainId }) => {
                         this.actions.update({ chainId: parseChainId(chainId) });
                     });
-                    this.provider.on('chainChanged', (chainId) => {
+                    this.provider.on("chainChanged", (chainId) => {
                         this._switchingChains = true;
                         this.actions.update({ chainId: parseChainId(chainId) });
                     });
-                    this.provider.on('disconnect', (error) => {
+                    this.provider.on("disconnect", (error) => {
                         var _a;
                         // We need this as MetaMask can emit the "disconnect" event
                         // upon switching chains. This workaround ensures that the
@@ -83,7 +84,7 @@ class MetaMask extends types_1.Connector {
                         this.actions.resetState();
                         (_a = this.onError) === null || _a === void 0 ? void 0 : _a.call(this, error);
                     });
-                    this.provider.on('accountsChanged', (accounts) => {
+                    this.provider.on("accountsChanged", (accounts) => {
                         if (accounts.length === 0) {
                             // handle this edge case by disconnecting
                             this.actions.resetState();
@@ -104,19 +105,19 @@ class MetaMask extends types_1.Connector {
             if (!this.provider)
                 return cancelActivation();
             return Promise.all([
-                this.provider.request({ method: 'eth_chainId' }),
-                this.provider.request({ method: 'eth_accounts' }),
+                this.provider.request({ method: "eth_chainId" }),
+                this.provider.request({ method: "eth_accounts" }),
             ])
                 .then(([chainId, accounts]) => {
                 if (accounts.length) {
                     this.actions.update({ chainId: parseChainId(chainId), accounts });
                 }
                 else {
-                    throw new Error('No accounts returned');
+                    throw new Error("No accounts returned");
                 }
             })
                 .catch((error) => {
-                console.debug('Could not connect eagerly', error);
+                console.debug("Could not connect eagerly", error);
                 cancelActivation();
             });
         });
@@ -141,11 +142,11 @@ class MetaMask extends types_1.Connector {
                 if (!this.provider)
                     throw new NoMetaMaskError();
                 return Promise.all([
-                    this.provider.request({ method: 'eth_chainId' }),
-                    this.provider.request({ method: 'eth_requestAccounts' }),
+                    this.provider.request({ method: "eth_chainId" }),
+                    this.provider.request({ method: "eth_requestAccounts" }),
                 ]).then(([chainId, accounts]) => {
                     const receivedChainId = parseChainId(chainId);
-                    const desiredChainId = typeof desiredChainIdOrChainParameters === 'number'
+                    const desiredChainId = typeof desiredChainIdOrChainParameters === "number"
                         ? desiredChainIdOrChainParameters
                         : desiredChainIdOrChainParameters === null || desiredChainIdOrChainParameters === void 0 ? void 0 : desiredChainIdOrChainParameters.chainId;
                     // if there's no desired chain, or it's equal to the received, update
@@ -155,16 +156,19 @@ class MetaMask extends types_1.Connector {
                     // if we're here, we can try to switch networks
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     return this.provider.request({
-                        method: 'wallet_switchEthereumChain',
+                        method: "wallet_switchEthereumChain",
                         params: [{ chainId: desiredChainIdHex }],
                     })
                         .catch((error) => {
-                        if (error.code === 4902 && typeof desiredChainIdOrChainParameters !== 'number') {
+                        if (error.code === 4902 &&
+                            typeof desiredChainIdOrChainParameters !== "number") {
                             // if we're here, we can try to add a new network
                             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                             return this.provider.request({
-                                method: 'wallet_addEthereumChain',
-                                params: [Object.assign(Object.assign({}, desiredChainIdOrChainParameters), { chainId: desiredChainIdHex })],
+                                method: "wallet_addEthereumChain",
+                                params: [
+                                    Object.assign(Object.assign({}, desiredChainIdOrChainParameters), { chainId: desiredChainIdHex }),
+                                ],
                             });
                         }
                         throw error;
@@ -178,15 +182,15 @@ class MetaMask extends types_1.Connector {
             });
         });
     }
-    watchAsset({ address, symbol, decimals, image }) {
+    watchAsset({ address, symbol, decimals, image, }) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.provider)
-                throw new Error('No provider');
+                throw new Error("No provider");
             return this.provider
                 .request({
-                method: 'wallet_watchAsset',
+                method: "wallet_watchAsset",
                 params: {
-                    type: 'ERC20',
+                    type: "ERC20",
                     options: {
                         address,
                         symbol,
@@ -197,7 +201,7 @@ class MetaMask extends types_1.Connector {
             })
                 .then((success) => {
                 if (!success)
-                    throw new Error('Rejected');
+                    throw new Error("Rejected");
                 return true;
             });
         });
