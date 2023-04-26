@@ -35,8 +35,8 @@ class CoinbaseWalletConnector {
                 actions,
                 options: {
                     url: URLS[1][0],
-                    appName: 'web3-react',
-                }
+                    appName: "web3-react",
+                },
             }));
         }
         return this.instance;
@@ -58,7 +58,7 @@ function initConnector(URLS) {
     return [
         [web3Injected, web3InjectedHooks],
         [web3CoinbaseWallet, web3CoinbaseWalletHooks],
-        [web3WalletConnect, web3WalletConnectHooks]
+        [web3WalletConnect, web3WalletConnectHooks],
     ];
 }
 exports.initConnector = initConnector;
@@ -84,15 +84,15 @@ function getConnectionMap() {
     return {
         injectedConnection,
         coinbaseWalletConnection,
-        walletConnectConnection
+        walletConnectConnection,
     };
 }
 function getConnectors(URLS) {
-    const [[web3Injected, web3InjectedHooks], [web3CoinbaseWallet, web3CoinbaseWalletHooks], [web3WalletConnect, web3WalletConnectHooks]] = initConnector(URLS);
+    const [[web3Injected, web3InjectedHooks], [web3CoinbaseWallet, web3CoinbaseWalletHooks], [web3WalletConnect, web3WalletConnectHooks],] = initConnector(URLS);
     const connectors = [
         [web3Injected, web3InjectedHooks],
         [web3CoinbaseWallet, web3CoinbaseWalletHooks],
-        [web3WalletConnect, web3WalletConnectHooks]
+        [web3WalletConnect, web3WalletConnectHooks],
     ];
     return connectors;
 }
@@ -128,16 +128,16 @@ function getIsCoinbaseWallet() {
 }
 exports.getIsCoinbaseWallet = getIsCoinbaseWallet;
 function getConnection(c) {
-    const { injectedConnection, coinbaseWalletConnection, walletConnectConnection } = getConnectionMap();
+    const { injectedConnection, coinbaseWalletConnection, walletConnectConnection, } = getConnectionMap();
     const CONNECTIONS = [
         injectedConnection,
         coinbaseWalletConnection,
-        walletConnectConnection
+        walletConnectConnection,
     ];
     if (c instanceof types_1.Connector) {
         const connection = CONNECTIONS.find((connection) => connection.connector === c);
         if (!connection) {
-            throw Error('unsupported connector');
+            throw Error("unsupported connector");
         }
         return connection;
     }
@@ -156,25 +156,25 @@ exports.getConnection = getConnection;
 function getConnectionName(connectionType, isMetaMask) {
     switch (connectionType) {
         case types_2.ConnectionType.INJECTED:
-            return isMetaMask ? 'MetaMask' : 'Injected';
+            return isMetaMask ? "MetaMask" : "Injected";
         case types_2.ConnectionType.COINBASE_WALLET:
-            return 'Coinbase Wallet';
+            return "Coinbase Wallet";
         case types_2.ConnectionType.WALLET_CONNECT:
-            return 'WalletConnect';
+            return "WalletConnect";
     }
 }
 exports.getConnectionName = getConnectionName;
 function getStorage() {
     const storage = (0, storage_1.createStorage)({
-        storage: typeof window !== 'undefined' ? window.localStorage : storage_1.noopStorage,
+        storage: typeof window !== "undefined" ? window.localStorage : storage_1.noopStorage,
     });
     return storage;
 }
-const selectedWalletKey = 'selectedWallet';
+const selectedWalletKey = "selectedWallet";
 function useEagerlyConnect(onError) {
     let selectedWallet = undefined;
     const storage = getStorage();
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
         selectedWallet = storage.getItem(selectedWalletKey);
     }
     let selectedConnection;
