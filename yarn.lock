@@ -446,10 +446,10 @@
   resolved "https://registry.npmmirror.com/@types/prop-types/-/prop-types-15.7.5.tgz#5f19d2b85a98e9558036f6a3cacc8819420f05cf"
   integrity sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==
 
-"@types/react@^18.0.26":
-  version "18.0.26"
-  resolved "https://registry.npmmirror.com/@types/react/-/react-18.0.26.tgz#8ad59fc01fef8eaf5c74f4ea392621749f0b7917"
-  integrity sha512-hCR3PJQsAIXyxhTNSiDFY//LhnMZWpNNr5etoCqx/iUfGc5gXWtQR2Phl908jVR6uPXacojQWTg4qRpkxTuGug==
+"@types/react@^18.0.5":
+  version "18.2.0"
+  resolved "https://registry.npmmirror.com/@types/react/-/react-18.2.0.tgz#15cda145354accfc09a18d2f2305f9fc099ada21"
+  integrity sha512-0FLj93y5USLHdnhIhABk83rm8XEGA7kH3cr+YUlvxoUGp1xNt/DINUMvqPxLyOQMzLmZe8i4RTHbvb8MC7NmrA==
   dependencies:
     "@types/prop-types" "*"
     "@types/scheduler" "*"
@@ -532,7 +532,7 @@
   dependencies:
     tslib "1.14.1"
 
-"@walletconnect/ethereum-provider@^1.7.5":
+"@walletconnect/ethereum-provider@^1.7.5", "@walletconnect/ethereum-provider@^1.7.8":
   version "1.8.0"
   resolved "https://registry.npmmirror.com/@walletconnect/ethereum-provider/-/ethereum-provider-1.8.0.tgz#ed1dbf9cecc3b818758a060d2f9017c50bde1d32"
   integrity sha512-Nq9m+oo5P0F+njsROHw9KMWdoc/8iGHYzQdkjJN/1C7DtsqFRg5k5a3hd9rzCLpbPsOC1q8Z5lRs6JQgDvPm6Q==
@@ -688,46 +688,47 @@
   dependencies:
     "@walletconnect/window-getters" "^1.0.0"
 
-"@web3-react/coinbase-wallet@^8.0.34-beta.0":
-  version "8.0.34-beta.0"
-  resolved "https://registry.npmmirror.com/@web3-react/coinbase-wallet/-/coinbase-wallet-8.0.34-beta.0.tgz#43d51bb440fb4b98cc2c33782714da30ab8e1fb6"
-  integrity sha512-eGgtGtAqcRL64U1lcWeICB9CmpUycVl/mWD/b2Nd7yE0hXFUbPGLZHNvBTpnOpkANkjHI5ufFoyDGzzoxdw12A==
+"@web3-react/coinbase-wallet@8.2.0":
+  version "8.2.0"
+  resolved "https://registry.npmmirror.com/@web3-react/coinbase-wallet/-/coinbase-wallet-8.2.0.tgz#038bb9e915834046320621aa49db5ba79130e488"
+  integrity sha512-SFPrsRbyw1gECyKJmE/TAB3iMhHAqh9DTa8X2FKPMgPyNPVPcha4+G0SuWy55rysh0MO6TJbj9pofX3HvXaYpw==
   dependencies:
-    "@web3-react/types" "^8.0.20-beta.0"
+    "@web3-react/types" "^8.2.0"
 
-"@web3-react/core@8.0.35-beta.0":
-  version "8.0.35-beta.0"
-  resolved "https://registry.npmmirror.com/@web3-react/core/-/core-8.0.35-beta.0.tgz#8667483bdbc283fc8377d7f56faba1ec2fcdb095"
-  integrity sha512-vkEL2Vafu57lTA9T/cd3DNkZoDZ3G/JDUgxgjHqKLQVF4bPucrkeErqIHutAJ4suIi4bLOD0dFPMpFs+Bq7RgA==
+"@web3-react/core@^8.2.0":
+  version "8.2.0"
+  resolved "https://registry.npmmirror.com/@web3-react/core/-/core-8.2.0.tgz#95fb615bb283be520e6f61b5e48cfb0047943808"
+  integrity sha512-r7dmK2E8Jrpvm/DF93hGMB+8lECHSI3Oo0NrHbhxkisK6in6rdgAXeYFhZtM48LBAm9py6fQvLzjCM6Qx9q0oQ==
   dependencies:
-    "@web3-react/store" "^8.0.25-beta.0"
-    "@web3-react/types" "^8.0.20-beta.0"
-    zustand "^4.0.0-rc.0"
+    "@web3-react/store" "^8.2.0"
+    "@web3-react/types" "^8.2.0"
+    zustand "^4.3.5"
   optionalDependencies:
     "@ethersproject/providers" "^5"
 
-"@web3-react/store@^8.0.25-beta.0":
-  version "8.0.25-beta.0"
-  resolved "https://registry.npmmirror.com/@web3-react/store/-/store-8.0.25-beta.0.tgz#853a029a9f82d8950e306adb455ba308f908c8f4"
-  integrity sha512-YHrZ42EHiQ9UAJq8Y/pHsyXu6GhzbCSHaQJ9U0wCDhbPoQ9QjOj0Pwcaa/VLXljuynK/7ERP942nI1IzArt9Sg==
+"@web3-react/store@^8.2.0":
+  version "8.2.0"
+  resolved "https://registry.npmmirror.com/@web3-react/store/-/store-8.2.0.tgz#4260c7d1fca3c8e0358f32ed8909a5d8dba69a80"
+  integrity sha512-cG8nb+tBeRUJu+98ko6YZuAWmoipGMEbR3bhineCNd4x2mXv3GbWSPtE17GeWVshZgDbZu2/Du0okTx+22VWCg==
   dependencies:
     "@ethersproject/address" "^5"
-    "@web3-react/types" "^8.0.20-beta.0"
-    zustand "^4.0.0-rc.0"
+    "@web3-react/types" "^8.2.0"
+    zustand "^4.3.5"
 
-"@web3-react/types@^8.0.20-beta.0":
-  version "8.0.20-beta.0"
-  resolved "https://registry.npmmirror.com/@web3-react/types/-/types-8.0.20-beta.0.tgz#6b4509bef8c5c7eb866e49295880c865c20fb565"
-  integrity sha512-qOZYMyUmsm3Um6t6Pg3OgnE86ufhWZpB5/VxsooB8cdpXc/C/f8KMyYSeM63GoKSMScOKwfqV6yODFL7g/Qc8g==
+"@web3-react/types@^8.2.0":
+  version "8.2.0"
+  resolved "https://registry.npmmirror.com/@web3-react/types/-/types-8.2.0.tgz#195464ebb94cb417e6dc3c16951573f9b6b3832a"
+  integrity sha512-TBYTFlqJZaEpVbuAAKRJFX5PZc3lI1TqDZzY94zwCrCh4GBepwwK7+PxmRAppMFuNa5x0vFX/ghLEC44e6TCFg==
   dependencies:
-    zustand "^4.0.0-rc.0"
+    zustand "^4.3.5"
 
-"@web3-react/walletconnect@8.0.35-beta.0":
-  version "8.0.35-beta.0"
-  resolved "https://registry.npmmirror.com/@web3-react/walletconnect/-/walletconnect-8.0.35-beta.0.tgz#49c6c77447d58bfb295f28fa87c8fbfeec95cff5"
-  integrity sha512-fUrqcnwAr5oecZ6VUE/7+RSVURrohbAgWMLKYxd8Zo47AtTPzgJ1t5Lydh/EX4xJPLhfK1LqX5YgMwiys3DvhQ==
+"@web3-react/walletconnect@^8.2.0":
+  version "8.2.0"
+  resolved "https://registry.npmmirror.com/@web3-react/walletconnect/-/walletconnect-8.2.0.tgz#e4e325132f04f03a07a19cd193b4b97bfe6a9914"
+  integrity sha512-Yl1C0beRnwohtFZ9c6xz6mOci2MqoES2hYKhJI4X7qKqcmQJC6TOeLjlYfzjdUTUvP8IDf0A7flYZVeBUvL/fg==
   dependencies:
-    "@web3-react/types" "^8.0.20-beta.0"
+    "@walletconnect/ethereum-provider" "^1.7.8"
+    "@web3-react/types" "^8.2.0"
     eventemitter3 "^4.0.7"
 
 JSONStream@^1.3.5:
@@ -1626,7 +1627,7 @@ lodash@^4.17.20:
   resolved "https://registry.npmmirror.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
 
-loose-envify@^1.1.0, loose-envify@^1.4.0:
+loose-envify@^1.1.0:
   version "1.4.0"
   resolved "https://registry.npmmirror.com/loose-envify/-/loose-envify-1.4.0.tgz#71ee51fa7be4caec1a63839f7e682d8132d30caf"
   integrity sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==
@@ -1690,11 +1691,6 @@ node-releases@^2.0.6:
   version "2.0.8"
   resolved "https://registry.npmmirror.com/node-releases/-/node-releases-2.0.8.tgz#0f349cdc8fcfa39a92ac0be9bc48b7706292b9ae"
   integrity sha512-dFSmB8fFHEH/s81Xi+Y/15DQY6VHW81nXRj86EMSL3lmuTmK1e+aT4wrFCkTbm+gSwkw4KpX+rT/pMM2c1mF+A==
-
-object-assign@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.npmmirror.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
-  integrity sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==
 
 object-inspect@^1.9.0:
   version "1.12.2"
@@ -1771,15 +1767,6 @@ preact@^10.5.9:
   resolved "https://registry.npmmirror.com/preact/-/preact-10.11.3.tgz#8a7e4ba19d3992c488b0785afcc0f8aa13c78d19"
   integrity sha512-eY93IVpod/zG3uMF22Unl8h9KkrcKIRs2EGar8hwLZZDU1lkjph303V9HZBwufh2s736U6VXuhD109LYqPoffg==
 
-prop-types@^15.6.2:
-  version "15.8.1"
-  resolved "https://registry.npmmirror.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
-  integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
-  dependencies:
-    loose-envify "^1.4.0"
-    object-assign "^4.1.1"
-    react-is "^16.13.1"
-
 qrcode@1.4.4:
   version "1.4.4"
   resolved "https://registry.npmmirror.com/qrcode/-/qrcode-1.4.4.tgz#f0c43568a7e7510a55efc3b88d9602f71963ea83"
@@ -1816,19 +1803,12 @@ randombytes@^2.1.0:
   dependencies:
     safe-buffer "^5.1.0"
 
-react-is@^16.13.1:
-  version "16.13.1"
-  resolved "https://registry.npmmirror.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
-  integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
-
-react@16:
-  version "16.14.0"
-  resolved "https://registry.npmmirror.com/react/-/react-16.14.0.tgz#94d776ddd0aaa37da3eda8fc5b6b18a4c9a3114d"
-  integrity sha512-0X2CImDkJGApiAlcf0ODKIneSwBPhqJawOa5wCtKbu7ZECrmS26NvtSILynQ66cgkT/RJ4LidJOc3bUESwmU8g==
+react@^18.0.0:
+  version "18.2.0"
+  resolved "https://registry.npmmirror.com/react/-/react-18.2.0.tgz#555bd98592883255fa00de14f1151a917b5d77d5"
+  integrity sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==
   dependencies:
     loose-envify "^1.1.0"
-    object-assign "^4.1.1"
-    prop-types "^15.6.2"
 
 readable-stream@^3.5.0, readable-stream@^3.6.0:
   version "3.6.0"
@@ -2200,9 +2180,9 @@ yargs@^13.2.4:
     y18n "^4.0.0"
     yargs-parser "^13.1.2"
 
-zustand@^4.0.0-rc.0:
-  version "4.2.0"
-  resolved "https://registry.npmmirror.com/zustand/-/zustand-4.2.0.tgz#f6ef9e63794eda9b296979578538a6df6be3e1b0"
-  integrity sha512-eNwaDoD2FYVnMgtNxiMUhTJO780wonZUzJrPQTLYI0erSIMZF8cniWFW22kGQUECd8rdHRJ/ZJL2XO54c9Ttuw==
+zustand@^4.3.5:
+  version "4.3.7"
+  resolved "https://registry.npmmirror.com/zustand/-/zustand-4.3.7.tgz#501b1f0393a7f1d103332e45ab574be5747fedce"
+  integrity sha512-dY8ERwB9Nd21ellgkBZFhudER8KVlelZm8388B5nDAXhO/+FZDhYMuRnqDgu5SYyRgz/iaf8RKnbUs/cHfOGlQ==
   dependencies:
     use-sync-external-store "1.2.0"
