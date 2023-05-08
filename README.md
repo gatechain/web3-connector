@@ -7,7 +7,7 @@
 ```
 // package.json
 
-"web3-connector": "https://github.com/gatechain/web3-connector#2.0.6"
+"web3-connector": "https://github.com/gatechain/web3-connector#3.0.1"
 ```
 
 ### provider
