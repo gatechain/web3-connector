@@ -1,6 +1,6 @@
 {
   "name": "web3-connector",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "This is a tool for connecting Web3 wallets.",
   "author": "Thone Liu <thorne_lew@126.com>",
   "homepage": "",
@@ -25,10 +25,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@coinbase/wallet-sdk": "^3.0.4",
     "@metamask/detect-provider": "^1.2.0",
     "@walletconnect/ethereum-provider": "^1.7.5",
-    "@web3-react/coinbase-wallet": "8.2.0",
     "@web3-react/core": "^8.2.0",
     "@web3-react/walletconnect": "^8.2.0",
     "@web3-react/metamask": "^8.2.0"

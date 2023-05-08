@@ -14,7 +14,6 @@ const core_1 = require("@web3-react/core");
 const react_1 = require("react");
 const types_1 = require("@web3-react/types");
 const metamask_1 = require("@web3-react/metamask");
-const coinbase_wallet_1 = require("@web3-react/coinbase-wallet");
 const walletconnect_1 = require("@web3-react/walletconnect");
 const types_2 = require("./types");
 const storage_1 = require("./storage");
@@ -24,21 +23,6 @@ class MetaMaskConnector {
     static getInstance() {
         if (!this.instance) {
             this.instance = (0, core_1.initializeConnector)((actions) => new metamask_1.MetaMask({ actions }));
-        }
-        return this.instance;
-    }
-}
-class CoinbaseWalletConnector {
-    constructor() { }
-    static getInstance(URLS) {
-        if (!this.instance) {
-            this.instance = (0, core_1.initializeConnector)((actions) => new coinbase_wallet_1.CoinbaseWallet({
-                actions,
-                options: {
-                    url: URLS[1][0],
-                    appName: "web3-react",
-                },
-            }));
         }
         return this.instance;
     }
@@ -63,12 +47,10 @@ class WalletConnectNotQrConnector {
 }
 function initConnector(URLS) {
     const [web3Injected, web3InjectedHooks] = MetaMaskConnector.getInstance();
-    const [web3CoinbaseWallet, web3CoinbaseWalletHooks] = CoinbaseWalletConnector.getInstance(URLS);
     const [web3WalletConnect, web3WalletConnectHooks] = WalletConnectConnector.getInstance(URLS);
     const [web3WalletNotQrConnect, web3WalletNotQrConnectHooks] = WalletConnectNotQrConnector.getInstance(URLS);
     return [
         [web3Injected, web3InjectedHooks],
-        [web3CoinbaseWallet, web3CoinbaseWalletHooks],
         [web3WalletConnect, web3WalletConnectHooks],
         [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],
     ];
@@ -76,18 +58,12 @@ function initConnector(URLS) {
 exports.initConnector = initConnector;
 function getConnectionMap() {
     const [web3Injected, web3InjectedHooks] = MetaMaskConnector.getInstance();
-    const [web3CoinbaseWallet, web3CoinbaseWalletHooks] = CoinbaseWalletConnector.getInstance({});
     const [web3WalletConnect, web3WalletConnectHooks] = WalletConnectConnector.getInstance({});
     const [web3WalletNotQrConnect, web3WalletNotQrConnectHooks] = WalletConnectNotQrConnector.getInstance({});
     const injectedConnection = {
         connector: web3Injected,
         hooks: web3InjectedHooks,
         type: types_2.ConnectionType.INJECTED,
-    };
-    const coinbaseWalletConnection = {
-        connector: web3CoinbaseWallet,
-        hooks: web3CoinbaseWalletHooks,
-        type: types_2.ConnectionType.COINBASE_WALLET,
     };
     const walletConnectConnection = {
         connector: web3WalletConnect,
@@ -101,16 +77,14 @@ function getConnectionMap() {
     };
     return {
         injectedConnection,
-        coinbaseWalletConnection,
         walletConnectConnection,
         walletConnectNotQrConnection,
     };
 }
 function getConnectors(URLS) {
-    const [[web3Injected, web3InjectedHooks], [web3CoinbaseWallet, web3CoinbaseWalletHooks], [web3WalletConnect, web3WalletConnectHooks], [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],] = initConnector(URLS);
+    const [[web3Injected, web3InjectedHooks], [web3WalletConnect, web3WalletConnectHooks], [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],] = initConnector(URLS);
     const connectors = [
         [web3Injected, web3InjectedHooks],
-        [web3CoinbaseWallet, web3CoinbaseWalletHooks],
         [web3WalletConnect, web3WalletConnectHooks],
         [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],
     ];
@@ -148,10 +122,9 @@ function getIsCoinbaseWallet() {
 }
 exports.getIsCoinbaseWallet = getIsCoinbaseWallet;
 function getConnection(c) {
-    const { injectedConnection, coinbaseWalletConnection, walletConnectConnection, walletConnectNotQrConnection, } = getConnectionMap();
+    const { injectedConnection, walletConnectConnection, walletConnectNotQrConnection, } = getConnectionMap();
     const CONNECTIONS = [
         injectedConnection,
-        coinbaseWalletConnection,
         walletConnectConnection,
         walletConnectNotQrConnection,
     ];
@@ -166,8 +139,6 @@ function getConnection(c) {
         switch (c) {
             case types_2.ConnectionType.INJECTED:
                 return injectedConnection;
-            case types_2.ConnectionType.COINBASE_WALLET:
-                return coinbaseWalletConnection;
             case types_2.ConnectionType.WALLET_CONNECT:
                 return walletConnectConnection;
             case types_2.ConnectionType.WALLET_CONNECT_NOTQR:
@@ -180,8 +151,6 @@ function getConnectionName(connectionType, isMetaMask) {
     switch (connectionType) {
         case types_2.ConnectionType.INJECTED:
             return isMetaMask ? "MetaMask" : "Injected";
-        case types_2.ConnectionType.COINBASE_WALLET:
-            return "Coinbase Wallet";
         case types_2.ConnectionType.WALLET_CONNECT:
             return "WalletConnect";
     }
@@ -223,9 +192,6 @@ function connectWallet(connectionType) {
         switch (connectionType) {
             case types_2.ConnectionType.INJECTED:
                 connection = getConnection(types_2.ConnectionType.INJECTED);
-                break;
-            case types_2.ConnectionType.COINBASE_WALLET:
-                connection = getConnection(types_2.ConnectionType.COINBASE_WALLET);
                 break;
             case types_2.ConnectionType.WALLET_CONNECT:
                 connection = getConnection(types_2.ConnectionType.WALLET_CONNECT);
