@@ -1,11 +1,12 @@
 import { initializeConnector, Web3ReactHooks } from "@web3-react/core";
 import { useEffect } from "react";
 import { Connector } from "@web3-react/types";
-import { MetaMask } from "./metamask";
+import { MetaMask } from "@web3-react/metamask";
 import { CoinbaseWallet } from "@web3-react/coinbase-wallet";
 import { WalletConnect } from "@web3-react/walletconnect";
 import { Connection, ConnectionType } from "./types";
 import { createStorage, noopStorage } from "./storage";
+import { delay } from "./utils";
 
 type URLMap = {
   [chainId: number]: string | string[];
@@ -60,6 +61,21 @@ class WalletConnectConnector {
     return this.instance;
   }
 }
+class WalletConnectNotQrConnector {
+  private constructor() {}
+  private static instance: ReturnType<
+    typeof initializeConnector<WalletConnect>
+  >;
+  public static getInstance(URLS: URLMap) {
+    if (!this.instance) {
+      this.instance = initializeConnector<WalletConnect>(
+        (actions) =>
+          new WalletConnect({ actions, options: { rpc: URLS, qrcode: false } })
+      );
+    }
+    return this.instance;
+  }
+}
 
 export function initConnector(URLS: URLMap): any {
   const [web3Injected, web3InjectedHooks] = MetaMaskConnector.getInstance();
@@ -67,11 +83,14 @@ export function initConnector(URLS: URLMap): any {
     CoinbaseWalletConnector.getInstance(URLS);
   const [web3WalletConnect, web3WalletConnectHooks] =
     WalletConnectConnector.getInstance(URLS);
+  const [web3WalletNotQrConnect, web3WalletNotQrConnectHooks] =
+    WalletConnectNotQrConnector.getInstance(URLS);
 
   return [
     [web3Injected, web3InjectedHooks],
     [web3CoinbaseWallet, web3CoinbaseWalletHooks],
     [web3WalletConnect, web3WalletConnectHooks],
+    [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],
   ];
 }
 
@@ -81,6 +100,8 @@ function getConnectionMap() {
     CoinbaseWalletConnector.getInstance({});
   const [web3WalletConnect, web3WalletConnectHooks] =
     WalletConnectConnector.getInstance({});
+  const [web3WalletNotQrConnect, web3WalletNotQrConnectHooks] =
+    WalletConnectNotQrConnector.getInstance({});
   const injectedConnection = {
     connector: web3Injected,
     hooks: web3InjectedHooks,
@@ -98,11 +119,17 @@ function getConnectionMap() {
     hooks: web3WalletConnectHooks,
     type: ConnectionType.WALLET_CONNECT,
   };
+  const walletConnectNotQrConnection: Connection = {
+    connector: web3WalletNotQrConnect,
+    hooks: web3WalletNotQrConnectHooks,
+    type: ConnectionType.WALLET_CONNECT_NOTQR,
+  };
 
   return {
     injectedConnection,
     coinbaseWalletConnection,
     walletConnectConnection,
+    walletConnectNotQrConnection,
   };
 }
 
@@ -111,6 +138,7 @@ export function getConnectors(URLS: URLMap) {
     [web3Injected, web3InjectedHooks],
     [web3CoinbaseWallet, web3CoinbaseWalletHooks],
     [web3WalletConnect, web3WalletConnectHooks],
+    [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],
   ] = initConnector(URLS);
 
   const connectors: [
@@ -120,8 +148,8 @@ export function getConnectors(URLS: URLMap) {
     [web3Injected, web3InjectedHooks],
     [web3CoinbaseWallet, web3CoinbaseWalletHooks],
     [web3WalletConnect, web3WalletConnectHooks],
+    [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],
   ];
-
   return connectors;
 }
 
@@ -154,11 +182,13 @@ export function getConnection(c: Connector | ConnectionType) {
     injectedConnection,
     coinbaseWalletConnection,
     walletConnectConnection,
+    walletConnectNotQrConnection,
   } = getConnectionMap();
   const CONNECTIONS = [
     injectedConnection,
     coinbaseWalletConnection,
     walletConnectConnection,
+    walletConnectNotQrConnection,
   ];
 
   if (c instanceof Connector) {
@@ -177,6 +207,8 @@ export function getConnection(c: Connector | ConnectionType) {
         return coinbaseWalletConnection;
       case ConnectionType.WALLET_CONNECT:
         return walletConnectConnection;
+      case ConnectionType.WALLET_CONNECT_NOTQR:
+        return walletConnectNotQrConnection;
     }
   }
 }
@@ -228,7 +260,7 @@ export function useEagerlyConnect(onError?: Function) {
   }, []);
 }
 
-export function connectWallet(connectionType: ConnectionType) {
+export async function connectWallet(connectionType: ConnectionType) {
   const storage = getStorage();
   let connection: Connection;
   switch (connectionType) {
@@ -241,10 +273,15 @@ export function connectWallet(connectionType: ConnectionType) {
     case ConnectionType.WALLET_CONNECT:
       connection = getConnection(ConnectionType.WALLET_CONNECT);
       break;
+    case ConnectionType.WALLET_CONNECT_NOTQR:
+      connection = getConnection(ConnectionType.WALLET_CONNECT_NOTQR);
+      break;
   }
 
   connection && connection.connector.activate();
   storage.setItem(selectedWalletKey, connectionType);
+  await delay(100);
+  return connection;
 }
 
 export function disconnect(connector: Connector) {
@@ -254,4 +291,12 @@ export function disconnect(connector: Connector) {
   }
   connector.resetState();
   storage.removeItem(selectedWalletKey);
+}
+export function getWCUri(connection: Connection) {
+  try {
+    const { uri } = (connection.connector?.provider as any)?.connector;
+    return uri;
+  } catch (e) {
+    return "";
+  }
 }

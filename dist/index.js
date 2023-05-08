@@ -20,3 +20,4 @@ Object.defineProperty(exports, "Web3ReactProvider", { enumerable: true, get: fun
 Object.defineProperty(exports, "useWeb3React", { enumerable: true, get: function () { return core_1.useWeb3React; } });
 __exportStar(require("./connection"), exports);
 __exportStar(require("./types"), exports);
+__exportStar(require("./utils"), exports);

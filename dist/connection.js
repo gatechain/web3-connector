@@ -9,15 +9,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.disconnect = exports.connectWallet = exports.useEagerlyConnect = exports.getConnectionName = exports.getConnection = exports.getIsCoinbaseWallet = exports.getIsMetaMask = exports.getIsInjected = exports.connect = exports.getConnectors = exports.initConnector = void 0;
+exports.getWCUri = exports.disconnect = exports.connectWallet = exports.useEagerlyConnect = exports.getConnectionName = exports.getConnection = exports.getIsCoinbaseWallet = exports.getIsMetaMask = exports.getIsInjected = exports.connect = exports.getConnectors = exports.initConnector = void 0;
 const core_1 = require("@web3-react/core");
 const react_1 = require("react");
 const types_1 = require("@web3-react/types");
-const metamask_1 = require("./metamask");
+const metamask_1 = require("@web3-react/metamask");
 const coinbase_wallet_1 = require("@web3-react/coinbase-wallet");
 const walletconnect_1 = require("@web3-react/walletconnect");
 const types_2 = require("./types");
 const storage_1 = require("./storage");
+const utils_1 = require("./utils");
 class MetaMaskConnector {
     constructor() { }
     static getInstance() {
@@ -51,14 +52,25 @@ class WalletConnectConnector {
         return this.instance;
     }
 }
+class WalletConnectNotQrConnector {
+    constructor() { }
+    static getInstance(URLS) {
+        if (!this.instance) {
+            this.instance = (0, core_1.initializeConnector)((actions) => new walletconnect_1.WalletConnect({ actions, options: { rpc: URLS, qrcode: false } }));
+        }
+        return this.instance;
+    }
+}
 function initConnector(URLS) {
     const [web3Injected, web3InjectedHooks] = MetaMaskConnector.getInstance();
     const [web3CoinbaseWallet, web3CoinbaseWalletHooks] = CoinbaseWalletConnector.getInstance(URLS);
     const [web3WalletConnect, web3WalletConnectHooks] = WalletConnectConnector.getInstance(URLS);
+    const [web3WalletNotQrConnect, web3WalletNotQrConnectHooks] = WalletConnectNotQrConnector.getInstance(URLS);
     return [
         [web3Injected, web3InjectedHooks],
         [web3CoinbaseWallet, web3CoinbaseWalletHooks],
         [web3WalletConnect, web3WalletConnectHooks],
+        [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],
     ];
 }
 exports.initConnector = initConnector;
@@ -66,6 +78,7 @@ function getConnectionMap() {
     const [web3Injected, web3InjectedHooks] = MetaMaskConnector.getInstance();
     const [web3CoinbaseWallet, web3CoinbaseWalletHooks] = CoinbaseWalletConnector.getInstance({});
     const [web3WalletConnect, web3WalletConnectHooks] = WalletConnectConnector.getInstance({});
+    const [web3WalletNotQrConnect, web3WalletNotQrConnectHooks] = WalletConnectNotQrConnector.getInstance({});
     const injectedConnection = {
         connector: web3Injected,
         hooks: web3InjectedHooks,
@@ -81,18 +94,25 @@ function getConnectionMap() {
         hooks: web3WalletConnectHooks,
         type: types_2.ConnectionType.WALLET_CONNECT,
     };
+    const walletConnectNotQrConnection = {
+        connector: web3WalletNotQrConnect,
+        hooks: web3WalletNotQrConnectHooks,
+        type: types_2.ConnectionType.WALLET_CONNECT_NOTQR,
+    };
     return {
         injectedConnection,
         coinbaseWalletConnection,
         walletConnectConnection,
+        walletConnectNotQrConnection,
     };
 }
 function getConnectors(URLS) {
-    const [[web3Injected, web3InjectedHooks], [web3CoinbaseWallet, web3CoinbaseWalletHooks], [web3WalletConnect, web3WalletConnectHooks],] = initConnector(URLS);
+    const [[web3Injected, web3InjectedHooks], [web3CoinbaseWallet, web3CoinbaseWalletHooks], [web3WalletConnect, web3WalletConnectHooks], [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],] = initConnector(URLS);
     const connectors = [
         [web3Injected, web3InjectedHooks],
         [web3CoinbaseWallet, web3CoinbaseWalletHooks],
         [web3WalletConnect, web3WalletConnectHooks],
+        [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],
     ];
     return connectors;
 }
@@ -128,11 +148,12 @@ function getIsCoinbaseWallet() {
 }
 exports.getIsCoinbaseWallet = getIsCoinbaseWallet;
 function getConnection(c) {
-    const { injectedConnection, coinbaseWalletConnection, walletConnectConnection, } = getConnectionMap();
+    const { injectedConnection, coinbaseWalletConnection, walletConnectConnection, walletConnectNotQrConnection, } = getConnectionMap();
     const CONNECTIONS = [
         injectedConnection,
         coinbaseWalletConnection,
         walletConnectConnection,
+        walletConnectNotQrConnection,
     ];
     if (c instanceof types_1.Connector) {
         const connection = CONNECTIONS.find((connection) => connection.connector === c);
@@ -149,6 +170,8 @@ function getConnection(c) {
                 return coinbaseWalletConnection;
             case types_2.ConnectionType.WALLET_CONNECT:
                 return walletConnectConnection;
+            case types_2.ConnectionType.WALLET_CONNECT_NOTQR:
+                return walletConnectNotQrConnection;
         }
     }
 }
@@ -194,21 +217,28 @@ function useEagerlyConnect(onError) {
 }
 exports.useEagerlyConnect = useEagerlyConnect;
 function connectWallet(connectionType) {
-    const storage = getStorage();
-    let connection;
-    switch (connectionType) {
-        case types_2.ConnectionType.INJECTED:
-            connection = getConnection(types_2.ConnectionType.INJECTED);
-            break;
-        case types_2.ConnectionType.COINBASE_WALLET:
-            connection = getConnection(types_2.ConnectionType.COINBASE_WALLET);
-            break;
-        case types_2.ConnectionType.WALLET_CONNECT:
-            connection = getConnection(types_2.ConnectionType.WALLET_CONNECT);
-            break;
-    }
-    connection && connection.connector.activate();
-    storage.setItem(selectedWalletKey, connectionType);
+    return __awaiter(this, void 0, void 0, function* () {
+        const storage = getStorage();
+        let connection;
+        switch (connectionType) {
+            case types_2.ConnectionType.INJECTED:
+                connection = getConnection(types_2.ConnectionType.INJECTED);
+                break;
+            case types_2.ConnectionType.COINBASE_WALLET:
+                connection = getConnection(types_2.ConnectionType.COINBASE_WALLET);
+                break;
+            case types_2.ConnectionType.WALLET_CONNECT:
+                connection = getConnection(types_2.ConnectionType.WALLET_CONNECT);
+                break;
+            case types_2.ConnectionType.WALLET_CONNECT_NOTQR:
+                connection = getConnection(types_2.ConnectionType.WALLET_CONNECT_NOTQR);
+                break;
+        }
+        connection && connection.connector.activate();
+        storage.setItem(selectedWalletKey, connectionType);
+        yield (0, utils_1.delay)(100);
+        return connection;
+    });
 }
 exports.connectWallet = connectWallet;
 function disconnect(connector) {
@@ -220,3 +250,14 @@ function disconnect(connector) {
     storage.removeItem(selectedWalletKey);
 }
 exports.disconnect = disconnect;
+function getWCUri(connection) {
+    var _a, _b;
+    try {
+        const { uri } = (_b = (_a = connection.connector) === null || _a === void 0 ? void 0 : _a.provider) === null || _b === void 0 ? void 0 : _b.connector;
+        return uri;
+    }
+    catch (e) {
+        return "";
+    }
+}
+exports.getWCUri = getWCUri;
