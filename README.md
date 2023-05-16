@@ -10,9 +10,16 @@
 "web3-connector": "https://github.com/gatechain/web3-connector#3.1.0"
 ```
 
+- dist/umd/web3-connector.x.x.x.js // window.web3Connector
+
+### 前置依赖
+
+- ethers | window.ethers
+- react | window.React
+
 ### provider
 
-```tsx
+```ts
 // _app.tsx
 import {
   getConnectors,
@@ -36,7 +43,7 @@ export default MyApp;
 
 ### connect/disconnect wallet demo
 
-```tsx
+```ts
 import {
   connectWallet,
   ConnectionType,
@@ -45,8 +52,15 @@ import {
 } from "web3-connector";
 
 const Home: NextPage = () => {
-  const { connector, provider, account, chainId, isActive, isActivating } =
-    useWeb3React();
+  const {
+    connector,
+    provider,
+    account,
+    accounts,
+    chainId,
+    isActive,
+    isActivating,
+  } = useWeb3React();
 
   function connectCoinbaseWallet() {
     connectWallet(ConnectionType.COINBASE_WALLET);
