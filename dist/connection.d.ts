@@ -3,7 +3,7 @@ import { Connector } from "@web3-react/types";
 import { MetaMask } from "@web3-react/metamask";
 import { WalletConnect } from "@web3-react/walletconnect";
 import { Connection, ConnectionType } from "./types";
-declare type URLMap = {
+type URLMap = {
     [chainId: number]: string | string[];
 };
 export declare function initConnector(URLS: URLMap): any;
