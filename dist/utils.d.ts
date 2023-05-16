@@ -1,4 +1,4 @@
-declare type ISWalletType = "MetaMask" | "TokenPocket";
+type ISWalletType = "MetaMask" | "TokenPocket";
 export interface EthereumProvider {
     isMetaMask?: boolean;
     isTokenPocket?: boolean;
