@@ -1,5 +1,6 @@
 const path = require("path");
 const package = require("./package");
+const webpack = require("webpack");
 // const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 module.exports = {
@@ -42,4 +43,9 @@ module.exports = {
   },
 
   // plugins: [new BundleAnalyzerPlugin()],
+  plugins: [
+    new webpack.ProvidePlugin({
+      Buffer: ["buffer", "Buffer"],
+    }),
+  ],
 };
