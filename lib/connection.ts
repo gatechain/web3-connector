@@ -1,15 +1,13 @@
 import { initializeConnector, Web3ReactHooks } from "@web3-react/core";
 import { useEffect } from "react";
 import { Connector } from "@web3-react/types";
-import { MetaMask } from "@web3-react/metamask";
+import { MetaMask } from "./metamask";
 import { WalletConnect } from "@web3-react/walletconnect";
 import { Connection, ConnectionType } from "./types";
 import { createStorage, noopStorage } from "./storage";
 import { delay } from "./utils";
 
-type URLMap = {
-  [chainId: number]: string | string[];
-};
+type URLMap = { [chainId: number]: string | string[] };
 
 class MetaMaskConnector {
   private constructor() {}

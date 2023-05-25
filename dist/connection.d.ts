@@ -1,6 +1,6 @@
 import { Web3ReactHooks } from "@web3-react/core";
 import { Connector } from "@web3-react/types";
-import { MetaMask } from "@web3-react/metamask";
+import { MetaMask } from "./metamask";
 import { WalletConnect } from "@web3-react/walletconnect";
 import { Connection, ConnectionType } from "./types";
 type URLMap = {

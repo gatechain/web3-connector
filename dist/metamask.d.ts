@@ -1,7 +1,7 @@
 import type detectEthereumProvider from "@metamask/detect-provider";
 import type { Actions, AddEthereumChainParameter, Provider, WatchAssetParameters } from "@web3-react/types";
 import { Connector } from "@web3-react/types";
-declare type MetaMaskProvider = Provider & {
+type MetaMaskProvider = Provider & {
     isMetaMask?: boolean;
     isConnected?: () => boolean;
     providers?: MetaMaskProvider[];
