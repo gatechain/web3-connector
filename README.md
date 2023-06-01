@@ -7,7 +7,7 @@
 ```
 // package.json
 
-"web3-connector": "https://github.com/gatechain/web3-connector#3.1.0"
+"web3-connector": "https://github.com/gatechain/web3-connector#3.1.1"
 ```
 
 - dist/umd/web3-connector.x.x.x.js // window.web3Connector
