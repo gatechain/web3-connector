@@ -56,7 +56,6 @@ class Phantom extends types_1.Connector {
                 return;
             return (this.eagerConnection = Promise.resolve().then(() => __importStar(require("./detect"))).then((m) => __awaiter(this, void 0, void 0, function* () {
                 const provider = yield m.default(Object.assign({ mustBePhantom: false }, this.options));
-                console.log("m:provider", provider);
                 if (provider.isPhantom) {
                     this.provider = provider;
                     this.provider.on("connect", ({ chainId }) => {
