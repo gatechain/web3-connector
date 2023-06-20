@@ -7,7 +7,7 @@
 ```
 // package.json
 
-"web3-connector": "https://github.com/gatechain/web3-connector#3.1.1"
+"web3-connector": "https://github.com/gatechain/web3-connector#3.1.2"
 ```
 
 - dist/umd/web3-connector.x.x.x.js // window.web3Connector
@@ -108,3 +108,16 @@ const Home: NextPage = () => {
 
 export default Home;
 ```
+
+### wallet
+
+| name                        | type                 |
+| --------------------------- | -------------------- |
+| WalletConnect               | WALLET_CONNECT       |
+| imToken, Rainbow, Zengo ... | WALLET_CONNECT_NOTQR |
+| MetaMask , TP ...           | INJECTED             |
+| phantom                     | PHANTOM              |
+
+### log
+
+- 3.1.2 add phantom

@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Connector } from "@web3-react/types";
 import { MetaMask } from "./metamask";
 import { WalletConnect } from "@web3-react/walletconnect";
+import { Phantom } from "./phantom";
 import { Connection, ConnectionType } from "./types";
 import { createStorage, noopStorage } from "./storage";
 import { delay } from "./utils";
@@ -22,6 +23,18 @@ class MetaMaskConnector {
   }
 }
 
+class PhantomConnector {
+  private constructor() {}
+  private static instance: ReturnType<typeof initializeConnector<Phantom>>;
+  public static getInstance() {
+    if (!this.instance) {
+      this.instance = initializeConnector<Phantom>(
+        (actions) => new Phantom({ actions })
+      );
+    }
+    return this.instance;
+  }
+}
 class WalletConnectConnector {
   private constructor() {}
   private static instance: ReturnType<
@@ -54,6 +67,7 @@ class WalletConnectNotQrConnector {
 
 export function initConnector(URLS: URLMap): any {
   const [web3Injected, web3InjectedHooks] = MetaMaskConnector.getInstance();
+  const [phantom, phantomHooks] = PhantomConnector.getInstance();
   const [web3WalletConnect, web3WalletConnectHooks] =
     WalletConnectConnector.getInstance(URLS);
   const [web3WalletNotQrConnect, web3WalletNotQrConnectHooks] =
@@ -63,11 +77,13 @@ export function initConnector(URLS: URLMap): any {
     [web3Injected, web3InjectedHooks],
     [web3WalletConnect, web3WalletConnectHooks],
     [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],
+    [phantom, phantomHooks],
   ];
 }
 
 function getConnectionMap() {
   const [web3Injected, web3InjectedHooks] = MetaMaskConnector.getInstance();
+  const [phantom, phantomHooks] = PhantomConnector.getInstance();
   const [web3WalletConnect, web3WalletConnectHooks] =
     WalletConnectConnector.getInstance({});
   const [web3WalletNotQrConnect, web3WalletNotQrConnectHooks] =
@@ -76,6 +92,11 @@ function getConnectionMap() {
     connector: web3Injected,
     hooks: web3InjectedHooks,
     type: ConnectionType.INJECTED,
+  };
+  const phantomConnection = {
+    connector: phantom,
+    hooks: phantomHooks,
+    type: ConnectionType.PHANTOM,
   };
 
   const walletConnectConnection: Connection = {
@@ -91,6 +112,7 @@ function getConnectionMap() {
 
   return {
     injectedConnection,
+    phantomConnection,
     walletConnectConnection,
     walletConnectNotQrConnection,
   };
@@ -101,12 +123,14 @@ export function getConnectors(URLS: URLMap) {
     [web3Injected, web3InjectedHooks],
     [web3WalletConnect, web3WalletConnectHooks],
     [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],
+    [phantom, phantomHooks],
   ] = initConnector(URLS);
 
   const connectors: [MetaMask | WalletConnect, Web3ReactHooks][] = [
     [web3Injected, web3InjectedHooks],
     [web3WalletConnect, web3WalletConnectHooks],
     [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],
+    [phantom, phantomHooks],
   ];
   return connectors;
 }
@@ -140,11 +164,13 @@ export function getConnection(c: Connector | ConnectionType) {
     injectedConnection,
     walletConnectConnection,
     walletConnectNotQrConnection,
+    phantomConnection,
   } = getConnectionMap();
   const CONNECTIONS = [
     injectedConnection,
     walletConnectConnection,
     walletConnectNotQrConnection,
+    phantomConnection,
   ];
 
   if (c instanceof Connector) {
@@ -163,6 +189,8 @@ export function getConnection(c: Connector | ConnectionType) {
         return walletConnectConnection;
       case ConnectionType.WALLET_CONNECT_NOTQR:
         return walletConnectNotQrConnection;
+      case ConnectionType.PHANTOM:
+        return phantomConnection;
     }
   }
 }
@@ -224,6 +252,9 @@ export async function connectWallet(connectionType: ConnectionType) {
       break;
     case ConnectionType.WALLET_CONNECT_NOTQR:
       connection = getConnection(ConnectionType.WALLET_CONNECT_NOTQR);
+      break;
+    case ConnectionType.PHANTOM:
+      connection = getConnection(ConnectionType.PHANTOM);
       break;
   }
 
