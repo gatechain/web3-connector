@@ -165,7 +165,6 @@ function getConnection(c) {
             case types_2.ConnectionType.WALLET_CONNECT_NOTQR:
                 return walletConnectNotQrConnection;
             case types_2.ConnectionType.PHANTOM:
-                console.log("getConnection - phantomConnection", phantomConnection);
                 return phantomConnection;
         }
     }
