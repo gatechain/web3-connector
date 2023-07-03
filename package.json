@@ -1,11 +1,11 @@
 {
   "name": "web3-connector",
-  "version": "3.1.2",
+  "version": "3.2.0",
   "description": "This is a tool for connecting Web3 wallets.",
   "author": "Thone Liu <thorne_lew@126.com>",
   "homepage": "",
   "license": "ISC",
-  "main": "./dist/index.js",
+  "main": "./dist/index.js.js",
   "exports": [
     "./dist/index.js"
   ],
@@ -25,11 +25,10 @@
     "build": "webpack -c ./webpack.config.js"
   },
   "dependencies": {
-    "@metamask/detect-provider": "^1.2.0",
-    "@walletconnect/ethereum-provider": "^1.7.5",
-    "@web3-react/core": "8.0.35-beta.0",
+    "@web3-react/core": "^8.2.0",
     "@web3-react/metamask": "^8.2.0",
-    "@web3-react/walletconnect": "8.0.35-beta.0"
+    "@web3-react/walletconnect": "^8.2.0",
+    "@web3-react/walletconnect-v2": "^8.3.5"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",

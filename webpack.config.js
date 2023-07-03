@@ -7,12 +7,14 @@ module.exports = {
   entry: "./lib/index.ts",
   mode: "production",
   output: {
-    filename: `umd/web3-connector.${package.version}.js`,
+    filename: `web3-connector.${package.version}.js`,
     path: path.resolve(__dirname, "dist"),
     library: {
       name: "web3Connector",
       type: "umd",
     },
+    publicPath: "https://webpro.gateweb3.cc/lib/", // https://webpro.gateweb3.cc/lib
+    // publicPath: "/js/web3/", // https://webpro.gateweb3.cc/lib
   },
   resolve: {
     extensions: [".ts", ".tsx", ".js"],
@@ -41,9 +43,21 @@ module.exports = {
       umd: "react",
     },
   },
-
-  // plugins: [new BundleAnalyzerPlugin()],
+  optimization: {
+    splitChunks: {
+      name: "no",
+      cacheGroups: {
+        defaultVendors: {
+          name: "modules",
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10,
+          reuseExistingChunk: true,
+        },
+      },
+    },
+  },
   plugins: [
+    // new BundleAnalyzerPlugin(),
     new webpack.ProvidePlugin({
       Buffer: ["buffer", "Buffer"],
     }),

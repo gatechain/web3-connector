@@ -1,8 +1,9 @@
 import { initializeConnector, Web3ReactHooks } from "@web3-react/core";
 import { useEffect } from "react";
 import { Connector } from "@web3-react/types";
-import { MetaMask } from "./metamask";
+import { MetaMask } from "@web3-react/metamask";
 import { WalletConnect } from "@web3-react/walletconnect";
+import { WalletConnect as WalletConnectV2 } from "@web3-react/walletconnect-v2";
 import { Phantom } from "./phantom";
 import { Connection, ConnectionType } from "./types";
 import { createStorage, noopStorage } from "./storage";
@@ -23,6 +24,8 @@ class MetaMaskConnector {
   }
 }
 
+// c6c9bacd35afa3eb9e6cccf6d8464395
+const projectId = "49cf6ec6179f8d21bf525adc78d6900a";
 class PhantomConnector {
   private constructor() {}
   private static instance: ReturnType<typeof initializeConnector<Phantom>>;
@@ -38,12 +41,21 @@ class PhantomConnector {
 class WalletConnectConnector {
   private constructor() {}
   private static instance: ReturnType<
-    typeof initializeConnector<WalletConnect>
+    typeof initializeConnector<WalletConnectV2>
   >;
   public static getInstance(URLS: URLMap) {
     if (!this.instance) {
-      this.instance = initializeConnector<WalletConnect>(
-        (actions) => new WalletConnect({ actions, options: { rpc: URLS } })
+      this.instance = initializeConnector<WalletConnectV2>(
+        (actions) =>
+          new WalletConnectV2({
+            actions,
+            options: {
+              projectId,
+              chains: [1],
+              optionalChains: [56],
+              showQrModal: true,
+            },
+          })
       );
     }
     return this.instance;
@@ -52,13 +64,21 @@ class WalletConnectConnector {
 class WalletConnectNotQrConnector {
   private constructor() {}
   private static instance: ReturnType<
-    typeof initializeConnector<WalletConnect>
+    typeof initializeConnector<WalletConnectV2>
   >;
   public static getInstance(URLS: URLMap) {
     if (!this.instance) {
-      this.instance = initializeConnector<WalletConnect>(
+      this.instance = initializeConnector<WalletConnectV2>(
         (actions) =>
-          new WalletConnect({ actions, options: { rpc: URLS, qrcode: false } })
+          new WalletConnectV2({
+            actions,
+            options: {
+              projectId,
+              chains: [1],
+              optionalChains: [56],
+              showQrModal: false,
+            },
+          })
       );
     }
     return this.instance;
@@ -274,7 +294,10 @@ export function disconnect(connector: Connector) {
 }
 export function getWCUri(connection: Connection) {
   try {
-    const { uri } = (connection.connector?.provider as any)?.connector;
+    console.log(connection, "connection");
+    // const { uri } = (connection.connector?.provider as any)?.connector;
+    const { uri } = (connection.connector?.provider as any)?.signer;
+    console.log(uri, "in uri");
     return uri;
   } catch (e) {
     return "";
