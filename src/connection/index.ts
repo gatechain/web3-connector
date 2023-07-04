@@ -110,10 +110,15 @@ export async function connectWallet(
   storage.setItem(selectedWalletKey, connectionType);
 
   if (connectionType === ConnectionType.WALLET_CONNECT_NOTQR) {
-    (connection.connector as any)?.events.on(URI_AVAILABLE, (uri: string) => {
+    function setUri(uri: string) {
       if (!uri) return;
       cb && cb(uri);
-    });
+      (connection.connector as any)?.events.removeListener(
+        URI_AVAILABLE,
+        setUri
+      );
+    }
+    (connection.connector as any)?.events.on(URI_AVAILABLE, setUri);
   }
 
   await delay(100);
