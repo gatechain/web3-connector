@@ -5,15 +5,13 @@
   "author": "Thone Liu <thorne_lew@126.com>",
   "homepage": "",
   "license": "ISC",
-  "main": "./dist/index.js.js",
+  "main": "./dist/web3-connector.3.2.0.js",
   "exports": [
-    "./dist/index.js"
+    "./dist/web3-connector.3.2.0.js"
   ],
   "types": "./dist/index.d.ts",
   "type": "commonjs",
-  "directories": {
-    "lib": "lib"
-  },
+  "directories": {},
   "files": [
     "dist"
   ],
@@ -21,13 +19,12 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "start": "tsc --watch",
+    "dev": "webpack -c ./webpack.config.js -w",
     "build": "webpack -c ./webpack.config.js"
   },
   "dependencies": {
     "@web3-react/core": "^8.2.0",
     "@web3-react/metamask": "^8.2.0",
-    "@web3-react/walletconnect": "^8.2.0",
     "@web3-react/walletconnect-v2": "^8.3.5"
   },
   "devDependencies": {
