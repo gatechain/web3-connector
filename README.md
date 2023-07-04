@@ -121,3 +121,8 @@ export default Home;
 ### log
 
 - 3.1.2 add phantom
+- 3.2.0
+    1. delete getWCUri
+    2. split connection 
+    3. delete isMeteMask isxxxx.... 
+    4. use @web3-react/metamask@8.2.0 | @web3-react/walletconnect-v2@8.3.5

@@ -4,7 +4,7 @@ const webpack = require("webpack");
 // const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 module.exports = {
-  entry: "./lib/index.ts",
+  entry: "./src/index.ts",
   mode: "production",
   output: {
     filename: `web3-connector.${package.version}.js`,
@@ -17,7 +17,7 @@ module.exports = {
     // publicPath: "/js/web3/", // https://webpro.gateweb3.cc/lib
   },
   resolve: {
-    extensions: [".ts", ".tsx", ".js"],
+    extensions: [".ts", ".js"],
     extensionAlias: {
       ".js": [".js", ".ts"],
       ".cjs": [".cjs", ".cts"],
