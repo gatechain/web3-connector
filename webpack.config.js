@@ -9,7 +9,6 @@ module.exports = {
   output: {
     filename: `web3-connector.${package.version}.js`,
     path: path.resolve(__dirname, "dist"),
-    globalObject: "this",
     library: {
       name: "web3Connector",
       type: "umd",
