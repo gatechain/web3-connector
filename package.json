@@ -5,9 +5,9 @@
   "author": "Thone Liu <thorne_lew@126.com>",
   "homepage": "",
   "license": "ISC",
-  "main": "./dist/web3-connector.3.2.0.js",
+  "main": "./src/index.js",
   "exports": [
-    "./dist/web3-connector.3.2.0.js"
+    "./dist/index.js"
   ],
   "types": "./dist/index.d.ts",
   "type": "commonjs",
@@ -20,12 +20,18 @@
   },
   "scripts": {
     "dev": "webpack -c ./webpack.config.js -w",
+    "tsc": "tsc",
     "build": "webpack -c ./webpack.config.js"
   },
   "dependencies": {
     "@web3-react/core": "^8.2.0",
     "@web3-react/metamask": "^8.2.0",
-    "@web3-react/walletconnect-v2": "^8.3.5"
+    "@web3-react/walletconnect-v2": "^8.3.5",
+    "bufferutil": "^4.0.7",
+    "encoding": "^0.1.13",
+    "lokijs": "^1.5.12",
+    "pino-pretty": "^10.0.1",
+    "utf-8-validate": "^6.0.3"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
