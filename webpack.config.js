@@ -9,11 +9,12 @@ module.exports = {
   output: {
     filename: `web3-connector.${package.version}.js`,
     path: path.resolve(__dirname, "dist"),
+    globalObject: "this",
     library: {
       name: "web3Connector",
       type: "umd",
     },
-    publicPath: "https://webpro.gateweb3.cc/lib/", // https://webpro.gateweb3.cc/lib
+    // publicPath: "https://webpro.gateweb3.cc/lib/", // https://webpro.gateweb3.cc/lib
     // publicPath: "/js/web3/", // https://webpro.gateweb3.cc/lib
   },
   resolve: {
