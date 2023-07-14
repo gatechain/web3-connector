@@ -18,8 +18,8 @@ export class WalletConnectV2 extends WalletConnect {
       actions,
       options: {
         projectId: "49cf6ec6179f8d21bf525adc78d6900a",
-        chains: [defaultChainId],
-        optionalChains: [],
+        chains: [defaultChainId || 1],
+        optionalChains: [56],
         showQrModal: qrcode,
         optionalMethods: [
           "eth_signTypedData",
