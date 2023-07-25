@@ -1,6 +1,6 @@
 {
   "name": "web3-connector",
-  "version": "3.2.2",
+  "version": "3.2.3",
   "description": "This is a tool for connecting Web3 wallets.",
   "author": "Thone Liu <thorne_lew@126.com>",
   "homepage": "",
@@ -25,7 +25,7 @@
   "dependencies": {
     "@web3-react/core": "^8.2.0",
     "@web3-react/metamask": "^8.2.0",
-    "@web3-react/walletconnect-v2": "^8.3.5"
+    "@web3-react/walletconnect-v2": "^8.3.7"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",

@@ -13,7 +13,7 @@ module.exports = {
       name: "web3Connector",
       type: "umd",
     },
-    // publicPath: "https://webpro.gateweb3.cc/lib/", // https://webpro.gateweb3.cc/lib
+    publicPath: "https://webpro.gateweb3.cc/lib/", // https://webpro.gateweb3.cc/lib
     // publicPath: "/js/web3/", // https://webpro.gateweb3.cc/lib
   },
   resolve: {

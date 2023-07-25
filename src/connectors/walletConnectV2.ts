@@ -28,6 +28,7 @@ export class WalletConnectV2 extends WalletConnect {
         ],
         qrModalOptions: {
           explorerRecommendedWalletIds: [
+            // "aba1f652e61fd536e8a7a5cd5e0319c9047c435ef8f7e907717361ff33bb3588",
             "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96",
             "1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369",
             "ef333840daf915aafdc4a004525502d6d49d77bd9c65e0642dbaefb3c2893bef",
