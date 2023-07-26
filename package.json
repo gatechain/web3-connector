@@ -1,13 +1,13 @@
 {
   "name": "web3-connector",
-  "version": "3.2.3",
+  "version": "v3.2.3",
   "description": "This is a tool for connecting Web3 wallets.",
   "author": "Thone Liu <thorne_lew@126.com>",
   "homepage": "",
   "license": "ISC",
-  "main": "./dist/web3-connector.3.2.0.js",
+  "main": "./dist/index.js",
   "exports": [
-    "./dist/web3-connector.3.2.0.js"
+    "./dist/index.js"
   ],
   "types": "./dist/index.d.ts",
   "type": "commonjs",
