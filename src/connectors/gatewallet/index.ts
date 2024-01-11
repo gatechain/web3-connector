@@ -9,10 +9,28 @@ import type {
 } from "@web3-react/types";
 import { Connector } from "@web3-react/types";
 
+interface IGateACcountInfo {
+  walletName: string;
+  accountName: string;
+  walletId: string;
+  accountNetworkArr: Array<{
+    accountFormat: string;
+    accountFormatName: string;
+    address: string;
+    network: string;
+    accountPublicKey?: string;
+  }>;
+  moreAddressSort: Array<any>;
+}
+
 type GateWalletProvider = Provider & {
   isMetaMask?: boolean;
   isConnected?: () => boolean;
   providers?: GateWalletProvider[];
+  selectedAddress: string;
+  connect: () => Promise<IGateACcountInfo>;
+  chainId: string;
+  getAccount: () => Promise<IGateACcountInfo>;
 };
 export class NoMetaMaskError extends Error {
   public constructor() {
@@ -103,6 +121,17 @@ export class GateWallet extends Connector {
               this.actions.update({ accounts });
             }
           });
+
+          this.provider.on("gateAccountChange", (): void => {
+            console.log("gateAccountChange");
+            const acc = this.provider?.selectedAddress as string;
+            if (!acc) {
+              // handle this edge case by disconnecting
+              this.actions.resetState();
+            } else {
+              this.actions.update({ accounts: [acc] });
+            }
+          });
         }
       }
     ));
@@ -114,6 +143,22 @@ export class GateWallet extends Connector {
 
     await this.isomorphicInitialize();
     if (!this.provider) return cancelActivation();
+
+    const result = await this.provider
+      .getAccount?.()
+      .then((gc: any) => {
+        console.log(gc, "connectEagerly gc", this.provider);
+
+        return this.provider?.connect();
+
+        // this.actions.update({
+        //   chainId: parseChainId(this.provider?.chainId as string),
+        //   accounts: [this.provider?.selectedAddress as string],
+        // });
+      })
+      .catch((err) => {
+        throw err;
+      });
 
     return Promise.all([
       this.provider.request({ method: "eth_chainId" }) as Promise<string>,
@@ -152,12 +197,19 @@ export class GateWallet extends Connector {
       .then(async () => {
         if (!this.provider) throw new NoMetaMaskError();
 
+        const result = await this.provider?.connect().catch((err) => {
+          throw err;
+        });
+
+        console.log("result", result);
+
         return Promise.all([
           this.provider.request({ method: "eth_chainId" }) as Promise<string>,
           this.provider.request({ method: "eth_requestAccounts" }) as Promise<
             string[]
           >,
         ]).then(([chainId, accounts]) => {
+          console.log("ffdfsdf", chainId, accounts);
           const receivedChainId = parseChainId(chainId);
           const desiredChainId =
             typeof desiredChainIdOrChainParameters === "number"
