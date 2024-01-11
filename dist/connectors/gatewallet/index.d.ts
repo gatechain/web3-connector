@@ -1,10 +1,27 @@
 import type detectEthereumProvider from "./detect-provider";
 import type { Actions, AddEthereumChainParameter, Provider, WatchAssetParameters } from "@web3-react/types";
 import { Connector } from "@web3-react/types";
+interface IGateACcountInfo {
+    walletName: string;
+    accountName: string;
+    walletId: string;
+    accountNetworkArr: Array<{
+        accountFormat: string;
+        accountFormatName: string;
+        address: string;
+        network: string;
+        accountPublicKey?: string;
+    }>;
+    moreAddressSort: Array<any>;
+}
 type GateWalletProvider = Provider & {
     isMetaMask?: boolean;
     isConnected?: () => boolean;
     providers?: GateWalletProvider[];
+    selectedAddress: string;
+    connect: () => Promise<IGateACcountInfo>;
+    chainId: string;
+    getAccount: () => Promise<IGateACcountInfo>;
 };
 export declare class NoMetaMaskError extends Error {
     constructor();
