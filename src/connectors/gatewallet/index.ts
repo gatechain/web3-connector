@@ -122,10 +122,10 @@ export class GateWallet extends Connector {
             }
           });
 
-          this.provider.on("gateAccountChange", (): void => {
-            console.log("gateAccountChange");
+          this.provider.on("gateAccountChange", (gateWallet: any): void => {
+            console.log("gateAccountChange", gateWallet);
             const acc = this.provider?.selectedAddress as string;
-            if (!acc) {
+            if (!acc || !gateWallet?.walletId) {
               // handle this edge case by disconnecting
               this.actions.resetState();
             } else {
