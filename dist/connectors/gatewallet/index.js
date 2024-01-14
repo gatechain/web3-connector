@@ -99,17 +99,41 @@ class GateWallet extends types_1.Connector {
                             this.actions.update({ accounts });
                         }
                     });
+                    this.provider.on("gateAccountChange", (gateWallet) => {
+                        var _a;
+                        console.log("gateAccountChange", gateWallet);
+                        const acc = (_a = this.provider) === null || _a === void 0 ? void 0 : _a.selectedAddress;
+                        if (!acc || !(gateWallet === null || gateWallet === void 0 ? void 0 : gateWallet.walletId)) {
+                            // handle this edge case by disconnecting
+                            this.actions.resetState();
+                        }
+                        else {
+                            this.actions.update({ accounts: [acc] });
+                        }
+                    });
                 }
             })));
         });
     }
     /** {@inheritdoc Connector.connectEagerly} */
     connectEagerly() {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             const cancelActivation = this.actions.startActivation();
             yield this.isomorphicInitialize();
             if (!this.provider)
                 return cancelActivation();
+            const result = yield ((_b = (_a = this.provider).getAccount) === null || _b === void 0 ? void 0 : _b.call(_a).then((gc) => {
+                var _a;
+                console.log(gc, "connectEagerly gc", this.provider);
+                return (_a = this.provider) === null || _a === void 0 ? void 0 : _a.connect();
+                // this.actions.update({
+                //   chainId: parseChainId(this.provider?.chainId as string),
+                //   accounts: [this.provider?.selectedAddress as string],
+                // });
+            }).catch((err) => {
+                throw err;
+            }));
             return Promise.all([
                 this.provider.request({ method: "eth_chainId" }),
                 this.provider.request({ method: "eth_accounts" }),
@@ -145,12 +169,18 @@ class GateWallet extends types_1.Connector {
                 cancelActivation = this.actions.startActivation();
             return this.isomorphicInitialize()
                 .then(() => __awaiter(this, void 0, void 0, function* () {
+                var _c;
                 if (!this.provider)
                     throw new NoMetaMaskError();
+                const result = yield ((_c = this.provider) === null || _c === void 0 ? void 0 : _c.connect().catch((err) => {
+                    throw err;
+                }));
+                console.log("result", result);
                 return Promise.all([
                     this.provider.request({ method: "eth_chainId" }),
                     this.provider.request({ method: "eth_requestAccounts" }),
                 ]).then(([chainId, accounts]) => {
+                    console.log("ffdfsdf", chainId, accounts);
                     const receivedChainId = parseChainId(chainId);
                     const desiredChainId = typeof desiredChainIdOrChainParameters === "number"
                         ? desiredChainIdOrChainParameters
