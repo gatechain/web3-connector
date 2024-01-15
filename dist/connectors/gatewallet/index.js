@@ -89,16 +89,15 @@ class GateWallet extends types_1.Connector {
                         this.actions.resetState();
                         (_a = this.onError) === null || _a === void 0 ? void 0 : _a.call(this, error);
                     });
-                    this.provider.on("accountsChanged", (accounts) => {
-                        console.log("accountsChanged");
-                        if (accounts.length === 0) {
-                            // handle this edge case by disconnecting
-                            this.actions.resetState();
-                        }
-                        else {
-                            this.actions.update({ accounts });
-                        }
-                    });
+                    // this.provider.on("accountsChanged", (accounts: string[]): void => {
+                    //   console.log("accountsChanged");
+                    //   if (accounts.length === 0) {
+                    //     // handle this edge case by disconnecting
+                    //     this.actions.resetState();
+                    //   } else {
+                    //     this.actions.update({ accounts });
+                    //   }
+                    // });
                     this.provider.on("gateAccountChange", (gateWallet) => {
                         var _a;
                         console.log("gateAccountChange", gateWallet);
