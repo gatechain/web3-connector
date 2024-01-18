@@ -169,11 +169,11 @@ class GateWallet extends types_1.Connector {
                 cancelActivation = this.actions.startActivation();
             return this.isomorphicInitialize()
                 .then(() => __awaiter(this, void 0, void 0, function* () {
-                var _c, _d;
+                var _c, _d, _e;
                 if (!this.provider)
                     throw new NoMetaMaskError();
                 if (!((_c = this.provider) === null || _c === void 0 ? void 0 : _c.connect)) {
-                    const result = yield ((_d = this.provider) === null || _d === void 0 ? void 0 : _d.connect().catch((err) => {
+                    const result = yield ((_e = (_d = this.provider) === null || _d === void 0 ? void 0 : _d.connect) === null || _e === void 0 ? void 0 : _e.call(_d).catch((err) => {
                         throw err;
                     }));
                     console.log("result", result);
