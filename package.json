@@ -20,7 +20,8 @@
   },
   "scripts": {
     "dev": "webpack -c ./webpack.config.js -w",
-    "build": "webpack -c ./webpack.config.js"
+    "build": "webpack -c ./webpack.config.js",
+    "build:tsc": "tsc"
   },
   "dependencies": {
     "@web3-react/core": "^8.2.0",
