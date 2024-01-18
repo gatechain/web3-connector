@@ -144,21 +144,23 @@ export class GateWallet extends Connector {
     await this.isomorphicInitialize();
     if (!this.provider) return cancelActivation();
 
-    const result = await this.provider
-      .getAccount?.()
-      .then((gc: any) => {
-        console.log(gc, "connectEagerly gc", this.provider);
+    if (!this.provider?.connect) {
+      await this.provider
+        .getAccount?.()
+        .then((gc: any) => {
+          console.log(gc, "connectEagerly gc", this.provider);
 
-        return this.provider?.connect();
+          // return this.provider?.connect();
 
-        // this.actions.update({
-        //   chainId: parseChainId(this.provider?.chainId as string),
-        //   accounts: [this.provider?.selectedAddress as string],
-        // });
-      })
-      .catch((err) => {
-        throw err;
-      });
+          // this.actions.update({
+          //   chainId: parseChainId(this.provider?.chainId as string),
+          //   accounts: [this.provider?.selectedAddress as string],
+          // });
+        })
+        .catch((err) => {
+          throw err;
+        });
+    }
 
     return Promise.all([
       this.provider.request({ method: "eth_chainId" }) as Promise<string>,
@@ -197,11 +199,12 @@ export class GateWallet extends Connector {
       .then(async () => {
         if (!this.provider) throw new NoMetaMaskError();
 
-        const result = await this.provider?.connect().catch((err) => {
-          throw err;
-        });
-
-        console.log("result", result);
+        if (!this.provider?.connect) {
+          const result = await this.provider?.connect().catch((err) => {
+            throw err;
+          });
+          console.log("result", result);
+        }
 
         return Promise.all([
           this.provider.request({ method: "eth_chainId" }) as Promise<string>,
