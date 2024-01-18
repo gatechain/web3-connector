@@ -116,24 +116,22 @@ class GateWallet extends types_1.Connector {
     }
     /** {@inheritdoc Connector.connectEagerly} */
     connectEagerly() {
-        var _a, _b, _c;
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             const cancelActivation = this.actions.startActivation();
             yield this.isomorphicInitialize();
             if (!this.provider)
                 return cancelActivation();
-            if (!((_a = this.provider) === null || _a === void 0 ? void 0 : _a.connect)) {
-                yield ((_c = (_b = this.provider).getAccount) === null || _c === void 0 ? void 0 : _c.call(_b).then((gc) => {
-                    console.log(gc, "connectEagerly gc", this.provider);
-                    // return this.provider?.connect();
-                    // this.actions.update({
-                    //   chainId: parseChainId(this.provider?.chainId as string),
-                    //   accounts: [this.provider?.selectedAddress as string],
-                    // });
-                }).catch((err) => {
-                    throw err;
-                }));
-            }
+            const result = yield ((_b = (_a = this.provider).getAccount) === null || _b === void 0 ? void 0 : _b.call(_a).then((gc) => {
+                console.log(gc, "connectEagerly gc", this.provider);
+                // return this.provider?.connect();
+                // this.actions.update({
+                //   chainId: parseChainId(this.provider?.chainId as string),
+                //   accounts: [this.provider?.selectedAddress as string],
+                // });
+            }).catch((err) => {
+                throw err;
+            }));
             return Promise.all([
                 this.provider.request({ method: "eth_chainId" }),
                 this.provider.request({ method: "eth_accounts" }),
@@ -169,15 +167,13 @@ class GateWallet extends types_1.Connector {
                 cancelActivation = this.actions.startActivation();
             return this.isomorphicInitialize()
                 .then(() => __awaiter(this, void 0, void 0, function* () {
-                var _c, _d, _e;
+                var _c, _d;
                 if (!this.provider)
                     throw new NoMetaMaskError();
-                if (!((_c = this.provider) === null || _c === void 0 ? void 0 : _c.connect)) {
-                    const result = yield ((_e = (_d = this.provider) === null || _d === void 0 ? void 0 : _d.connect) === null || _e === void 0 ? void 0 : _e.call(_d).catch((err) => {
-                        throw err;
-                    }));
-                    console.log("result", result);
-                }
+                const result = yield ((_d = (_c = this.provider) === null || _c === void 0 ? void 0 : _c.connect) === null || _d === void 0 ? void 0 : _d.call(_c).catch((err) => {
+                    throw err;
+                }));
+                console.log("result", result);
                 return Promise.all([
                     this.provider.request({ method: "eth_chainId" }),
                     this.provider.request({ method: "eth_requestAccounts" }),
