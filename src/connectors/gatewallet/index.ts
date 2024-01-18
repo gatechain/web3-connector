@@ -200,7 +200,7 @@ export class GateWallet extends Connector {
         if (!this.provider) throw new NoMetaMaskError();
 
         if (!this.provider?.connect) {
-          const result = await this.provider?.connect().catch((err) => {
+          const result = await this.provider?.connect?.().catch((err) => {
             throw err;
           });
           console.log("result", result);
