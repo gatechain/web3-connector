@@ -112,15 +112,18 @@ export class GateWallet extends Connector {
             this.onError?.(error);
           });
 
-          // this.provider.on("accountsChanged", (accounts: string[]): void => {
-          //   console.log("accountsChanged");
-          //   if (accounts.length === 0) {
-          //     // handle this edge case by disconnecting
-          //     this.actions.resetState();
-          //   } else {
-          //     this.actions.update({ accounts });
-          //   }
-          // });
+          // TODO 兼容旧插件
+          if (!this.provider?.connect) {
+            this.provider.on("accountsChanged", (accounts: string[]): void => {
+              console.log("accountsChanged");
+              if (accounts.length === 0) {
+                // handle this edge case by disconnecting
+                this.actions.resetState();
+              } else {
+                this.actions.update({ accounts });
+              }
+            });
+          }
 
           this.provider.on("gateAccountChange", (gateWallet: any): void => {
             console.log("gateAccountChange", gateWallet);
