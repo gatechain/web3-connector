@@ -125,16 +125,18 @@ export class GateWallet extends Connector {
             });
           }
 
-          this.provider.on("gateAccountChange", (gateWallet: any): void => {
-            console.log("gateAccountChange", gateWallet);
-            const acc = this.provider?.selectedAddress as string;
-            if (!acc || !gateWallet?.walletId) {
-              // handle this edge case by disconnecting
-              this.actions.resetState();
-            } else {
-              this.actions.update({ accounts: [acc] });
-            }
-          });
+          if (this.provider?.connect) {
+            this.provider.on("gateAccountChange", (gateWallet: any): void => {
+              console.log("gateAccountChange", gateWallet);
+              const acc = this.provider?.selectedAddress as string;
+              if (!acc || !gateWallet?.walletId) {
+                // handle this edge case by disconnecting
+                this.actions.resetState();
+              } else {
+                this.actions.update({ accounts: [acc] });
+              }
+            });
+          }
         }
       }
     ));
