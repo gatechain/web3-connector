@@ -56,7 +56,7 @@ class GateWallet extends types_1.Connector {
             if (this.eagerConnection)
                 return;
             return (this.eagerConnection = Promise.resolve().then(() => __importStar(require("./detect-provider"))).then((m) => __awaiter(this, void 0, void 0, function* () {
-                var _a, _b, _c;
+                var _a, _b, _c, _d;
                 console.log("m", m);
                 const provider = (yield m.default(this.options));
                 console.log(provider, "provider");
@@ -102,18 +102,20 @@ class GateWallet extends types_1.Connector {
                             }
                         });
                     }
-                    this.provider.on("gateAccountChange", (gateWallet) => {
-                        var _a;
-                        console.log("gateAccountChange", gateWallet);
-                        const acc = (_a = this.provider) === null || _a === void 0 ? void 0 : _a.selectedAddress;
-                        if (!acc || !(gateWallet === null || gateWallet === void 0 ? void 0 : gateWallet.walletId)) {
-                            // handle this edge case by disconnecting
-                            this.actions.resetState();
-                        }
-                        else {
-                            this.actions.update({ accounts: [acc] });
-                        }
-                    });
+                    if ((_d = this.provider) === null || _d === void 0 ? void 0 : _d.connect) {
+                        this.provider.on("gateAccountChange", (gateWallet) => {
+                            var _a;
+                            console.log("gateAccountChange", gateWallet);
+                            const acc = (_a = this.provider) === null || _a === void 0 ? void 0 : _a.selectedAddress;
+                            if (!acc || !(gateWallet === null || gateWallet === void 0 ? void 0 : gateWallet.walletId)) {
+                                // handle this edge case by disconnecting
+                                this.actions.resetState();
+                            }
+                            else {
+                                this.actions.update({ accounts: [acc] });
+                            }
+                        });
+                    }
                 }
             })));
         });
