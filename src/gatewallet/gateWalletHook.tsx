@@ -10,11 +10,24 @@ import EventEmitter from "events";
 
 const eventEmitter = new EventEmitter();
 
+interface IGateAccountInfo {
+  walletName: string;
+  accountName: string;
+  walletId: string;
+  accountNetworkArr: Array<{
+    accountFormat: string;
+    accountFormatName: string;
+    address: string;
+    network: string;
+    accountPublicKey?: string;
+  }>;
+}
+
 export const GateWalletContext = createContext<{
   connectInfo: {
     chainId: string;
   } | null;
-  gateAccountInfo?: any;
+  gateAccountInfo?: IGateAccountInfo | null;
   hasEVMNetwork?: boolean;
   chainId: string;
 }>({
@@ -27,6 +40,38 @@ export const GateWalletContext = createContext<{
 export const useNonEVMReact = () => {
   const gatewallet = useContext(GateWalletContext);
   return gatewallet;
+};
+
+export const useNonEVMEagerlyConnect = () => {
+  useEffect(() => {
+    const provider = detectProvider();
+    if (!provider) return;
+    provider.on("connect", (info: { chainId: string }) => {
+      eventEmitter.emit("connect", info);
+    });
+
+    provider.on("gateAccountChange", (gateWallet: IGateAccountInfo): void => {
+      console.log("gateAccountChange", gateWallet, gateWallet);
+      eventEmitter.emit("gateAccountChange", gateWallet);
+    });
+
+    provider.on("chainChanged", (chainId: string): void => {
+      console.log("chainChanged", chainId);
+      eventEmitter.emit("chainChanged", chainId);
+    });
+
+    provider.on("disconnect", (error: any) => {
+      console.log(error, "error");
+    });
+    provider
+      .getAccount?.()
+      .then((gc: any) => {
+        console.log(gc, "connectEagerly gc", provider);
+      })
+      .catch((err: any) => {
+        console.error("gatewallet.getAccount错误", err);
+      });
+  }, []);
 };
 
 export const GateWalletProvider: FC<{ children: any }> = ({ children }) => {
@@ -60,17 +105,15 @@ export const GateWalletProvider: FC<{ children: any }> = ({ children }) => {
 
   const value = useMemo(() => {
     return {
-        connectInfo,
-        gateAccountInfo,
-        chainId: chain,
-        hasEVMNetwork: hasEVMNetwork,
-    }
-  }, [connectInfo, gateAccountInfo, chain, hasEVMNetwork])
+      connectInfo,
+      gateAccountInfo,
+      chainId: chain,
+      hasEVMNetwork: hasEVMNetwork,
+    };
+  }, [connectInfo, gateAccountInfo, chain, hasEVMNetwork]);
 
   return (
-    <GateWalletContext.Provider
-      value={value}
-    >
+    <GateWalletContext.Provider value={value}>
       {children}
     </GateWalletContext.Provider>
   );
@@ -94,8 +137,8 @@ export function connectGateWallet() {
   });
 
   provider.on("gateAccountChange", (gateWallet: any): void => {
-    console.log("gateAccountChange", provider?.gateAccountInfo);
-    eventEmitter.emit("gateAccountChange", provider?.gateAccountInfo);
+    console.log("gateAccountChange", gateWallet, gateWallet);
+    eventEmitter.emit("gateAccountChange", gateWallet);
   });
 
   provider.on("chainChanged", (chainId: string): void => {
