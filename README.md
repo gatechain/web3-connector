@@ -19,6 +19,8 @@
 
 ### provider
 
+#### evm provider
+
 ```ts
 // _app.tsx
 import {
@@ -41,9 +43,34 @@ function MyApp({ Component, pageProps }: AppProps) {
 export default MyApp;
 ```
 
+#### 非evm provider
+```ts
+// _app.tsx
+import {
+  connectGateWallet,
+  useNonEVMReact,
+  GateWalletProvider,
+  useNonEVMEagerlyConnect,
+} from "web3-connector";
+
+function MyApp({ Component, pageProps }: AppProps) {
+  useNonEVMEagerlyConnect();
+
+  return (
+    <GateWalletProvider>
+      <Component {...pageProps} />
+    </GateWalletProvider>
+  );
+}
+
+export default MyApp;
+```
+
 ### connect/disconnect wallet demo
 
-```ts
+#### evm connect/disconnect wallet demo
+
+```tsx
 import {
   connectWallet,
   ConnectionType,
@@ -101,6 +128,38 @@ const Home: NextPage = () => {
         }}
       >
         disconnect
+      </button>
+    </div>
+  );
+};
+
+export default Home;
+```
+
+#### 非evm connect/disconnect wallet demo
+```tsx
+import {
+  connectGateWallet,
+  useNonEVMReact,
+  GateWalletProvider,
+  useNonEVMEagerlyConnect,
+  disconnectGateWallet
+} from "web3-connector";
+
+const Home: NextPage = () => {
+
+  return (
+    <div className={styles.container}>
+     
+      <button
+        onClick={() => {
+          connectGateWallet();
+        }}
+      >
+        connect wallet
+      </button>
+      <button>
+        disconnectGateWallet()
       </button>
     </div>
   );
