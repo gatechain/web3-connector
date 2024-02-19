@@ -152,3 +152,7 @@ export function connectGateWallet() {
 
   return provider.connect();
 }
+
+export function disconnectGateWallet() {
+  eventEmitter.removeAllListeners();
+}
