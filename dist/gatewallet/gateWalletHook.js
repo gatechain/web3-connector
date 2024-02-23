@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.connectGateWallet = exports.detectProvider = exports.GateWalletProvider = exports.useNonEVMEagerlyConnect = exports.useNonEVMReact = exports.GateWalletContext = void 0;
+exports.disconnectGateWallet = exports.connectGateWallet = exports.detectProvider = exports.GateWalletProvider = exports.useNonEVMEagerlyConnect = exports.useNonEVMReact = exports.GateWalletContext = void 0;
 const react_1 = __importStar(require("react"));
 const events_1 = __importDefault(require("events"));
 const eventEmitter = new events_1.default();
@@ -133,3 +133,7 @@ function connectGateWallet() {
     return provider.connect();
 }
 exports.connectGateWallet = connectGateWallet;
+function disconnectGateWallet() {
+    eventEmitter.removeAllListeners();
+}
+exports.disconnectGateWallet = disconnectGateWallet;
