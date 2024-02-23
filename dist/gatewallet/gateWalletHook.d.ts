@@ -33,4 +33,5 @@ export declare const GateWalletProvider: FC<{
 }>;
 export declare function detectProvider(): any;
 export declare function connectGateWallet(): any;
+export declare function disconnectGateWallet(): void;
 export {};

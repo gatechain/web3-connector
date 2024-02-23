@@ -15,7 +15,6 @@ import {
 import { UnisatConnector } from "./connectors/unisat";
 import { NonEVMGateWalletConnector } from "./connectors/gatewalllet";
 
-NonEVMGateWalletConnector;
 type Action =
   | { type: "on connect"; connectorName: NonEVMConnectorName }
   | { type: "connect failed" }
