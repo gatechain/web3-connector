@@ -36,7 +36,6 @@ exports.useNonEVMReact = exports.NonEVMProvider = void 0;
 const react_1 = __importStar(require("react"));
 const unisat_1 = require("./connectors/unisat");
 const gatewalllet_1 = require("./connectors/gatewalllet");
-gatewalllet_1.NonEVMGateWalletConnector;
 const NonEVMContext = (0, react_1.createContext)(undefined);
 const nonEVMReducer = (state, action) => {
     var _a, _b, _c, _d;

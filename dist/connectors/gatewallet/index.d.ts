@@ -19,7 +19,7 @@ type GateWalletProvider = Provider & {
     isConnected?: () => boolean;
     providers?: GateWalletProvider[];
     selectedAddress: string;
-    connect: () => Promise<IGateACcountInfo>;
+    connect?: () => Promise<IGateACcountInfo>;
     chainId: string;
     getAccount: () => Promise<IGateACcountInfo>;
 };
