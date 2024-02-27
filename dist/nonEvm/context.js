@@ -47,16 +47,7 @@ const nonEVMReducer = (state, action) => {
             return Object.assign(Object.assign({}, state), { isConnecting: false, connectorName: undefined });
         }
         case "connected": {
-            return {
-                isConnecting: false,
-                isConnected: true,
-                connectorName: action.connectorName,
-                address: action.address,
-                publicKey: action.publicKey,
-                network: action.network,
-                gateAccountInfo: action.gateAccountInfo,
-                hasEVMNetwork: !!((_b = (_a = action === null || action === void 0 ? void 0 : action.gateAccountInfo) === null || _a === void 0 ? void 0 : _a.accountNetworkArr) === null || _b === void 0 ? void 0 : _b.find((x) => x.network === "EVM")),
-            };
+            return Object.assign(Object.assign({}, state), { isConnecting: false, isConnected: true, connectorName: action.connectorName, address: action.address, publicKey: action.publicKey, network: action.network, gateAccountInfo: action.gateAccountInfo, hasEVMNetwork: !!((_b = (_a = action === null || action === void 0 ? void 0 : action.gateAccountInfo) === null || _a === void 0 ? void 0 : _a.accountNetworkArr) === null || _b === void 0 ? void 0 : _b.find((x) => x.network === "EVM")) });
         }
         case "disconnected": {
             return {
@@ -66,10 +57,14 @@ const nonEVMReducer = (state, action) => {
                 address: undefined,
                 publicKey: undefined,
                 network: undefined,
+                chainId: undefined,
             };
         }
         case "account changed": {
             return Object.assign(Object.assign({}, state), { address: action.address, publicKey: action.publicKey });
+        }
+        case "chain change": {
+            return Object.assign(Object.assign({}, state), { chainId: action.chainId });
         }
         case "network changed": {
             return Object.assign(Object.assign({}, state), { network: action.network });
@@ -94,6 +89,7 @@ const NonEVMProvider = ({ children }) => {
         publicKey: undefined,
         network: undefined,
         gateAccountInfo: undefined,
+        chainId: undefined,
     });
     console.log("state", state);
     return (react_1.default.createElement(NonEVMContext.Provider, { value: { state, dispatch } }, children));
@@ -122,12 +118,17 @@ const useNonEVMReact = (options) => {
                 network,
             });
         },
+        onChainChange: (chainId) => {
+            ctx.dispatch({
+                type: "chain change",
+                chainId,
+            });
+        },
         onDisconnect: () => {
             ctx.dispatch({ type: "disconnected" });
         },
         onGateAccountChange: (gateAccountInfo) => {
             var _a;
-            console.log("fdsfs", gateAccountInfo);
             ctx.dispatch({
                 type: "gate account change",
                 gateAccountInfo,
