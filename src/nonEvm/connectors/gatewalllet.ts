@@ -1,7 +1,8 @@
 import { ConnectorNotFoundError } from "../errors";
-import { NonEVMConnectorName, Network } from "../types";
+import { NonEVMConnectorName } from "../types";
 import {
   AccountsChangedHandler,
+  ChainChangeHandler,
   Connector,
   ConnectorOptions,
   DisconnectHandler,
@@ -16,6 +17,7 @@ export class NonEVMGateWalletConnector implements Connector {
   onNetworkChanged?: NetworkChangedHandler;
   onDisconnect?: DisconnectHandler;
   onGateAccountChange?: GateAccountChangeHandler;
+  onChainChange?: ChainChangeHandler;
 
   constructor(options?: ConnectorOptions) {
     this.name = "GateWallet";
@@ -23,6 +25,7 @@ export class NonEVMGateWalletConnector implements Connector {
     this.onNetworkChanged = options?.onNetworkChanged;
     this.onDisconnect = options?.onDisconnect;
     this.onGateAccountChange = options?.onGateAccountChange;
+    this.onChainChange = options?.onChainChange;
   }
 
   getProvider() {
@@ -40,18 +43,30 @@ export class NonEVMGateWalletConnector implements Connector {
       if (provider.on) {
         provider.on("connect", (info: any) => {
           console.log("inffo", info);
+          if (info?.chainId) {
+            this.onChainChange?.(info.chainId);
+          }
         });
 
         provider.on(
           "gateAccountChange",
           (gateWallet: GateAccountInfo): void => {
             console.log("gateAccountChange", gateWallet);
+
+            if (!gateWallet) {
+              this.onDisconnect?.();
+            }
+
+            if (JSON.stringify(gateWallet) === "{}") {
+              this.onDisconnect?.();
+            }
             this.onGateAccountChange?.(gateWallet);
           }
         );
 
         provider.on("chainChanged", (chainId: string): void => {
-          console.log('chainId', chainId)
+          console.log("chainId", chainId);
+          this.onChainChange?.(chainId);
         });
 
         provider.on("disconnect", (error: any) => {
@@ -63,7 +78,7 @@ export class NonEVMGateWalletConnector implements Connector {
 
       console.log("info", info);
 
-      return {};
+      return { gateAccountInfo: info};
     } catch (error) {
       console.log("connnector error: ", error);
       throw error;
@@ -88,7 +103,7 @@ export class NonEVMGateWalletConnector implements Connector {
         );
 
         provider.on("chainChanged", (chainId: string): void => {
-          console.log('chainId', chainId)
+          console.log("chainId", chainId);
         });
 
         provider.on("disconnect", (error: any) => {
@@ -100,7 +115,7 @@ export class NonEVMGateWalletConnector implements Connector {
 
       console.log("info", info);
 
-      return { gateAccountInfo: info};
+      return { gateAccountInfo: info };
     } catch (error) {
       console.log("connnector error: ", error);
       throw error;

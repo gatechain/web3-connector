@@ -27,6 +27,7 @@ type Action =
       gateAccountInfo?: any;
       hasEvmNetwork?: boolean;
     }
+  | { type: "chain change"; chainId: string }
   | { type: "account changed"; address: string; publicKey: string }
   | { type: "network changed"; network: Network }
   | { type: "has evm network"; hasEvmNetwork: boolean }
@@ -42,6 +43,7 @@ interface State {
   publicKey?: string;
   connectorName?: NonEVMConnectorName;
   network?: Network;
+  chainId?: string;
   gateAccountInfo?: {
     walletName: string;
     accountName: string;
@@ -83,6 +85,7 @@ const nonEVMReducer = (state: State, action: Action): State => {
 
     case "connected": {
       return {
+        ...state,
         isConnecting: false,
         isConnected: true,
         connectorName: action.connectorName,
@@ -104,11 +107,16 @@ const nonEVMReducer = (state: State, action: Action): State => {
         address: undefined,
         publicKey: undefined,
         network: undefined,
+        chainId: undefined,
       };
     }
 
     case "account changed": {
       return { ...state, address: action.address, publicKey: action.publicKey };
+    }
+
+    case "chain change": {
+      return { ...state, chainId: action.chainId };
     }
 
     case "network changed": {
@@ -144,6 +152,7 @@ export const NonEVMProvider = ({ children }: NonEVMProviderProps) => {
     publicKey: undefined,
     network: undefined,
     gateAccountInfo: undefined,
+    chainId: undefined,
   });
 
   console.log("state", state);
@@ -185,11 +194,16 @@ export const useNonEVMReact = (options?: {
           network,
         });
       },
+      onChainChange: (chainId) => {
+        ctx.dispatch({
+          type: "chain change",
+          chainId,
+        });
+      },
       onDisconnect: () => {
         ctx.dispatch({ type: "disconnected" });
       },
       onGateAccountChange: (gateAccountInfo: GateAccountInfo) => {
-        console.log("fdsfs", gateAccountInfo);
         ctx.dispatch({
           type: "gate account change",
           gateAccountInfo,

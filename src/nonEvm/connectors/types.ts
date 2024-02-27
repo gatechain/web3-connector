@@ -7,6 +7,7 @@ export type AccountsChangedHandler = (
 export type GateAccountChangeHandler = (gateAccountInfo: GateAccountInfo) => void;
 export type NetworkChangedHandler = (network: Network) => void;
 export type DisconnectHandler = () => void;
+export type ChainChangeHandler = (chainId: string) => void;
 
 export type GateAccountInfo = any;
 
@@ -15,6 +16,7 @@ export interface ConnectorOptions {
   onNetworkChanged?: NetworkChangedHandler;
   onDisconnect?: DisconnectHandler;
   onGateAccountChange?: GateAccountChangeHandler;
+  onChainChange?: ChainChangeHandler;
 }
 
 export interface Connection {
