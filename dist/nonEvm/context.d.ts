@@ -19,6 +19,7 @@ export declare const useNonEVMReact: (options?: {
     publicKey?: string | undefined;
     connectorName?: NonEVMConnectorName | undefined;
     network?: Network | undefined;
+    chainId?: string | undefined;
     gateAccountInfo?: {
         walletName: string;
         accountName: string;

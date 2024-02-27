@@ -18,6 +18,7 @@ class NonEVMGateWalletConnector {
         this.onNetworkChanged = options === null || options === void 0 ? void 0 : options.onNetworkChanged;
         this.onDisconnect = options === null || options === void 0 ? void 0 : options.onDisconnect;
         this.onGateAccountChange = options === null || options === void 0 ? void 0 : options.onGateAccountChange;
+        this.onChainChange = options === null || options === void 0 ? void 0 : options.onChainChange;
     }
     getProvider() {
         if (typeof window.gatewallet !== "undefined") {
@@ -32,15 +33,27 @@ class NonEVMGateWalletConnector {
                 const provider = this.getProvider();
                 if (provider.on) {
                     provider.on("connect", (info) => {
+                        var _a;
                         console.log("inffo", info);
+                        if (info === null || info === void 0 ? void 0 : info.chainId) {
+                            (_a = this.onChainChange) === null || _a === void 0 ? void 0 : _a.call(this, info.chainId);
+                        }
                     });
                     provider.on("gateAccountChange", (gateWallet) => {
-                        var _a;
+                        var _a, _b, _c;
                         console.log("gateAccountChange", gateWallet);
-                        (_a = this.onGateAccountChange) === null || _a === void 0 ? void 0 : _a.call(this, gateWallet);
+                        if (!gateWallet) {
+                            (_a = this.onDisconnect) === null || _a === void 0 ? void 0 : _a.call(this);
+                        }
+                        if (JSON.stringify(gateWallet) === "{}") {
+                            (_b = this.onDisconnect) === null || _b === void 0 ? void 0 : _b.call(this);
+                        }
+                        (_c = this.onGateAccountChange) === null || _c === void 0 ? void 0 : _c.call(this, gateWallet);
                     });
                     provider.on("chainChanged", (chainId) => {
-                        console.log('chainId', chainId);
+                        var _a;
+                        console.log("chainId", chainId);
+                        (_a = this.onChainChange) === null || _a === void 0 ? void 0 : _a.call(this, chainId);
                     });
                     provider.on("disconnect", (error) => {
                         console.log(error, "error");
@@ -48,7 +61,7 @@ class NonEVMGateWalletConnector {
                 }
                 const info = yield provider.connect();
                 console.log("info", info);
-                return {};
+                return { gateAccountInfo: info };
             }
             catch (error) {
                 console.log("connnector error: ", error);
@@ -70,7 +83,7 @@ class NonEVMGateWalletConnector {
                         (_a = this.onGateAccountChange) === null || _a === void 0 ? void 0 : _a.call(this, gateWallet);
                     });
                     provider.on("chainChanged", (chainId) => {
-                        console.log('chainId', chainId);
+                        console.log("chainId", chainId);
                     });
                     provider.on("disconnect", (error) => {
                         console.log(error, "error");
