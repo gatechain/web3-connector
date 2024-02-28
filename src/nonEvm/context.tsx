@@ -14,7 +14,10 @@ import {
 } from "./connectors/types";
 import { UnisatConnector } from "./connectors/unisat";
 import { NonEVMGateWalletConnector } from "./connectors/gatewalllet";
+import { getConnection } from "../connection";
+import { ConnectionType } from "../types";
 
+NonEVMGateWalletConnector;
 type Action =
   | { type: "on connect"; connectorName: NonEVMConnectorName }
   | { type: "connect failed" }
@@ -254,6 +257,15 @@ export const useNonEVMReact = (options?: {
 
         const { address, publicKey, network, gateAccountInfo } =
           await ConnectorMap[connectorName].connect();
+
+        const hasEvmNetwork = !!gateAccountInfo?.accountNetworkArr?.find(
+          (x: any) => x.network === "EVM"
+        );
+
+        if (hasEvmNetwork) {
+          const connection = getConnection(ConnectionType.GATEWALLET);
+          connection.connector.connectEagerly?.();
+        }
 
         ctx.dispatch({
           type: "connected",
