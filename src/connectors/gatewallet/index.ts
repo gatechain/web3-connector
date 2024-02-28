@@ -28,7 +28,7 @@ type GateWalletProvider = Provider & {
   isConnected?: () => boolean;
   providers?: GateWalletProvider[];
   selectedAddress: string;
-  connect?: () => Promise<IGateACcountInfo>;
+  connect: () => Promise<IGateACcountInfo>;
   chainId: string;
   getAccount: () => Promise<IGateACcountInfo>;
 };
@@ -112,31 +112,26 @@ export class GateWallet extends Connector {
             this.onError?.(error);
           });
 
-          // TODO 兼容旧插件
-          if (!this.provider?.connect) {
-            this.provider.on("accountsChanged", (accounts: string[]): void => {
-              console.log("accountsChanged");
-              if (accounts.length === 0) {
-                // handle this edge case by disconnecting
-                this.actions.resetState();
-              } else {
-                this.actions.update({ accounts });
-              }
-            });
-          }
+          // this.provider.on("accountsChanged", (accounts: string[]): void => {
+          //   console.log("accountsChanged");
+          //   if (accounts.length === 0) {
+          //     // handle this edge case by disconnecting
+          //     this.actions.resetState();
+          //   } else {
+          //     this.actions.update({ accounts });
+          //   }
+          // });
 
-          if (this.provider?.connect) {
-            this.provider.on("gateAccountChange", (gateWallet: any): void => {
-              console.log("gateAccountChange", gateWallet);
-              const acc = this.provider?.selectedAddress as string;
-              if (!acc || !gateWallet?.walletId) {
-                // handle this edge case by disconnecting
-                this.actions.resetState();
-              } else {
-                this.actions.update({ accounts: [acc] });
-              }
-            });
-          }
+          this.provider.on("gateAccountChange", (gateWallet: any): void => {
+            console.log("gateAccountChange", gateWallet);
+            const acc = this.provider?.selectedAddress as string;
+            if (!acc || !gateWallet?.walletId) {
+              // handle this edge case by disconnecting
+              this.actions.resetState();
+            } else {
+              this.actions.update({ accounts: [acc] });
+            }
+          });
         }
       }
     ));
@@ -286,5 +281,9 @@ export class GateWallet extends Connector {
         if (!success) throw new Error("Rejected");
         return true;
       });
+  }
+
+  public deactivate() {
+    this.actions.resetState();
   }
 }

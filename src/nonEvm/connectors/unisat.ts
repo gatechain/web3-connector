@@ -60,8 +60,8 @@ export class UnisatConnector implements Connector {
     }
   }
 
-  async connectEagerly () {
-    return this.connect()
+  async connectEagerly() {
+    return this.connect();
   }
 
   // Unisat does not provide a disconnect method at this time

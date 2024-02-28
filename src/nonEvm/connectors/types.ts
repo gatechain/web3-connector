@@ -4,7 +4,9 @@ export type AccountsChangedHandler = (
   address: string,
   publicKey: string
 ) => void;
-export type GateAccountChangeHandler = (gateAccountInfo: GateAccountInfo) => void;
+export type GateAccountChangeHandler = (
+  gateAccountInfo: GateAccountInfo
+) => void;
 export type NetworkChangedHandler = (network: Network) => void;
 export type DisconnectHandler = () => void;
 export type ChainChangeHandler = (chainId: string) => void;
@@ -26,14 +28,14 @@ export interface Connection {
   chainId?: string;
   walletName?: string;
   walletId?: string;
-  gateAccountInfo?: GateAccountInfo
+  gateAccountInfo?: GateAccountInfo;
 }
 
 export interface Connector {
   name: NonEVMConnectorName;
   getProvider(): unknown;
-  connect(options?: ConnectorOptions): Promise<Connection>;
-  connectEagerly(): Promise<Connection>;
+  connect(options?: ConnectorOptions): Promise<Connection | undefined>;
+  connectEagerly(): Promise<Connection | undefined>;
   disconnect(): void;
   signMessage?: (message?: string) => Promise<string>;
 }

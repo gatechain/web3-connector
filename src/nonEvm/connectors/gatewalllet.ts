@@ -33,12 +33,14 @@ export class NonEVMGateWalletConnector implements Connector {
       console.log("Gate Wallet is installed!");
       return (window as any).gatewallet;
     }
-    throw new ConnectorNotFoundError();
+    console.error(new ConnectorNotFoundError());
   }
 
   async connect() {
     try {
       const provider = this.getProvider();
+
+      if (!provider) return;
 
       if (provider.on) {
         provider.on("connect", (info: any) => {
@@ -78,16 +80,17 @@ export class NonEVMGateWalletConnector implements Connector {
 
       console.log("info", info);
 
-      return { gateAccountInfo: info};
+      return { gateAccountInfo: info };
     } catch (error) {
       console.log("connnector error: ", error);
-      throw error;
     }
   }
 
   async connectEagerly() {
     try {
       const provider = this.getProvider();
+
+      if (!provider) return;
 
       if (provider.on) {
         provider.on("connect", (info: any) => {
