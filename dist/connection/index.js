@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.connect = exports.disconnect = exports.connectWallet = exports.useEagerlyConnect = exports.getConnection = exports.getConnectionMap = exports.initConnector = exports.getConnectors = void 0;
+exports.connect = exports.disconnect = exports.connectWallet = exports.useEagerlyConnect = exports.selectedWalletKey = exports.getStorage = exports.getConnection = exports.getConnectionMap = exports.initConnector = exports.getConnectors = void 0;
 const react_1 = require("react");
 const types_1 = require("@web3-react/types");
 const types_2 = require("../types");
@@ -20,6 +20,7 @@ const walletConnectV2_1 = require("./walletConnectV2");
 const walletConnectV2NotQr_1 = require("./walletConnectV2NotQr");
 const walletconnect_v2_1 = require("@web3-react/walletconnect-v2");
 const gateWallet_1 = require("./gateWallet");
+const context_1 = require("../nonEvm/context");
 function getConnectors(config) {
     return initConnector();
 }
@@ -75,13 +76,15 @@ function getStorage() {
     });
     return storage;
 }
-const selectedWalletKey = "selectedWallet";
+exports.getStorage = getStorage;
+exports.selectedWalletKey = "selectedWallet";
 function useEagerlyConnect(onError) {
     let selectedWallet;
     const storage = getStorage();
     if (typeof window !== "undefined") {
-        selectedWallet = storage.getItem(selectedWalletKey);
+        selectedWallet = storage.getItem(exports.selectedWalletKey);
     }
+    const { connectEagerly } = (0, context_1.useNonEVMReact)();
     let selectedConnection;
     if (selectedWallet) {
         try {
@@ -96,6 +99,17 @@ function useEagerlyConnect(onError) {
             connect(selectedConnection.connector);
         }
     }, []);
+    (0, react_1.useEffect)(() => {
+        console.log('eargely selectedWallet', selectedWallet);
+        if (selectedWallet === types_2.ConnectionType.GATEWALLET) {
+            connectEagerly("GateWallet");
+            return;
+        }
+        if (selectedWallet === types_2.ConnectionType.Unisat) {
+            connectEagerly("Unisat");
+            return;
+        }
+    }, []);
 }
 exports.useEagerlyConnect = useEagerlyConnect;
 function connectWallet(connectionType, resolve, reject) {
@@ -106,18 +120,18 @@ function connectWallet(connectionType, resolve, reject) {
         return;
     }
     (_b = (_a = connection.connector) === null || _a === void 0 ? void 0 : _a.activate()) === null || _b === void 0 ? void 0 : _b.then(() => {
-        storage.setItem(selectedWalletKey, connectionType);
+        storage.setItem(exports.selectedWalletKey, connectionType);
     }).catch((err) => {
         reject && reject(err);
     });
+    function setUri(uri) {
+        var _a;
+        if (!uri)
+            return;
+        resolve && resolve(uri);
+        (_a = connection.connector) === null || _a === void 0 ? void 0 : _a.events.removeListener(walletconnect_v2_1.URI_AVAILABLE, setUri);
+    }
     if (connectionType === types_2.ConnectionType.WALLET_CONNECT_NOTQR) {
-        function setUri(uri) {
-            var _a;
-            if (!uri)
-                return;
-            resolve && resolve(uri);
-            (_a = connection.connector) === null || _a === void 0 ? void 0 : _a.events.removeListener(walletconnect_v2_1.URI_AVAILABLE, setUri);
-        }
         (_c = connection.connector) === null || _c === void 0 ? void 0 : _c.events.on(walletconnect_v2_1.URI_AVAILABLE, setUri);
     }
 }
@@ -128,7 +142,7 @@ function disconnect(connector) {
         connector.deactivate();
     }
     connector.resetState();
-    storage.removeItem(selectedWalletKey);
+    storage.removeItem(exports.selectedWalletKey);
 }
 exports.disconnect = disconnect;
 function connect(connector) {

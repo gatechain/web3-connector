@@ -38,7 +38,6 @@ const unisat_1 = require("./connectors/unisat");
 const gatewalllet_1 = require("./connectors/gatewalllet");
 const connection_1 = require("../connection");
 const types_1 = require("../types");
-gatewalllet_1.NonEVMGateWalletConnector;
 const NonEVMContext = (0, react_1.createContext)(undefined);
 const nonEVMReducer = (state, action) => {
     var _a, _b, _c, _d;
@@ -105,7 +104,7 @@ const useNonEVMContext = () => {
     }
     return ctx;
 };
-const useNonEVMReact = (options) => {
+const useNonEVMReact = () => {
     const ctx = useNonEVMContext();
     const defaultConnectorOptions = (0, react_1.useMemo)(() => ({
         onAccountsChanged: (address, publicKey) => {
@@ -153,8 +152,12 @@ const useNonEVMReact = (options) => {
         return ConnectorMap[ctx.state.connectorName];
     }, [ConnectorMap, ctx.state.connectorName]);
     const disconnect = (0, react_1.useCallback)(() => {
+        var _a, _b;
         ctx.dispatch({ type: "disconnected" });
         connector === null || connector === void 0 ? void 0 : connector.disconnect();
+        const storage = (0, connection_1.getStorage)();
+        const connection = (0, connection_1.getConnection)(storage.getItem(connection_1.selectedWalletKey));
+        (_b = (_a = connection === null || connection === void 0 ? void 0 : connection.connector) === null || _a === void 0 ? void 0 : _a.deactivate) === null || _b === void 0 ? void 0 : _b.call(_a);
     }, [connector, ctx]);
     const connect = (0, react_1.useCallback)((connectorName) => __awaiter(void 0, void 0, void 0, function* () {
         var _a, _b, _c;
@@ -167,7 +170,13 @@ const useNonEVMReact = (options) => {
                 type: "on connect",
                 connectorName,
             });
-            const { address, publicKey, network, gateAccountInfo } = yield ConnectorMap[connectorName].connect();
+            const { address, publicKey, network, gateAccountInfo } = (yield ConnectorMap[connectorName].connect()) || {};
+            const storage = (0, connection_1.getStorage)();
+            const map = {
+                Unisat: types_1.ConnectionType.Unisat,
+                GateWallet: types_1.ConnectionType.GATEWALLET,
+            };
+            storage.setItem(connection_1.selectedWalletKey, map[connectorName]);
             const hasEvmNetwork = !!((_a = gateAccountInfo === null || gateAccountInfo === void 0 ? void 0 : gateAccountInfo.accountNetworkArr) === null || _a === void 0 ? void 0 : _a.find((x) => x.network === "EVM"));
             if (hasEvmNetwork) {
                 const connection = (0, connection_1.getConnection)(types_1.ConnectionType.GATEWALLET);
@@ -188,6 +197,7 @@ const useNonEVMReact = (options) => {
         }
     }), [ConnectorMap, ctx, disconnect]);
     const connectEagerly = (0, react_1.useCallback)((connectorName) => __awaiter(void 0, void 0, void 0, function* () {
+        var _d, _e, _f;
         try {
             if (ctx.state.isConnected) {
                 disconnect();
@@ -197,7 +207,18 @@ const useNonEVMReact = (options) => {
                 type: "on connect",
                 connectorName,
             });
-            const { address, publicKey, network, gateAccountInfo } = yield ConnectorMap[connectorName].connectEagerly();
+            const { address, publicKey, network, gateAccountInfo } = (yield ConnectorMap[connectorName].connectEagerly()) || {};
+            const storage = (0, connection_1.getStorage)();
+            const map = {
+                Unisat: types_1.ConnectionType.Unisat,
+                GateWallet: types_1.ConnectionType.GATEWALLET,
+            };
+            storage.setItem(connection_1.selectedWalletKey, map[connectorName]);
+            const hasEvmNetwork = !!((_d = gateAccountInfo === null || gateAccountInfo === void 0 ? void 0 : gateAccountInfo.accountNetworkArr) === null || _d === void 0 ? void 0 : _d.find((x) => x.network === "EVM"));
+            if (hasEvmNetwork) {
+                const connection = (0, connection_1.getConnection)(types_1.ConnectionType.GATEWALLET);
+                (_f = (_e = connection.connector).connectEagerly) === null || _f === void 0 ? void 0 : _f.call(_e);
+            }
             ctx.dispatch({
                 type: "connected",
                 connectorName,
@@ -213,14 +234,13 @@ const useNonEVMReact = (options) => {
         }
     }), [ConnectorMap, ctx, disconnect]);
     const signMessage = (0, react_1.useCallback)((message) => __awaiter(void 0, void 0, void 0, function* () {
-        var _d;
-        return (_d = connector === null || connector === void 0 ? void 0 : connector.signMessage) === null || _d === void 0 ? void 0 : _d.call(connector, message);
+        var _g;
+        return (_g = connector === null || connector === void 0 ? void 0 : connector.signMessage) === null || _g === void 0 ? void 0 : _g.call(connector, message);
     }), [connector]);
-    (0, react_1.useEffect)(() => {
-        if (options === null || options === void 0 ? void 0 : options.connectEagerly) {
-            connectEagerly(options.connectorName);
-        }
-    }, []);
-    return Object.assign(Object.assign({}, ctx.state), { connect, disconnect, connector, signMessage });
+    return Object.assign(Object.assign({}, ctx.state), { connect,
+        disconnect,
+        connector,
+        signMessage,
+        connectEagerly });
 };
 exports.useNonEVMReact = useNonEVMReact;

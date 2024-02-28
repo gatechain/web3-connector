@@ -19,7 +19,7 @@ type GateWalletProvider = Provider & {
     isConnected?: () => boolean;
     providers?: GateWalletProvider[];
     selectedAddress: string;
-    connect?: () => Promise<IGateACcountInfo>;
+    connect: () => Promise<IGateACcountInfo>;
     chainId: string;
     getAccount: () => Promise<IGateACcountInfo>;
 };
@@ -56,5 +56,6 @@ export declare class GateWallet extends Connector {
      */
     activate(desiredChainIdOrChainParameters?: number | AddEthereumChainParameter): Promise<void>;
     watchAsset({ address, symbol, decimals, image, }: WatchAssetParameters): Promise<true>;
+    deactivate(): void;
 }
 export {};

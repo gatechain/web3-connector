@@ -13,6 +13,8 @@ type InitConnectorReturnType = [
 export declare function initConnector(): InitConnectorReturnType;
 export declare function getConnectionMap(): Connection[];
 export declare function getConnection(c: Connector | ConnectionType): Connection;
+export declare function getStorage(): import("../storage").ClientStorage;
+export declare const selectedWalletKey = "selectedWallet";
 export declare function useEagerlyConnect(onError?: Function): void;
 export declare function connectWallet(connectionType: ConnectionType, resolve?: (uri: string) => void, reject?: (err: any) => void): void;
 export declare function disconnect(connector: Connector): void;

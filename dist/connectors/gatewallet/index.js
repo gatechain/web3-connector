@@ -56,7 +56,7 @@ class GateWallet extends types_1.Connector {
             if (this.eagerConnection)
                 return;
             return (this.eagerConnection = Promise.resolve().then(() => __importStar(require("./detect-provider"))).then((m) => __awaiter(this, void 0, void 0, function* () {
-                var _a, _b, _c, _d;
+                var _a, _b;
                 console.log("m", m);
                 const provider = (yield m.default(this.options));
                 console.log(provider, "provider");
@@ -89,33 +89,27 @@ class GateWallet extends types_1.Connector {
                         this.actions.resetState();
                         (_a = this.onError) === null || _a === void 0 ? void 0 : _a.call(this, error);
                     });
-                    // TODO 兼容旧插件
-                    if (!((_c = this.provider) === null || _c === void 0 ? void 0 : _c.connect)) {
-                        this.provider.on("accountsChanged", (accounts) => {
-                            console.log("accountsChanged");
-                            if (accounts.length === 0) {
-                                // handle this edge case by disconnecting
-                                this.actions.resetState();
-                            }
-                            else {
-                                this.actions.update({ accounts });
-                            }
-                        });
-                    }
-                    if ((_d = this.provider) === null || _d === void 0 ? void 0 : _d.connect) {
-                        this.provider.on("gateAccountChange", (gateWallet) => {
-                            var _a;
-                            console.log("gateAccountChange", gateWallet);
-                            const acc = (_a = this.provider) === null || _a === void 0 ? void 0 : _a.selectedAddress;
-                            if (!acc || !(gateWallet === null || gateWallet === void 0 ? void 0 : gateWallet.walletId)) {
-                                // handle this edge case by disconnecting
-                                this.actions.resetState();
-                            }
-                            else {
-                                this.actions.update({ accounts: [acc] });
-                            }
-                        });
-                    }
+                    // this.provider.on("accountsChanged", (accounts: string[]): void => {
+                    //   console.log("accountsChanged");
+                    //   if (accounts.length === 0) {
+                    //     // handle this edge case by disconnecting
+                    //     this.actions.resetState();
+                    //   } else {
+                    //     this.actions.update({ accounts });
+                    //   }
+                    // });
+                    this.provider.on("gateAccountChange", (gateWallet) => {
+                        var _a;
+                        console.log("gateAccountChange", gateWallet);
+                        const acc = (_a = this.provider) === null || _a === void 0 ? void 0 : _a.selectedAddress;
+                        if (!acc || !(gateWallet === null || gateWallet === void 0 ? void 0 : gateWallet.walletId)) {
+                            // handle this edge case by disconnecting
+                            this.actions.resetState();
+                        }
+                        else {
+                            this.actions.update({ accounts: [acc] });
+                        }
+                    });
                 }
             })));
         });
@@ -245,6 +239,9 @@ class GateWallet extends types_1.Connector {
                 return true;
             });
         });
+    }
+    deactivate() {
+        this.actions.resetState();
     }
 }
 exports.GateWallet = GateWallet;

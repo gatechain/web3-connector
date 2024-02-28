@@ -11,9 +11,9 @@ export declare class NonEVMGateWalletConnector implements Connector {
     getProvider(): any;
     connect(): Promise<{
         gateAccountInfo: any;
-    }>;
+    } | undefined>;
     connectEagerly(): Promise<{
         gateAccountInfo: any;
-    }>;
+    } | undefined>;
     disconnect(): void;
 }
