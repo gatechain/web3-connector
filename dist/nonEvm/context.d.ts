@@ -5,14 +5,12 @@ type NonEVMProviderProps = {
     children: React.ReactNode;
 };
 export declare const NonEVMProvider: ({ children }: NonEVMProviderProps) => JSX.Element;
-export declare const useNonEVMReact: (options?: {
-    connectEagerly: boolean;
-    connectorName: NonEVMConnectorName;
-}) => {
+export declare const useNonEVMReact: () => {
     connect: (connectorName: NonEVMConnectorName) => Promise<void>;
     disconnect: () => void;
     connector: Connector | null;
     signMessage: (message?: string) => Promise<string | undefined>;
+    connectEagerly: (connectorName: NonEVMConnectorName) => Promise<void>;
     isConnecting: boolean;
     isConnected: boolean;
     address?: string | undefined;

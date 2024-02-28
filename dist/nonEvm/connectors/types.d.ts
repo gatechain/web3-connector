@@ -24,8 +24,8 @@ export interface Connection {
 export interface Connector {
     name: NonEVMConnectorName;
     getProvider(): unknown;
-    connect(options?: ConnectorOptions): Promise<Connection>;
-    connectEagerly(): Promise<Connection>;
+    connect(options?: ConnectorOptions): Promise<Connection | undefined>;
+    connectEagerly(): Promise<Connection | undefined>;
     disconnect(): void;
     signMessage?: (message?: string) => Promise<string>;
 }

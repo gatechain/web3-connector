@@ -25,12 +25,14 @@ class NonEVMGateWalletConnector {
             console.log("Gate Wallet is installed!");
             return window.gatewallet;
         }
-        throw new errors_1.ConnectorNotFoundError();
+        console.error(new errors_1.ConnectorNotFoundError());
     }
     connect() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const provider = this.getProvider();
+                if (!provider)
+                    return;
                 if (provider.on) {
                     provider.on("connect", (info) => {
                         var _a;
@@ -65,7 +67,6 @@ class NonEVMGateWalletConnector {
             }
             catch (error) {
                 console.log("connnector error: ", error);
-                throw error;
             }
         });
     }
@@ -73,6 +74,8 @@ class NonEVMGateWalletConnector {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const provider = this.getProvider();
+                if (!provider)
+                    return;
                 if (provider.on) {
                     provider.on("connect", (info) => {
                         console.log("inffo", info);

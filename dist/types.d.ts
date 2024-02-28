@@ -5,7 +5,8 @@ export declare enum ConnectionType {
     GATEWALLET = "GATEWALLET",
     PHANTOM = "PHANTOM",
     WALLET_CONNECT = "WALLET_CONNECT",
-    WALLET_CONNECT_NOTQR = "WALLET_CONNECT_NOTQR"
+    WALLET_CONNECT_NOTQR = "WALLET_CONNECT_NOTQR",
+    Unisat = "Unisat"
 }
 export interface Connection {
     connector: Connector;
