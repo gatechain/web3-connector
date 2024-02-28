@@ -10,6 +10,7 @@ import { GatewalletConnect } from "../connectors/walletConnectV2";
 import { WalletConnectNotQrConnector } from "./walletConnectV2NotQr";
 import { URI_AVAILABLE } from "@web3-react/walletconnect-v2";
 import { GateWalletConnector, GateWallet } from "./gateWallet";
+import { useNonEVMReact } from "../nonEvm/context";
 
 export function getConnectors(config?: any) {
   return initConnector();
@@ -71,7 +72,7 @@ export function getConnection(c: Connector | ConnectionType): Connection {
   }
 }
 
-function getStorage() {
+export function getStorage() {
   const storage = createStorage({
     storage: typeof window !== "undefined" ? window.localStorage : noopStorage,
   });
@@ -79,7 +80,7 @@ function getStorage() {
   return storage;
 }
 
-const selectedWalletKey = "selectedWallet";
+export const selectedWalletKey = "selectedWallet";
 
 export function useEagerlyConnect(onError?: Function) {
   let selectedWallet: any;
@@ -87,6 +88,8 @@ export function useEagerlyConnect(onError?: Function) {
   if (typeof window !== "undefined") {
     selectedWallet = storage.getItem(selectedWalletKey) as ConnectionType;
   }
+
+  const { connectEagerly } = useNonEVMReact();
 
   let selectedConnection: Connection | undefined;
   if (selectedWallet) {
@@ -100,6 +103,18 @@ export function useEagerlyConnect(onError?: Function) {
   useEffect(() => {
     if (selectedConnection) {
       connect(selectedConnection.connector);
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log('eargely selectedWallet', selectedWallet)
+    if (selectedWallet === ConnectionType.GATEWALLET) {
+      connectEagerly("GateWallet");
+      return;
+    }
+    if (selectedWallet === ConnectionType.Unisat) {
+      connectEagerly("Unisat");
+      return;
     }
   }, []);
 }
@@ -124,15 +139,13 @@ export function connectWallet(
       reject && reject(err);
     });
 
+  function setUri(uri: string) {
+    if (!uri) return;
+    resolve && resolve(uri);
+    (connection.connector as any)?.events.removeListener(URI_AVAILABLE, setUri);
+  }
+
   if (connectionType === ConnectionType.WALLET_CONNECT_NOTQR) {
-    function setUri(uri: string) {
-      if (!uri) return;
-      resolve && resolve(uri);
-      (connection.connector as any)?.events.removeListener(
-        URI_AVAILABLE,
-        setUri
-      );
-    }
     (connection.connector as any)?.events.on(URI_AVAILABLE, setUri);
   }
 }

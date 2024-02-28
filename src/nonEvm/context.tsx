@@ -14,10 +14,9 @@ import {
 } from "./connectors/types";
 import { UnisatConnector } from "./connectors/unisat";
 import { NonEVMGateWalletConnector } from "./connectors/gatewalllet";
-import { getConnection } from "../connection";
+import { getConnection, getStorage, selectedWalletKey } from "../connection";
 import { ConnectionType } from "../types";
 
-NonEVMGateWalletConnector;
 type Action =
   | { type: "on connect"; connectorName: NonEVMConnectorName }
   | { type: "connect failed" }
@@ -176,10 +175,7 @@ const useNonEVMContext = () => {
   return ctx;
 };
 
-export const useNonEVMReact = (options?: {
-  connectEagerly: boolean;
-  connectorName: NonEVMConnectorName;
-}) => {
+export const useNonEVMReact = () => {
   const ctx = useNonEVMContext();
 
   const defaultConnectorOptions: ConnectorOptions = useMemo(
@@ -240,6 +236,13 @@ export const useNonEVMReact = (options?: {
   const disconnect = useCallback(() => {
     ctx.dispatch({ type: "disconnected" });
     connector?.disconnect();
+
+    const storage = getStorage();
+
+    const connection = getConnection(
+      storage.getItem(selectedWalletKey) as ConnectionType
+    );
+    connection?.connector?.deactivate?.();
   }, [connector, ctx]);
 
   const connect = useCallback(
@@ -256,7 +259,16 @@ export const useNonEVMReact = (options?: {
         });
 
         const { address, publicKey, network, gateAccountInfo } =
-          await ConnectorMap[connectorName].connect();
+          (await ConnectorMap[connectorName].connect()) || {};
+
+        const storage = getStorage();
+
+        const map = {
+          Unisat: ConnectionType.Unisat,
+          GateWallet: ConnectionType.GATEWALLET,
+        };
+
+        storage.setItem(selectedWalletKey, map[connectorName]);
 
         const hasEvmNetwork = !!gateAccountInfo?.accountNetworkArr?.find(
           (x: any) => x.network === "EVM"
@@ -297,7 +309,25 @@ export const useNonEVMReact = (options?: {
         });
 
         const { address, publicKey, network, gateAccountInfo } =
-          await ConnectorMap[connectorName].connectEagerly();
+          (await ConnectorMap[connectorName].connectEagerly()) || {};
+
+        const storage = getStorage();
+
+        const map = {
+          Unisat: ConnectionType.Unisat,
+          GateWallet: ConnectionType.GATEWALLET,
+        };
+
+        storage.setItem(selectedWalletKey, map[connectorName]);
+
+        const hasEvmNetwork = !!gateAccountInfo?.accountNetworkArr?.find(
+          (x: any) => x.network === "EVM"
+        );
+
+        if (hasEvmNetwork) {
+          const connection = getConnection(ConnectionType.GATEWALLET);
+          connection.connector.connectEagerly?.();
+        }
 
         ctx.dispatch({
           type: "connected",
@@ -322,11 +352,12 @@ export const useNonEVMReact = (options?: {
     [connector]
   );
 
-  useEffect(() => {
-    if (options?.connectEagerly) {
-      connectEagerly(options.connectorName);
-    }
-  }, []);
-
-  return { ...ctx.state, connect, disconnect, connector, signMessage };
+  return {
+    ...ctx.state,
+    connect,
+    disconnect,
+    connector,
+    signMessage,
+    connectEagerly,
+  };
 };
