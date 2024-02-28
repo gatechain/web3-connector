@@ -36,6 +36,9 @@ exports.useNonEVMReact = exports.NonEVMProvider = void 0;
 const react_1 = __importStar(require("react"));
 const unisat_1 = require("./connectors/unisat");
 const gatewalllet_1 = require("./connectors/gatewalllet");
+const connection_1 = require("../connection");
+const types_1 = require("../types");
+gatewalllet_1.NonEVMGateWalletConnector;
 const NonEVMContext = (0, react_1.createContext)(undefined);
 const nonEVMReducer = (state, action) => {
     var _a, _b, _c, _d;
@@ -154,6 +157,7 @@ const useNonEVMReact = (options) => {
         connector === null || connector === void 0 ? void 0 : connector.disconnect();
     }, [connector, ctx]);
     const connect = (0, react_1.useCallback)((connectorName) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a, _b, _c;
         try {
             if (ctx.state.isConnected) {
                 disconnect();
@@ -164,6 +168,11 @@ const useNonEVMReact = (options) => {
                 connectorName,
             });
             const { address, publicKey, network, gateAccountInfo } = yield ConnectorMap[connectorName].connect();
+            const hasEvmNetwork = !!((_a = gateAccountInfo === null || gateAccountInfo === void 0 ? void 0 : gateAccountInfo.accountNetworkArr) === null || _a === void 0 ? void 0 : _a.find((x) => x.network === "EVM"));
+            if (hasEvmNetwork) {
+                const connection = (0, connection_1.getConnection)(types_1.ConnectionType.GATEWALLET);
+                (_c = (_b = connection.connector).connectEagerly) === null || _c === void 0 ? void 0 : _c.call(_b);
+            }
             ctx.dispatch({
                 type: "connected",
                 connectorName,
@@ -204,8 +213,8 @@ const useNonEVMReact = (options) => {
         }
     }), [ConnectorMap, ctx, disconnect]);
     const signMessage = (0, react_1.useCallback)((message) => __awaiter(void 0, void 0, void 0, function* () {
-        var _a;
-        return (_a = connector === null || connector === void 0 ? void 0 : connector.signMessage) === null || _a === void 0 ? void 0 : _a.call(connector, message);
+        var _d;
+        return (_d = connector === null || connector === void 0 ? void 0 : connector.signMessage) === null || _d === void 0 ? void 0 : _d.call(connector, message);
     }), [connector]);
     (0, react_1.useEffect)(() => {
         if (options === null || options === void 0 ? void 0 : options.connectEagerly) {
