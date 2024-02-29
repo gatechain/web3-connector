@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NonEVMGateWalletConnector = void 0;
+const connection_1 = require("../../connection");
 const errors_1 = require("../errors");
 class NonEVMGateWalletConnector {
     constructor(options) {
@@ -41,17 +42,7 @@ class NonEVMGateWalletConnector {
                             (_a = this.onChainChange) === null || _a === void 0 ? void 0 : _a.call(this, info.chainId);
                         }
                     });
-                    provider.on("gateAccountChange", (gateWallet) => {
-                        var _a, _b, _c;
-                        console.log("gateAccountChange", gateWallet);
-                        if (!gateWallet) {
-                            (_a = this.onDisconnect) === null || _a === void 0 ? void 0 : _a.call(this);
-                        }
-                        if (JSON.stringify(gateWallet) === "{}") {
-                            (_b = this.onDisconnect) === null || _b === void 0 ? void 0 : _b.call(this);
-                        }
-                        (_c = this.onGateAccountChange) === null || _c === void 0 ? void 0 : _c.call(this, gateWallet);
-                    });
+                    provider.on("gateAccountChange", this.handleGateAccountChange.bind(this));
                     provider.on("chainChanged", (chainId) => {
                         var _a;
                         console.log("chainId", chainId);
@@ -70,6 +61,18 @@ class NonEVMGateWalletConnector {
             }
         });
     }
+    handleGateAccountChange(gateWallet) {
+        var _a, _b;
+        console.log("gateAccountChange", gateWallet, JSON.stringify(gateWallet) === "{}");
+        if (!gateWallet || JSON.stringify(gateWallet) === "{}") {
+            const storage = (0, connection_1.getStorage)();
+            storage.removeItem(connection_1.selectedWalletKey);
+            (_a = this.onDisconnect) === null || _a === void 0 ? void 0 : _a.call(this);
+        }
+        else {
+            (_b = this.onGateAccountChange) === null || _b === void 0 ? void 0 : _b.call(this, gateWallet);
+        }
+    }
     connectEagerly() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -78,15 +81,17 @@ class NonEVMGateWalletConnector {
                     return;
                 if (provider.on) {
                     provider.on("connect", (info) => {
-                        console.log("inffo", info);
-                    });
-                    provider.on("gateAccountChange", (gateWallet) => {
                         var _a;
-                        console.log("gateAccountChange", gateWallet);
-                        (_a = this.onGateAccountChange) === null || _a === void 0 ? void 0 : _a.call(this, gateWallet);
+                        console.log("inffo", info);
+                        if (info === null || info === void 0 ? void 0 : info.chainId) {
+                            (_a = this.onChainChange) === null || _a === void 0 ? void 0 : _a.call(this, info.chainId);
+                        }
                     });
+                    provider.on("gateAccountChange", this.handleGateAccountChange.bind(this));
                     provider.on("chainChanged", (chainId) => {
+                        var _a;
                         console.log("chainId", chainId);
+                        (_a = this.onChainChange) === null || _a === void 0 ? void 0 : _a.call(this, chainId);
                     });
                     provider.on("disconnect", (error) => {
                         console.log(error, "error");
