@@ -1,3 +1,4 @@
+import { getStorage, selectedWalletKey } from "../../connection";
 import { ConnectorNotFoundError } from "../errors";
 import { NonEVMConnectorName } from "../types";
 import {
@@ -7,7 +8,6 @@ import {
   ConnectorOptions,
   DisconnectHandler,
   GateAccountChangeHandler,
-  GateAccountInfo,
   NetworkChangedHandler,
 } from "./types";
 
@@ -52,18 +52,7 @@ export class NonEVMGateWalletConnector implements Connector {
 
         provider.on(
           "gateAccountChange",
-          (gateWallet: GateAccountInfo): void => {
-            console.log("gateAccountChange", gateWallet);
-
-            if (!gateWallet) {
-              this.onDisconnect?.();
-            }
-
-            if (JSON.stringify(gateWallet) === "{}") {
-              this.onDisconnect?.();
-            }
-            this.onGateAccountChange?.(gateWallet);
-          }
+          this.handleGateAccountChange.bind(this)
         );
 
         provider.on("chainChanged", (chainId: string): void => {
@@ -86,6 +75,23 @@ export class NonEVMGateWalletConnector implements Connector {
     }
   }
 
+  private handleGateAccountChange(gateWallet: any) {
+    console.log(
+      "gateAccountChange",
+      gateWallet,
+      JSON.stringify(gateWallet) === "{}"
+    );
+
+    if (!gateWallet || JSON.stringify(gateWallet) === "{}") {
+      const storage = getStorage();
+
+      storage.removeItem(selectedWalletKey);
+      this.onDisconnect?.();
+    } else {
+      this.onGateAccountChange?.(gateWallet);
+    }
+  }
+
   async connectEagerly() {
     try {
       const provider = this.getProvider();
@@ -95,18 +101,19 @@ export class NonEVMGateWalletConnector implements Connector {
       if (provider.on) {
         provider.on("connect", (info: any) => {
           console.log("inffo", info);
+          if (info?.chainId) {
+            this.onChainChange?.(info.chainId);
+          }
         });
 
         provider.on(
           "gateAccountChange",
-          (gateWallet: GateAccountInfo): void => {
-            console.log("gateAccountChange", gateWallet);
-            this.onGateAccountChange?.(gateWallet);
-          }
+          this.handleGateAccountChange.bind(this)
         );
 
         provider.on("chainChanged", (chainId: string): void => {
           console.log("chainId", chainId);
+          this.onChainChange?.(chainId);
         });
 
         provider.on("disconnect", (error: any) => {
