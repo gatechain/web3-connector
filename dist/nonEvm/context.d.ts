@@ -4,21 +4,15 @@ import { Connector } from "./connectors/types";
 type NonEVMProviderProps = {
     children: React.ReactNode;
 };
-export declare const NonEVMProvider: ({ children }: NonEVMProviderProps) => JSX.Element;
+export declare const NonEVMProvider: ({ children }: NonEVMProviderProps) => React.ReactNode;
 export declare const useNonEVMReact: () => {
-    connect: (connectorName: NonEVMConnectorName) => Promise<void>;
-    disconnect: () => void;
-    connector: Connector | null;
-    signMessage: (message?: string) => Promise<string | undefined>;
-    connectEagerly: (connectorName: NonEVMConnectorName) => Promise<void>;
     isConnecting: boolean;
     isConnected: boolean;
-    address?: string | undefined;
-    publicKey?: string | undefined;
-    connectorName?: NonEVMConnectorName | undefined;
-    network?: Network | undefined;
-    chainId?: string | undefined;
-    gateAccountInfo?: {
+    connectorName: NonEVMConnectorName | undefined;
+    address: string | undefined;
+    publicKey: string | undefined;
+    network: Network | undefined;
+    gateAccountInfo: {
         walletName: string;
         accountName: string;
         walletId: string;
@@ -30,6 +24,11 @@ export declare const useNonEVMReact: () => {
             accountPublicKey?: string;
         }>;
     } | null | undefined;
-    hasEVMNetwork?: boolean | undefined;
+    chainId: string | undefined;
+    connect: (connectorName: NonEVMConnectorName) => Promise<void>;
+    disconnect: () => void;
+    connector: Connector | null;
+    signMessage: (message?: string) => Promise<string | undefined>;
+    connectEagerly: (connectorName: NonEVMConnectorName) => Promise<void>;
 };
 export {};

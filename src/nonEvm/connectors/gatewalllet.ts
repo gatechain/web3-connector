@@ -26,7 +26,13 @@ export class NonEVMGateWalletConnector implements Connector {
     this.onDisconnect = options?.onDisconnect;
     this.onGateAccountChange = options?.onGateAccountChange;
     this.onChainChange = options?.onChainChange;
+    this.handleGateAccountChange = this.handleGateAccountChange.bind(this);
+    this.handleConnect = this.handleConnect.bind(this);
+    this.handleChainChange = this.handleChainChange.bind(this);
+    this.id = Math.random();
   }
+
+  private id: number = Math.random();
 
   getProvider() {
     if (typeof (window as any).gatewallet !== "undefined") {
@@ -37,6 +43,7 @@ export class NonEVMGateWalletConnector implements Connector {
   }
 
   async connect() {
+    console.log("connectddd");
     try {
       const provider = this.getProvider();
 
@@ -50,10 +57,7 @@ export class NonEVMGateWalletConnector implements Connector {
           }
         });
 
-        provider.on(
-          "gateAccountChange",
-          this.handleGateAccountChange.bind(this)
-        );
+        provider.on("gateAccountChange", this.handleGateAccountChange);
 
         provider.on("chainChanged", (chainId: string): void => {
           console.log("chainId", chainId);
@@ -75,7 +79,7 @@ export class NonEVMGateWalletConnector implements Connector {
     }
   }
 
-  private handleGateAccountChange(gateWallet: any) {
+  private handleGateAccountChange = (gateWallet: any) => {
     console.log(
       "gateAccountChange",
       gateWallet,
@@ -90,7 +94,19 @@ export class NonEVMGateWalletConnector implements Connector {
     } else {
       this.onGateAccountChange?.(gateWallet);
     }
-  }
+  };
+
+  private handleConnect = (info: any) => {
+    console.log("inffo", info);
+    if (info?.chainId) {
+      this.onChainChange?.(info.chainId);
+    }
+  };
+
+  private handleChainChange = (chainId: string) => {
+    console.log("chainId", chainId);
+    this.onChainChange?.(chainId);
+  };
 
   async connectEagerly() {
     try {
@@ -99,22 +115,11 @@ export class NonEVMGateWalletConnector implements Connector {
       if (!provider) return;
 
       if (provider.on) {
-        provider.on("connect", (info: any) => {
-          console.log("inffo", info);
-          if (info?.chainId) {
-            this.onChainChange?.(info.chainId);
-          }
-        });
+        provider.on("connect", this.handleConnect);
 
-        provider.on(
-          "gateAccountChange",
-          this.handleGateAccountChange.bind(this)
-        );
+        provider.on("gateAccountChange", this.handleGateAccountChange);
 
-        provider.on("chainChanged", (chainId: string): void => {
-          console.log("chainId", chainId);
-          this.onChainChange?.(chainId);
-        });
+        provider.on("chainChanged", this.handleChainChange);
 
         provider.on("disconnect", (error: any) => {
           console.log(error, "error");
@@ -134,7 +139,26 @@ export class NonEVMGateWalletConnector implements Connector {
 
   // Unisat does not provide a disconnect method at this time
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  disconnect(): void {}
+  disconnect(): void {
+    try {
+      const provider = this.getProvider();
+
+      if (!provider) return;
+
+      console.log("disconnecttttt", this.id);
+
+      provider.removeListener(
+        "gateAccountChange",
+        this.handleGateAccountChange
+      );
+
+      provider.removeListener("connect", this.handleConnect);
+
+      provider.removeListener("chainChanged", this.handleChainChange);
+    } catch (err) {
+      console.error("disconnect error", err);
+    }
+  }
 
   // signMessage: (message?: string) => Promise<string> = (message) => {
   //   const provider = this.getProvider();
