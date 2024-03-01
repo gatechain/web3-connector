@@ -1,27 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -33,12 +10,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useNonEVMReact = exports.NonEVMProvider = void 0;
-const react_1 = __importStar(require("react"));
+const react_1 = require("react");
 const unisat_1 = require("./connectors/unisat");
 const gatewalllet_1 = require("./connectors/gatewalllet");
 const connection_1 = require("../connection");
 const types_1 = require("../types");
-const NonEVMContext = (0, react_1.createContext)(undefined);
+const zustand_1 = require("zustand");
+const useStore = (0, zustand_1.create)((set) => ({
+    isConnecting: false,
+    isConnected: false,
+    connectorName: undefined,
+    address: undefined,
+    publicKey: undefined,
+    network: undefined,
+    gateAccountInfo: undefined,
+    chainId: undefined,
+    dispatch: (action) => set((state) => nonEVMReducer(state, action)),
+}));
 const nonEVMReducer = (state, action) => {
     var _a, _b, _c, _d;
     switch (action.type) {
@@ -83,29 +71,11 @@ const nonEVMReducer = (state, action) => {
     }
 };
 const NonEVMProvider = ({ children }) => {
-    const [state, dispatch] = (0, react_1.useReducer)(nonEVMReducer, {
-        isConnecting: false,
-        isConnected: false,
-        connectorName: undefined,
-        address: undefined,
-        publicKey: undefined,
-        network: undefined,
-        gateAccountInfo: undefined,
-        chainId: undefined,
-    });
-    console.log("state", state);
-    return (react_1.default.createElement(NonEVMContext.Provider, { value: { state, dispatch } }, children));
+    return children;
 };
 exports.NonEVMProvider = NonEVMProvider;
-const useNonEVMContext = () => {
-    const ctx = (0, react_1.useContext)(NonEVMContext);
-    if (ctx === undefined) {
-        throw new Error("useNonEVMContext must be used within a nonEVMProvider");
-    }
-    return ctx;
-};
 const useNonEVMReact = () => {
-    const ctx = useNonEVMContext();
+    const ctx = useStore();
     const defaultConnectorOptions = (0, react_1.useMemo)(() => ({
         onAccountsChanged: (address, publicKey) => {
             ctx.dispatch({
@@ -141,16 +111,16 @@ const useNonEVMReact = () => {
                 hasEvmNetwork: hasEVMNetwork,
             });
         },
-    }), [ctx]);
+    }), [ctx.dispatch]);
     const ConnectorMap = (0, react_1.useMemo)(() => ({
         Unisat: new unisat_1.UnisatConnector(defaultConnectorOptions),
         GateWallet: new gatewalllet_1.NonEVMGateWalletConnector(defaultConnectorOptions),
     }), [defaultConnectorOptions]);
     const connector = (0, react_1.useMemo)(() => {
-        if (!ctx.state.connectorName)
+        if (!ctx.connectorName)
             return null;
-        return ConnectorMap[ctx.state.connectorName];
-    }, [ConnectorMap, ctx.state.connectorName]);
+        return ConnectorMap[ctx.connectorName];
+    }, [ConnectorMap, ctx.connectorName]);
     const disconnect = (0, react_1.useCallback)(() => {
         var _a, _b;
         ctx.dispatch({ type: "disconnected" });
@@ -162,7 +132,7 @@ const useNonEVMReact = () => {
     const connect = (0, react_1.useCallback)((connectorName) => __awaiter(void 0, void 0, void 0, function* () {
         var _a, _b, _c;
         try {
-            if (ctx.state.isConnected) {
+            if (ctx.isConnected) {
                 disconnect();
             }
             // TODO: avoid dispatch if is connected
@@ -199,7 +169,7 @@ const useNonEVMReact = () => {
     const connectEagerly = (0, react_1.useCallback)((connectorName) => __awaiter(void 0, void 0, void 0, function* () {
         var _d, _e, _f;
         try {
-            if (ctx.state.isConnected) {
+            if (ctx.isConnected) {
                 disconnect();
             }
             // TODO: avoid dispatch if is connected
@@ -237,10 +207,20 @@ const useNonEVMReact = () => {
         var _g;
         return (_g = connector === null || connector === void 0 ? void 0 : connector.signMessage) === null || _g === void 0 ? void 0 : _g.call(connector, message);
     }), [connector]);
-    return Object.assign(Object.assign({}, ctx.state), { connect,
+    return {
+        isConnecting: ctx.isConnecting,
+        isConnected: ctx.isConnected,
+        connectorName: ctx.connectorName,
+        address: ctx.address,
+        publicKey: ctx.publicKey,
+        network: ctx.network,
+        gateAccountInfo: ctx.gateAccountInfo,
+        chainId: ctx.chainId,
+        connect,
         disconnect,
         connector,
         signMessage,
-        connectEagerly });
+        connectEagerly,
+    };
 };
 exports.useNonEVMReact = useNonEVMReact;

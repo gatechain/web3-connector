@@ -8,11 +8,14 @@ export declare class NonEVMGateWalletConnector implements Connector {
     onGateAccountChange?: GateAccountChangeHandler;
     onChainChange?: ChainChangeHandler;
     constructor(options?: ConnectorOptions);
+    private id;
     getProvider(): any;
     connect(): Promise<{
         gateAccountInfo: any;
     } | undefined>;
     private handleGateAccountChange;
+    private handleConnect;
+    private handleChainChange;
     connectEagerly(): Promise<{
         gateAccountInfo: any;
     } | undefined>;

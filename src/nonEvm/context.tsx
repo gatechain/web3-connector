@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useReducer,
-} from "react";
+import React, { useCallback, useMemo } from "react";
 import { NonEVMConnectorName, Network } from "./types";
 import {
   Connector,
@@ -15,6 +9,8 @@ import { UnisatConnector } from "./connectors/unisat";
 import { NonEVMGateWalletConnector } from "./connectors/gatewalllet";
 import { getConnection, getStorage, selectedWalletKey } from "../connection";
 import { ConnectionType } from "../types";
+
+import { create } from "zustand";
 
 type Action =
   | { type: "on connect"; connectorName: NonEVMConnectorName }
@@ -62,9 +58,17 @@ interface State {
 
 type NonEVMProviderProps = { children: React.ReactNode };
 
-const NonEVMContext = createContext<
-  { state: State; dispatch: Dispatch } | undefined
->(undefined);
+const useStore = create<State & { dispatch: Dispatch }>((set) => ({
+  isConnecting: false,
+  isConnected: false,
+  connectorName: undefined,
+  address: undefined,
+  publicKey: undefined,
+  network: undefined,
+  gateAccountInfo: undefined,
+  chainId: undefined,
+  dispatch: (action: Action) => set((state) => nonEVMReducer(state, action)),
+}));
 
 const nonEVMReducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -145,37 +149,11 @@ const nonEVMReducer = (state: State, action: Action): State => {
 };
 
 export const NonEVMProvider = ({ children }: NonEVMProviderProps) => {
-  const [state, dispatch] = useReducer(nonEVMReducer, {
-    isConnecting: false,
-    isConnected: false,
-    connectorName: undefined,
-    address: undefined,
-    publicKey: undefined,
-    network: undefined,
-    gateAccountInfo: undefined,
-    chainId: undefined,
-  });
-
-  console.log("state", state);
-
-  return (
-    <NonEVMContext.Provider value={{ state, dispatch }}>
-      {children}
-    </NonEVMContext.Provider>
-  );
-};
-
-const useNonEVMContext = () => {
-  const ctx = useContext(NonEVMContext);
-  if (ctx === undefined) {
-    throw new Error("useNonEVMContext must be used within a nonEVMProvider");
-  }
-
-  return ctx;
+  return children;
 };
 
 export const useNonEVMReact = () => {
-  const ctx = useNonEVMContext();
+  const ctx = useStore();
 
   const defaultConnectorOptions: ConnectorOptions = useMemo(
     () => ({
@@ -216,7 +194,7 @@ export const useNonEVMReact = () => {
         });
       },
     }),
-    [ctx]
+    [ctx.dispatch]
   );
 
   const ConnectorMap: Record<NonEVMConnectorName, Connector> = useMemo(
@@ -228,9 +206,9 @@ export const useNonEVMReact = () => {
   );
 
   const connector = useMemo(() => {
-    if (!ctx.state.connectorName) return null;
-    return ConnectorMap[ctx.state.connectorName];
-  }, [ConnectorMap, ctx.state.connectorName]);
+    if (!ctx.connectorName) return null;
+    return ConnectorMap[ctx.connectorName];
+  }, [ConnectorMap, ctx.connectorName]);
 
   const disconnect = useCallback(() => {
     ctx.dispatch({ type: "disconnected" });
@@ -247,7 +225,7 @@ export const useNonEVMReact = () => {
   const connect = useCallback(
     async (connectorName: NonEVMConnectorName) => {
       try {
-        if (ctx.state.isConnected) {
+        if (ctx.isConnected) {
           disconnect();
         }
 
@@ -297,7 +275,7 @@ export const useNonEVMReact = () => {
   const connectEagerly = useCallback(
     async (connectorName: NonEVMConnectorName) => {
       try {
-        if (ctx.state.isConnected) {
+        if (ctx.isConnected) {
           disconnect();
         }
 
@@ -352,7 +330,14 @@ export const useNonEVMReact = () => {
   );
 
   return {
-    ...ctx.state,
+    isConnecting: ctx.isConnecting,
+    isConnected: ctx.isConnected,
+    connectorName: ctx.connectorName,
+    address: ctx.address,
+    publicKey: ctx.publicKey,
+    network: ctx.network,
+    gateAccountInfo: ctx.gateAccountInfo,
+    chainId: ctx.chainId,
     connect,
     disconnect,
     connector,
