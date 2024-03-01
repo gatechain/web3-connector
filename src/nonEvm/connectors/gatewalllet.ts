@@ -1,6 +1,6 @@
 import { getStorage, selectedWalletKey } from "../../connection";
 import { ConnectorNotFoundError } from "../errors";
-import { NonEVMConnectorName } from "../types";
+import { NonEVMConnectorName, Network } from "../types";
 import {
   AccountsChangedHandler,
   ChainChangeHandler,
@@ -21,18 +21,24 @@ export class NonEVMGateWalletConnector implements Connector {
 
   constructor(options?: ConnectorOptions) {
     this.name = "GateWallet";
-    this.onAccountsChanged = options?.onAccountsChanged;
-    this.onNetworkChanged = options?.onNetworkChanged;
-    this.onDisconnect = options?.onDisconnect;
-    this.onGateAccountChange = options?.onGateAccountChange;
-    this.onChainChange = options?.onChainChange;
+    this.setOptions(options);
     this.handleGateAccountChange = this.handleGateAccountChange.bind(this);
     this.handleConnect = this.handleConnect.bind(this);
     this.handleChainChange = this.handleChainChange.bind(this);
     this.id = Math.random();
   }
 
+  static instance: NonEVMGateWalletConnector | null = null;
+
   private id: number = Math.random();
+
+  setOptions(options?: ConnectorOptions) {
+    this.onAccountsChanged = options?.onAccountsChanged;
+    this.onNetworkChanged = options?.onNetworkChanged;
+    this.onDisconnect = options?.onDisconnect;
+    this.onGateAccountChange = options?.onGateAccountChange;
+    this.onChainChange = options?.onChainChange;
+  }
 
   getProvider() {
     if (typeof (window as any).gatewallet !== "undefined") {
@@ -164,4 +170,12 @@ export class NonEVMGateWalletConnector implements Connector {
   //   const provider = this.getProvider();
   //   return provider.signMessage(message) as Promise<string>;
   // };
+  static getInstance(options?: ConnectorOptions) {
+    if (this.instance) {
+      this.instance.setOptions(options);
+      return this.instance;
+    }
+    this.instance = new NonEVMGateWalletConnector(options);
+    return this.instance;
+  }
 }

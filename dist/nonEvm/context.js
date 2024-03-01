@@ -44,6 +44,7 @@ const nonEVMReducer = (state, action) => {
                 isConnecting: false,
                 isConnected: false,
                 connectorName: undefined,
+                gateAccountInfo: undefined,
                 address: undefined,
                 publicKey: undefined,
                 network: undefined,
@@ -76,45 +77,47 @@ const NonEVMProvider = ({ children }) => {
 exports.NonEVMProvider = NonEVMProvider;
 const useNonEVMReact = () => {
     const ctx = useStore();
-    const defaultConnectorOptions = (0, react_1.useMemo)(() => ({
-        onAccountsChanged: (address, publicKey) => {
-            ctx.dispatch({
-                type: "account changed",
-                address,
-                publicKey,
-            });
-        },
-        onNetworkChanged: (network) => {
-            ctx.dispatch({
-                type: "network changed",
-                network,
-            });
-        },
-        onChainChange: (chainId) => {
-            ctx.dispatch({
-                type: "chain change",
-                chainId,
-            });
-        },
-        onDisconnect: () => {
-            ctx.dispatch({ type: "disconnected" });
-        },
-        onGateAccountChange: (gateAccountInfo) => {
-            var _a;
-            ctx.dispatch({
-                type: "gate account change",
-                gateAccountInfo,
-            });
-            const hasEVMNetwork = !!((_a = gateAccountInfo === null || gateAccountInfo === void 0 ? void 0 : gateAccountInfo.accountNetworkArr) === null || _a === void 0 ? void 0 : _a.find((x) => x.network === "EVM"));
-            ctx.dispatch({
-                type: "has evm network",
-                hasEvmNetwork: hasEVMNetwork,
-            });
-        },
-    }), [ctx.dispatch]);
+    const defaultConnectorOptions = (0, react_1.useMemo)(() => {
+        return {
+            onAccountsChanged: (address, publicKey) => {
+                ctx.dispatch({
+                    type: "account changed",
+                    address,
+                    publicKey,
+                });
+            },
+            onNetworkChanged: (network) => {
+                ctx.dispatch({
+                    type: "network changed",
+                    network,
+                });
+            },
+            onChainChange: (chainId) => {
+                ctx.dispatch({
+                    type: "chain change",
+                    chainId,
+                });
+            },
+            onDisconnect: () => {
+                ctx.dispatch({ type: "disconnected" });
+            },
+            onGateAccountChange: (gateAccountInfo) => {
+                var _a;
+                ctx.dispatch({
+                    type: "gate account change",
+                    gateAccountInfo,
+                });
+                const hasEVMNetwork = !!((_a = gateAccountInfo === null || gateAccountInfo === void 0 ? void 0 : gateAccountInfo.accountNetworkArr) === null || _a === void 0 ? void 0 : _a.find((x) => x.network === "EVM"));
+                ctx.dispatch({
+                    type: "has evm network",
+                    hasEvmNetwork: hasEVMNetwork,
+                });
+            },
+        };
+    }, [ctx.dispatch]);
     const ConnectorMap = (0, react_1.useMemo)(() => ({
         Unisat: new unisat_1.UnisatConnector(defaultConnectorOptions),
-        GateWallet: new gatewalllet_1.NonEVMGateWalletConnector(defaultConnectorOptions),
+        GateWallet: gatewalllet_1.NonEVMGateWalletConnector.getInstance(defaultConnectorOptions),
     }), [defaultConnectorOptions]);
     const connector = (0, react_1.useMemo)(() => {
         if (!ctx.connectorName)
