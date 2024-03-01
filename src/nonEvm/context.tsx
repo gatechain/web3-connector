@@ -109,6 +109,7 @@ const nonEVMReducer = (state: State, action: Action): State => {
         isConnecting: false,
         isConnected: false,
         connectorName: undefined,
+        gateAccountInfo: undefined,
         address: undefined,
         publicKey: undefined,
         network: undefined,
@@ -155,8 +156,8 @@ export const NonEVMProvider = ({ children }: NonEVMProviderProps) => {
 export const useNonEVMReact = () => {
   const ctx = useStore();
 
-  const defaultConnectorOptions: ConnectorOptions = useMemo(
-    () => ({
+  const defaultConnectorOptions: ConnectorOptions = useMemo(() => {
+    return {
       onAccountsChanged: (address, publicKey) => {
         ctx.dispatch({
           type: "account changed",
@@ -193,14 +194,15 @@ export const useNonEVMReact = () => {
           hasEvmNetwork: hasEVMNetwork,
         });
       },
-    }),
-    [ctx.dispatch]
-  );
+    };
+  }, [ctx.dispatch]);
 
   const ConnectorMap: Record<NonEVMConnectorName, Connector> = useMemo(
     () => ({
       Unisat: new UnisatConnector(defaultConnectorOptions),
-      GateWallet: new NonEVMGateWalletConnector(defaultConnectorOptions),
+      GateWallet: NonEVMGateWalletConnector.getInstance(
+        defaultConnectorOptions
+      ),
     }),
     [defaultConnectorOptions]
   );

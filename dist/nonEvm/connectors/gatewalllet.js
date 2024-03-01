@@ -40,15 +40,18 @@ class NonEVMGateWalletConnector {
             (_a = this.onChainChange) === null || _a === void 0 ? void 0 : _a.call(this, chainId);
         };
         this.name = "GateWallet";
+        this.setOptions(options);
+        this.handleGateAccountChange = this.handleGateAccountChange.bind(this);
+        this.handleConnect = this.handleConnect.bind(this);
+        this.handleChainChange = this.handleChainChange.bind(this);
+        this.id = Math.random();
+    }
+    setOptions(options) {
         this.onAccountsChanged = options === null || options === void 0 ? void 0 : options.onAccountsChanged;
         this.onNetworkChanged = options === null || options === void 0 ? void 0 : options.onNetworkChanged;
         this.onDisconnect = options === null || options === void 0 ? void 0 : options.onDisconnect;
         this.onGateAccountChange = options === null || options === void 0 ? void 0 : options.onGateAccountChange;
         this.onChainChange = options === null || options === void 0 ? void 0 : options.onChainChange;
-        this.handleGateAccountChange = this.handleGateAccountChange.bind(this);
-        this.handleConnect = this.handleConnect.bind(this);
-        this.handleChainChange = this.handleChainChange.bind(this);
-        this.id = Math.random();
     }
     getProvider() {
         if (typeof window.gatewallet !== "undefined") {
@@ -131,5 +134,18 @@ class NonEVMGateWalletConnector {
             console.error("disconnect error", err);
         }
     }
+    // signMessage: (message?: string) => Promise<string> = (message) => {
+    //   const provider = this.getProvider();
+    //   return provider.signMessage(message) as Promise<string>;
+    // };
+    static getInstance(options) {
+        if (this.instance) {
+            this.instance.setOptions(options);
+            return this.instance;
+        }
+        this.instance = new NonEVMGateWalletConnector(options);
+        return this.instance;
+    }
 }
 exports.NonEVMGateWalletConnector = NonEVMGateWalletConnector;
+NonEVMGateWalletConnector.instance = null;
