@@ -54,6 +54,19 @@ export interface MetaMaskConstructorArgs {
   onError?: (error: Error) => void;
 }
 
+export const MAX_SAFE_CHAIN_ID = 4503599627370476;
+
+function validateChainId(chainId: number): boolean {
+  if (
+    !Number.isInteger(chainId) ||
+    chainId <= 0 ||
+    chainId > MAX_SAFE_CHAIN_ID
+  ) {
+    return false;
+  }
+  return true;
+}
+
 export class GateWallet extends Connector {
   /** {@inheritdoc Connector.provider} */
   public provider?: GateWalletProvider;
@@ -89,14 +102,20 @@ export class GateWallet extends Connector {
           this.provider.on(
             "connect",
             ({ chainId }: ProviderConnectInfo): void => {
-              this.actions.update({ chainId: parseChainId(chainId) });
+              const finalChainId = parseChainId(chainId);
+              if (validateChainId(finalChainId)) {
+                this.actions.update({ chainId: parseChainId(chainId) });
+              }
             }
           );
 
           this.provider.on("chainChanged", (chainId: string): void => {
             console.log("chainChanged");
-            this._switchingChains = true;
-            this.actions.update({ chainId: parseChainId(chainId) });
+            const finalChainId = parseChainId(chainId);
+            if (validateChainId(finalChainId)) {
+              this._switchingChains = true;
+              this.actions.update({ chainId: parseChainId(chainId) });
+            }
           });
 
           this.provider.on("disconnect", (error: ProviderRpcError): void => {
