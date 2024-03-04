@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GateWallet = exports.NoMetaMaskError = void 0;
+exports.GateWallet = exports.MAX_SAFE_CHAIN_ID = exports.NoMetaMaskError = void 0;
 const types_1 = require("@web3-react/types");
 class NoMetaMaskError extends Error {
     constructor() {
@@ -44,6 +44,15 @@ class NoMetaMaskError extends Error {
 exports.NoMetaMaskError = NoMetaMaskError;
 function parseChainId(chainId) {
     return Number.parseInt(chainId, 16);
+}
+exports.MAX_SAFE_CHAIN_ID = 4503599627370476;
+function validateChainId(chainId) {
+    if (!Number.isInteger(chainId) ||
+        chainId <= 0 ||
+        chainId > exports.MAX_SAFE_CHAIN_ID) {
+        return false;
+    }
+    return true;
 }
 class GateWallet extends types_1.Connector {
     constructor({ actions, options, onError }) {
@@ -69,12 +78,18 @@ class GateWallet extends types_1.Connector {
                             (_b = this.provider.providers.find((p) => p.isWeb3Wallet)) !== null && _b !== void 0 ? _b : this.provider.providers[0];
                     }
                     this.provider.on("connect", ({ chainId }) => {
-                        this.actions.update({ chainId: parseChainId(chainId) });
+                        const finalChainId = parseChainId(chainId);
+                        if (validateChainId(finalChainId)) {
+                            this.actions.update({ chainId: parseChainId(chainId) });
+                        }
                     });
                     this.provider.on("chainChanged", (chainId) => {
                         console.log("chainChanged");
-                        this._switchingChains = true;
-                        this.actions.update({ chainId: parseChainId(chainId) });
+                        const finalChainId = parseChainId(chainId);
+                        if (validateChainId(finalChainId)) {
+                            this._switchingChains = true;
+                            this.actions.update({ chainId: parseChainId(chainId) });
+                        }
                     });
                     this.provider.on("disconnect", (error) => {
                         var _a;
