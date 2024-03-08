@@ -14,7 +14,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NonEVMProvider = exports.useNonEVMReact = void 0;
+exports.useNonEVMReact = void 0;
 __exportStar(require("@web3-react/core"), exports);
 __exportStar(require("@web3-react/types"), exports);
 __exportStar(require("./connection"), exports);
@@ -22,4 +22,3 @@ __exportStar(require("./types"), exports);
 __exportStar(require("./utils"), exports);
 var context_1 = require("./nonEvm/context");
 Object.defineProperty(exports, "useNonEVMReact", { enumerable: true, get: function () { return context_1.useNonEVMReact; } });
-Object.defineProperty(exports, "NonEVMProvider", { enumerable: true, get: function () { return context_1.NonEVMProvider; } });
