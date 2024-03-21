@@ -62,7 +62,6 @@ class NonEVMGateWalletConnector {
     }
     connect() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("connectddd");
             try {
                 const provider = this.getProvider();
                 if (!provider)
@@ -86,7 +85,6 @@ class NonEVMGateWalletConnector {
                     });
                 }
                 const info = yield provider.connect();
-                console.log("info", info);
                 return { gateAccountInfo: info };
             }
             catch (error) {
@@ -125,7 +123,6 @@ class NonEVMGateWalletConnector {
             const provider = this.getProvider();
             if (!provider)
                 return;
-            console.log("disconnecttttt", this.id);
             provider.removeListener("gateAccountChange", this.handleGateAccountChange);
             provider.removeListener("connect", this.handleConnect);
             provider.removeListener("chainChanged", this.handleChainChange);

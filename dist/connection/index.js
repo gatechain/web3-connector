@@ -109,6 +109,10 @@ function useEagerlyConnect(onError) {
             connectEagerly("Unisat");
             return;
         }
+        if (selectedWallet === types_2.ConnectionType.PHANTOM) {
+            connectEagerly("Phantom");
+            return;
+        }
     }, []);
 }
 exports.useEagerlyConnect = useEagerlyConnect;

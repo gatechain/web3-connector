@@ -49,7 +49,6 @@ export class NonEVMGateWalletConnector implements Connector {
   }
 
   async connect() {
-    console.log("connectddd");
     try {
       const provider = this.getProvider();
 
@@ -76,8 +75,6 @@ export class NonEVMGateWalletConnector implements Connector {
       }
 
       const info = await provider.connect();
-
-      console.log("info", info);
 
       return { gateAccountInfo: info };
     } catch (error) {
@@ -150,8 +147,6 @@ export class NonEVMGateWalletConnector implements Connector {
       const provider = this.getProvider();
 
       if (!provider) return;
-
-      console.log("disconnecttttt", this.id);
 
       provider.removeListener(
         "gateAccountChange",

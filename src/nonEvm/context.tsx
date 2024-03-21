@@ -11,6 +11,7 @@ import { getConnection, getStorage, selectedWalletKey } from "../connection";
 import { ConnectionType } from "../types";
 
 import { create } from "zustand";
+import { PhantomConnector } from "./connectors/phantom";
 
 type Action =
   | { type: "on connect"; connectorName: NonEVMConnectorName }
@@ -199,10 +200,11 @@ export const useNonEVMReact = () => {
 
   const ConnectorMap: Record<NonEVMConnectorName, Connector> = useMemo(
     () => ({
-      Unisat: new UnisatConnector(defaultConnectorOptions),
+      Unisat: UnisatConnector.getInstance(defaultConnectorOptions),
       GateWallet: NonEVMGateWalletConnector.getInstance(
         defaultConnectorOptions
       ),
+      Phantom: PhantomConnector.getInstance(defaultConnectorOptions),
     }),
     [defaultConnectorOptions]
   );
@@ -240,11 +242,14 @@ export const useNonEVMReact = () => {
         const { address, publicKey, network, gateAccountInfo } =
           (await ConnectorMap[connectorName].connect()) || {};
 
+        console.log("address", address);
+
         const storage = getStorage();
 
         const map = {
           Unisat: ConnectionType.Unisat,
           GateWallet: ConnectionType.GATEWALLET,
+          Phantom: ConnectionType.PHANTOM,
         };
 
         storage.setItem(selectedWalletKey, map[connectorName]);
@@ -295,6 +300,7 @@ export const useNonEVMReact = () => {
         const map = {
           Unisat: ConnectionType.Unisat,
           GateWallet: ConnectionType.GATEWALLET,
+          Phantom: ConnectionType.PHANTOM,
         };
 
         storage.setItem(selectedWalletKey, map[connectorName]);
