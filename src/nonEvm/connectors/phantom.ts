@@ -10,7 +10,7 @@ import {
 } from "./types";
 
 type PhantomProvider = Provider & {
-  connect: (x?: {onlyIfTrusted: true}) => Promise<any>;
+  connect: (x?: { onlyIfTrusted: true }) => Promise<any>;
 };
 
 export class PhantomConnector implements Connector {
@@ -36,12 +36,9 @@ export class PhantomConnector implements Connector {
   }
 
   getProvider() {
-    if (typeof window === "undefined") return;
-    if (typeof (window as any).phantom === "undefined") {
-      throw new ConnectorNotFoundError();
-    }
-
-    return (window as any).phantom.solana as PhantomProvider;
+    const w = window as any;
+    if (w?.phantom?.solana) return w.phantom.solana as PhantomProvider;
+    console.error(new ConnectorNotFoundError());
   }
 
   async connect() {
@@ -106,6 +103,7 @@ export class PhantomConnector implements Connector {
 
         const account = resp?.publicKey?.toBase58();
 
+        console.log("fsdfs", account, publicKey);
         return { address: account, publicKey };
       }
       return {};

@@ -26,12 +26,11 @@ class PhantomConnector {
         this.onDisconnect = options === null || options === void 0 ? void 0 : options.onDisconnect;
     }
     getProvider() {
-        if (typeof window === "undefined")
-            return;
-        if (typeof window.phantom === "undefined") {
-            throw new errors_1.ConnectorNotFoundError();
-        }
-        return window.phantom.solana;
+        var _a;
+        const w = window;
+        if ((_a = w === null || w === void 0 ? void 0 : w.phantom) === null || _a === void 0 ? void 0 : _a.solana)
+            return w.phantom.solana;
+        console.error(new errors_1.ConnectorNotFoundError());
     }
     connect() {
         var _a, _b;
@@ -92,6 +91,7 @@ class PhantomConnector {
                     const resp = yield provider.connect({ onlyIfTrusted: true });
                     const publicKey = (_a = resp === null || resp === void 0 ? void 0 : resp.publicKey) === null || _a === void 0 ? void 0 : _a.toString();
                     const account = (_b = resp === null || resp === void 0 ? void 0 : resp.publicKey) === null || _b === void 0 ? void 0 : _b.toBase58();
+                    console.log("fsdfs", account, publicKey);
                     return { address: account, publicKey };
                 }
                 return {};
