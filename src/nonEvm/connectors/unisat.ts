@@ -31,12 +31,8 @@ export class UnisatConnector implements Connector {
   static instance?: UnisatConnector;
 
   getProvider() {
-    if (typeof window === "undefined") return;
-    if (typeof (window as any).unisat === "undefined") {
-      throw new ConnectorNotFoundError();
-    }
-
-    return (window as any).unisat;
+    if ((window as any)?.unisat) return (window as any).unisat;
+    console.error(new ConnectorNotFoundError());
   }
 
   async connect() {

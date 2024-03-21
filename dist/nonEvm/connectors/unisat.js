@@ -30,12 +30,9 @@ class UnisatConnector {
         this.onDisconnect = options === null || options === void 0 ? void 0 : options.onDisconnect;
     }
     getProvider() {
-        if (typeof window === "undefined")
-            return;
-        if (typeof window.unisat === "undefined") {
-            throw new errors_1.ConnectorNotFoundError();
-        }
-        return window.unisat;
+        if (window === null || window === void 0 ? void 0 : window.unisat)
+            return window.unisat;
+        console.error(new errors_1.ConnectorNotFoundError());
     }
     connect() {
         return __awaiter(this, void 0, void 0, function* () {
