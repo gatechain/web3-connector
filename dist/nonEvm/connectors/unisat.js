@@ -13,11 +13,18 @@ exports.UnisatConnector = void 0;
 const errors_1 = require("../errors");
 class UnisatConnector {
     constructor(options) {
+        var _a, _b, _c;
         this.signMessage = (message) => {
             const provider = this.getProvider();
             return provider.signMessage(message);
         };
         this.name = "Unisat";
+        this.setOptions(options);
+        this.onAccountsChanged = (_a = this.onAccountsChanged) === null || _a === void 0 ? void 0 : _a.bind(this);
+        this.onNetworkChanged = (_b = this.onNetworkChanged) === null || _b === void 0 ? void 0 : _b.bind(this);
+        this.onDisconnect = (_c = this.onDisconnect) === null || _c === void 0 ? void 0 : _c.bind(this);
+    }
+    setOptions(options) {
         this.onAccountsChanged = options === null || options === void 0 ? void 0 : options.onAccountsChanged;
         this.onNetworkChanged = options === null || options === void 0 ? void 0 : options.onNetworkChanged;
         this.onDisconnect = options === null || options === void 0 ? void 0 : options.onDisconnect;
@@ -70,5 +77,13 @@ class UnisatConnector {
     // Unisat does not provide a disconnect method at this time
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     disconnect() { }
+    static getInstance(options) {
+        if (this.instance) {
+            this.instance.setOptions(options);
+            return this.instance;
+        }
+        this.instance = new UnisatConnector(options);
+        return this.instance;
+    }
 }
 exports.UnisatConnector = UnisatConnector;

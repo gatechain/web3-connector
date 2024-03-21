@@ -16,6 +16,7 @@ const gatewalllet_1 = require("./connectors/gatewalllet");
 const connection_1 = require("../connection");
 const types_1 = require("../types");
 const zustand_1 = require("zustand");
+const phantom_1 = require("./connectors/phantom");
 const useStore = (0, zustand_1.create)((set) => ({
     isConnecting: false,
     isConnected: false,
@@ -116,8 +117,9 @@ const useNonEVMReact = () => {
         };
     }, [ctx.dispatch]);
     const ConnectorMap = (0, react_1.useMemo)(() => ({
-        Unisat: new unisat_1.UnisatConnector(defaultConnectorOptions),
+        Unisat: unisat_1.UnisatConnector.getInstance(defaultConnectorOptions),
         GateWallet: gatewalllet_1.NonEVMGateWalletConnector.getInstance(defaultConnectorOptions),
+        Phantom: phantom_1.PhantomConnector.getInstance(defaultConnectorOptions),
     }), [defaultConnectorOptions]);
     const connector = (0, react_1.useMemo)(() => {
         if (!ctx.connectorName)
@@ -144,10 +146,12 @@ const useNonEVMReact = () => {
                 connectorName,
             });
             const { address, publicKey, network, gateAccountInfo } = (yield ConnectorMap[connectorName].connect()) || {};
+            console.log("address", address);
             const storage = (0, connection_1.getStorage)();
             const map = {
                 Unisat: types_1.ConnectionType.Unisat,
                 GateWallet: types_1.ConnectionType.GATEWALLET,
+                Phantom: types_1.ConnectionType.PHANTOM,
             };
             storage.setItem(connection_1.selectedWalletKey, map[connectorName]);
             const hasEvmNetwork = !!((_a = gateAccountInfo === null || gateAccountInfo === void 0 ? void 0 : gateAccountInfo.accountNetworkArr) === null || _a === void 0 ? void 0 : _a.find((x) => x.network === "EVM"));
@@ -185,6 +189,7 @@ const useNonEVMReact = () => {
             const map = {
                 Unisat: types_1.ConnectionType.Unisat,
                 GateWallet: types_1.ConnectionType.GATEWALLET,
+                Phantom: types_1.ConnectionType.PHANTOM,
             };
             storage.setItem(connection_1.selectedWalletKey, map[connectorName]);
             const hasEvmNetwork = !!((_d = gateAccountInfo === null || gateAccountInfo === void 0 ? void 0 : gateAccountInfo.accountNetworkArr) === null || _d === void 0 ? void 0 : _d.find((x) => x.network === "EVM"));

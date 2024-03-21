@@ -6,6 +6,8 @@ export declare class UnisatConnector implements Connector {
     onNetworkChanged?: NetworkChangedHandler;
     onDisconnect?: DisconnectHandler;
     constructor(options?: ConnectorOptions);
+    setOptions(options?: ConnectorOptions): void;
+    static instance?: UnisatConnector;
     getProvider(): any;
     connect(): Promise<{
         address: string;
@@ -19,4 +21,5 @@ export declare class UnisatConnector implements Connector {
     }>;
     disconnect(): void;
     signMessage: (message?: string) => Promise<string>;
+    static getInstance(options?: ConnectorOptions): UnisatConnector;
 }
