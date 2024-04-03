@@ -1,6 +1,6 @@
 {
   "name": "web3-connector",
-  "version": "v0.3.2.8-test",
+  "version": "v0.3.28",
   "description": "This is a tool for connecting Web3 wallets.",
   "author": "Thone Liu <thorne_lew@126.com>",
   "homepage": "",
