@@ -133,6 +133,7 @@ const useNonEVMReact = () => {
         const storage = (0, connection_1.getStorage)();
         const connection = (0, connection_1.getConnection)(storage.getItem(connection_1.selectedWalletKey));
         (_b = (_a = connection === null || connection === void 0 ? void 0 : connection.connector) === null || _a === void 0 ? void 0 : _a.deactivate) === null || _b === void 0 ? void 0 : _b.call(_a);
+        storage.removeItem(connection_1.selectedWalletKey);
     }, [connector, ctx]);
     const connect = (0, react_1.useCallback)((connectorName) => __awaiter(void 0, void 0, void 0, function* () {
         var _a, _b, _c;
