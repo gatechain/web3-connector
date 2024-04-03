@@ -224,6 +224,7 @@ export const useNonEVMReact = () => {
       storage.getItem(selectedWalletKey) as ConnectionType
     );
     connection?.connector?.deactivate?.();
+    storage.removeItem(selectedWalletKey)
   }, [connector, ctx]);
 
   const connect = useCallback(
