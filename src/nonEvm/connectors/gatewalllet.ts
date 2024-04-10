@@ -79,6 +79,7 @@ export class NonEVMGateWalletConnector implements Connector {
       return { gateAccountInfo: info };
     } catch (error) {
       console.log("connnector error: ", error);
+      throw error
     }
   }
 
