@@ -13,6 +13,7 @@ export class WalletConnectNotQrConnector {
         (actions) =>
           new GatewalletConnect({
             actions,
+            defaultChainId: 1,
           })
       );
     }

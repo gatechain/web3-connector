@@ -4,7 +4,8 @@
 	  "module": "CommonJS",
 	  "declaration": true,
 	  "moduleResolution": "Node",
-	  "outDir": "./dist"
+	  "outDir": "./dist",
+	  "jsx": "react"
 	},
   "include": ["./src"],
 	"exclude": ["**/*.spec.ts"]

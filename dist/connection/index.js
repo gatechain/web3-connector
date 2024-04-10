@@ -9,23 +9,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.connect = exports.disconnect = exports.connectWallet = exports.useEagerlyConnect = exports.getConnection = exports.getConnectionMap = exports.initConnector = exports.getConnectors = void 0;
+exports.connect = exports.disconnect = exports.connectWallet = exports.useEagerlyConnect = exports.selectedWalletKey = exports.getStorage = exports.getConnection = exports.getConnectionMap = exports.initConnector = exports.getConnectors = void 0;
 const react_1 = require("react");
 const types_1 = require("@web3-react/types");
 const types_2 = require("../types");
 const storage_1 = require("../storage");
-const utils_1 = require("../utils");
 const metaMask_1 = require("./metaMask");
 const phantom_1 = require("./phantom");
 const walletConnectV2_1 = require("./walletConnectV2");
 const walletConnectV2NotQr_1 = require("./walletConnectV2NotQr");
 const walletconnect_v2_1 = require("@web3-react/walletconnect-v2");
+const gateWallet_1 = require("./gateWallet");
+const context_1 = require("../nonEvm/context");
 function getConnectors(config) {
     return initConnector();
 }
 exports.getConnectors = getConnectors;
 function initConnector() {
     const [web3Injected, web3InjectedHooks] = metaMask_1.MetaMaskConnector.getInstance();
+    const [gateWallet, getWalletHooks] = gateWallet_1.GateWalletConnector.getInstance();
     const [phantom, phantomHooks] = phantom_1.PhantomConnector.getInstance();
     const [web3WalletConnect, web3WalletConnectHooks] = walletConnectV2_1.WalletConnectConnector.getInstance();
     const [web3WalletNotQrConnect, web3WalletNotQrConnectHooks] = walletConnectV2NotQr_1.WalletConnectNotQrConnector.getInstance();
@@ -34,12 +36,14 @@ function initConnector() {
         [web3WalletConnect, web3WalletConnectHooks],
         [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],
         [phantom, phantomHooks],
+        [gateWallet, getWalletHooks],
     ];
 }
 exports.initConnector = initConnector;
 function getConnectionMap() {
     const phantomConnection = phantom_1.PhantomConnector.getConnection();
     const injectedConnection = metaMask_1.MetaMaskConnector.getConnection();
+    const getWalletConnection = gateWallet_1.GateWalletConnector.getConnection();
     const walletConnectConnection = walletConnectV2_1.WalletConnectConnector.getConnection();
     const walletConnectNotQrConnection = walletConnectV2NotQr_1.WalletConnectNotQrConnector.getConnection();
     return [
@@ -47,6 +51,7 @@ function getConnectionMap() {
         phantomConnection,
         walletConnectConnection,
         walletConnectNotQrConnection,
+        getWalletConnection,
     ];
 }
 exports.getConnectionMap = getConnectionMap;
@@ -71,13 +76,15 @@ function getStorage() {
     });
     return storage;
 }
-const selectedWalletKey = "selectedWallet";
+exports.getStorage = getStorage;
+exports.selectedWalletKey = "selectedWallet";
 function useEagerlyConnect(onError) {
     let selectedWallet;
     const storage = getStorage();
     if (typeof window !== "undefined") {
-        selectedWallet = storage.getItem(selectedWalletKey);
+        selectedWallet = storage.getItem(exports.selectedWalletKey);
     }
+    const { connectEagerly } = (0, context_1.useNonEVMReact)();
     let selectedConnection;
     if (selectedWallet) {
         try {
@@ -92,28 +99,45 @@ function useEagerlyConnect(onError) {
             connect(selectedConnection.connector);
         }
     }, []);
+    (0, react_1.useEffect)(() => {
+        console.log('eargely selectedWallet', selectedWallet);
+        if (selectedWallet === types_2.ConnectionType.GATEWALLET) {
+            connectEagerly("GateWallet");
+            return;
+        }
+        if (selectedWallet === types_2.ConnectionType.Unisat) {
+            connectEagerly("Unisat");
+            return;
+        }
+        if (selectedWallet === types_2.ConnectionType.PHANTOM) {
+            connectEagerly("Phantom");
+            return;
+        }
+    }, []);
 }
 exports.useEagerlyConnect = useEagerlyConnect;
-function connectWallet(connectionType, cb) {
-    var _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        const storage = getStorage();
-        let connection = getConnection(connectionType);
-        connection && connection.connector.activate();
-        storage.setItem(selectedWalletKey, connectionType);
-        if (connectionType === types_2.ConnectionType.WALLET_CONNECT_NOTQR) {
-            function setUri(uri) {
-                var _a;
-                if (!uri)
-                    return;
-                cb && cb(uri);
-                (_a = connection.connector) === null || _a === void 0 ? void 0 : _a.events.removeListener(walletconnect_v2_1.URI_AVAILABLE, setUri);
-            }
-            (_a = connection.connector) === null || _a === void 0 ? void 0 : _a.events.on(walletconnect_v2_1.URI_AVAILABLE, setUri);
-        }
-        yield (0, utils_1.delay)(100);
-        return connection;
+function connectWallet(connectionType, resolve, reject) {
+    var _a, _b, _c;
+    const storage = getStorage();
+    let connection = getConnection(connectionType);
+    if (!connection) {
+        return;
+    }
+    (_b = (_a = connection.connector) === null || _a === void 0 ? void 0 : _a.activate()) === null || _b === void 0 ? void 0 : _b.then(() => {
+        storage.setItem(exports.selectedWalletKey, connectionType);
+    }).catch((err) => {
+        reject && reject(err);
     });
+    function setUri(uri) {
+        var _a;
+        if (!uri)
+            return;
+        resolve && resolve(uri);
+        (_a = connection.connector) === null || _a === void 0 ? void 0 : _a.events.removeListener(walletconnect_v2_1.URI_AVAILABLE, setUri);
+    }
+    if (connectionType === types_2.ConnectionType.WALLET_CONNECT_NOTQR) {
+        (_c = connection.connector) === null || _c === void 0 ? void 0 : _c.events.on(walletconnect_v2_1.URI_AVAILABLE, setUri);
+    }
 }
 exports.connectWallet = connectWallet;
 function disconnect(connector) {
@@ -122,7 +146,7 @@ function disconnect(connector) {
         connector.deactivate();
     }
     connector.resetState();
-    storage.removeItem(selectedWalletKey);
+    storage.removeItem(exports.selectedWalletKey);
 }
 exports.disconnect = disconnect;
 function connect(connector) {

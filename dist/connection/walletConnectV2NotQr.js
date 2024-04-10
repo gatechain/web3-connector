@@ -11,6 +11,7 @@ class WalletConnectNotQrConnector {
         if (!this.instance) {
             this.instance = (0, core_1.initializeConnector)((actions) => new walletConnectV2_1.GatewalletConnect({
                 actions,
+                defaultChainId: 1,
             }));
         }
         return this.instance;

@@ -19,6 +19,8 @@
 
 ### provider
 
+#### evm provider
+
 ```ts
 // _app.tsx
 import {
@@ -41,9 +43,34 @@ function MyApp({ Component, pageProps }: AppProps) {
 export default MyApp;
 ```
 
+#### 非evm provider
+```ts
+// _app.tsx
+import {
+  connectGateWallet,
+  useNonEVMReact,
+  GateWalletProvider,
+  useNonEVMEagerlyConnect,
+} from "web3-connector";
+
+function MyApp({ Component, pageProps }: AppProps) {
+  useNonEVMEagerlyConnect();
+
+  return (
+    <GateWalletProvider>
+      <Component {...pageProps} />
+    </GateWalletProvider>
+  );
+}
+
+export default MyApp;
+```
+
 ### connect/disconnect wallet demo
 
-```ts
+#### evm connect/disconnect wallet demo
+
+```tsx
 import {
   connectWallet,
   ConnectionType,
@@ -109,6 +136,38 @@ const Home: NextPage = () => {
 export default Home;
 ```
 
+#### 非evm connect/disconnect wallet demo
+```tsx
+import {
+  connectGateWallet,
+  useNonEVMReact,
+  GateWalletProvider,
+  useNonEVMEagerlyConnect,
+  disconnectGateWallet
+} from "web3-connector";
+
+const Home: NextPage = () => {
+
+  return (
+    <div className={styles.container}>
+     
+      <button
+        onClick={() => {
+          connectGateWallet();
+        }}
+      >
+        connect wallet
+      </button>
+      <button>
+        disconnectGateWallet()
+      </button>
+    </div>
+  );
+};
+
+export default Home;
+```
+
 ### wallet
 
 | name                        | type                 |
@@ -117,6 +176,7 @@ export default Home;
 | imToken, Rainbow, Zengo ... | WALLET_CONNECT_NOTQR |
 | MetaMask , TP ...           | INJECTED             |
 | phantom                     | PHANTOM              |
+| gatewallet                  | GATEWALLET           |
 
 ### log
 
@@ -126,5 +186,5 @@ export default Home;
   2. split connection
   3. delete isMeteMask isxxxx....
   4. use @web3-react/metamask@8.2.0 | @web3-react/walletconnect-v2@8.3.5
-- 3.2.1
-  1. Supports nextjs
+- 3.2.2
+  1. add gatewallet

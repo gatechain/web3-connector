@@ -3,24 +3,26 @@ import { Web3ReactHooks } from "@web3-react/core";
 import { Connector } from "@web3-react/types";
 import { Connection, ConnectionType } from "../types";
 import { createStorage, noopStorage } from "../storage";
-import { delay } from "../utils";
 import { MetaMaskConnector, MetaMask } from "./metaMask";
 import { PhantomConnector, Phantom } from "./phantom";
 import { WalletConnectConnector } from "./walletConnectV2";
 import { GatewalletConnect } from "../connectors/walletConnectV2";
 import { WalletConnectNotQrConnector } from "./walletConnectV2NotQr";
 import { URI_AVAILABLE } from "@web3-react/walletconnect-v2";
+import { GateWalletConnector, GateWallet } from "./gateWallet";
+import { useNonEVMReact } from "../nonEvm/context";
 
 export function getConnectors(config?: any) {
   return initConnector();
 }
 
 type InitConnectorReturnType = [
-  MetaMask | GatewalletConnect | Phantom,
+  MetaMask | GatewalletConnect | Phantom | GateWallet,
   Web3ReactHooks
 ][];
 export function initConnector(): InitConnectorReturnType {
   const [web3Injected, web3InjectedHooks] = MetaMaskConnector.getInstance();
+  const [gateWallet, getWalletHooks] = GateWalletConnector.getInstance();
   const [phantom, phantomHooks] = PhantomConnector.getInstance();
   const [web3WalletConnect, web3WalletConnectHooks] =
     WalletConnectConnector.getInstance();
@@ -32,12 +34,14 @@ export function initConnector(): InitConnectorReturnType {
     [web3WalletConnect, web3WalletConnectHooks],
     [web3WalletNotQrConnect, web3WalletNotQrConnectHooks],
     [phantom, phantomHooks],
+    [gateWallet, getWalletHooks],
   ];
 }
 
 export function getConnectionMap(): Connection[] {
   const phantomConnection = PhantomConnector.getConnection();
   const injectedConnection = MetaMaskConnector.getConnection();
+  const getWalletConnection = GateWalletConnector.getConnection();
   const walletConnectConnection = WalletConnectConnector.getConnection();
   const walletConnectNotQrConnection =
     WalletConnectNotQrConnector.getConnection();
@@ -47,6 +51,7 @@ export function getConnectionMap(): Connection[] {
     phantomConnection,
     walletConnectConnection,
     walletConnectNotQrConnection,
+    getWalletConnection,
   ];
 }
 
@@ -67,7 +72,7 @@ export function getConnection(c: Connector | ConnectionType): Connection {
   }
 }
 
-function getStorage() {
+export function getStorage() {
   const storage = createStorage({
     storage: typeof window !== "undefined" ? window.localStorage : noopStorage,
   });
@@ -75,7 +80,7 @@ function getStorage() {
   return storage;
 }
 
-const selectedWalletKey = "selectedWallet";
+export const selectedWalletKey = "selectedWallet";
 
 export function useEagerlyConnect(onError?: Function) {
   let selectedWallet: any;
@@ -83,6 +88,8 @@ export function useEagerlyConnect(onError?: Function) {
   if (typeof window !== "undefined") {
     selectedWallet = storage.getItem(selectedWalletKey) as ConnectionType;
   }
+
+  const { connectEagerly } = useNonEVMReact();
 
   let selectedConnection: Connection | undefined;
   if (selectedWallet) {
@@ -98,31 +105,53 @@ export function useEagerlyConnect(onError?: Function) {
       connect(selectedConnection.connector);
     }
   }, []);
+
+  useEffect(() => {
+    console.log('eargely selectedWallet', selectedWallet)
+    if (selectedWallet === ConnectionType.GATEWALLET) {
+      connectEagerly("GateWallet");
+      return;
+    }
+    if (selectedWallet === ConnectionType.Unisat) {
+      connectEagerly("Unisat");
+      return;
+    }
+    if (selectedWallet === ConnectionType.PHANTOM) {
+      connectEagerly("Phantom")
+      return;
+    }
+  }, []);
 }
 
-export async function connectWallet(
+export function connectWallet(
   connectionType: ConnectionType,
-  cb?: (uri: string) => void
+  resolve?: (uri: string) => void,
+  reject?: (err: any) => void
 ) {
   const storage = getStorage();
   let connection: Connection = getConnection(connectionType);
-  connection && connection.connector.activate();
-  storage.setItem(selectedWalletKey, connectionType);
-
-  if (connectionType === ConnectionType.WALLET_CONNECT_NOTQR) {
-    function setUri(uri: string) {
-      if (!uri) return;
-      cb && cb(uri);
-      (connection.connector as any)?.events.removeListener(
-        URI_AVAILABLE,
-        setUri
-      );
-    }
-    (connection.connector as any)?.events.on(URI_AVAILABLE, setUri);
+  if (!connection) {
+    return;
   }
 
-  await delay(100);
-  return connection;
+  connection.connector
+    ?.activate()
+    ?.then(() => {
+      storage.setItem(selectedWalletKey, connectionType);
+    })
+    .catch((err) => {
+      reject && reject(err);
+    });
+
+  function setUri(uri: string) {
+    if (!uri) return;
+    resolve && resolve(uri);
+    (connection.connector as any)?.events.removeListener(URI_AVAILABLE, setUri);
+  }
+
+  if (connectionType === ConnectionType.WALLET_CONNECT_NOTQR) {
+    (connection.connector as any)?.events.on(URI_AVAILABLE, setUri);
+  }
 }
 
 export function disconnect(connector: Connector) {
