@@ -89,6 +89,7 @@ class NonEVMGateWalletConnector {
             }
             catch (error) {
                 console.log("connnector error: ", error);
+                throw error;
             }
         });
     }
