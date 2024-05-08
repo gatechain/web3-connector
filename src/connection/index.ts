@@ -140,6 +140,7 @@ export function connectWallet(
       storage.setItem(selectedWalletKey, connectionType);
     })
     .catch((err) => {
+      console.error('connector activate', err)
       reject && reject(err);
     });
 
