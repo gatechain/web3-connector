@@ -12,6 +12,7 @@ import { ConnectionType } from "../types";
 
 import { create } from "zustand";
 import { PhantomConnector } from "./connectors/phantom";
+import { useWallet } from "@suiet/wallet-kit";
 
 type Action =
   | { type: "on connect"; connectorName: NonEVMConnectorName }
@@ -151,7 +152,7 @@ const nonEVMReducer = (state: State, action: Action): State => {
 };
 
 export const NonEVMProvider = ({ children }: NonEVMProviderProps) => {
-  return children;
+  return <>children</> ;
 };
 
 export const useNonEVMReact = () => {
@@ -224,7 +225,7 @@ export const useNonEVMReact = () => {
       storage.getItem(selectedWalletKey) as ConnectionType
     );
     connection?.connector?.deactivate?.();
-    storage.removeItem(selectedWalletKey)
+    storage.removeItem(selectedWalletKey);
   }, [connector, ctx]);
 
   const connect = useCallback(
@@ -337,6 +338,8 @@ export const useNonEVMReact = () => {
     },
     [connector]
   );
+
+  const wallet = useWallet();
 
   return {
     isConnecting: ctx.isConnecting,

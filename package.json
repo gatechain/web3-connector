@@ -24,6 +24,7 @@
     "build:tsc": "rm -rf dist/ && tsc"
   },
   "dependencies": {
+    "@suiet/wallet-kit": "^0.2.24",
     "@web3-react/core": "^8.2.0",
     "@web3-react/metamask": "^8.2.0",
     "@web3-react/walletconnect-v2": "^8.3.7"

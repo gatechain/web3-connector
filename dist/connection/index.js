@@ -126,6 +126,7 @@ function connectWallet(connectionType, resolve, reject) {
     (_b = (_a = connection.connector) === null || _a === void 0 ? void 0 : _a.activate()) === null || _b === void 0 ? void 0 : _b.then(() => {
         storage.setItem(exports.selectedWalletKey, connectionType);
     }).catch((err) => {
+        console.error('connector activate', err);
         reject && reject(err);
     });
     function setUri(uri) {

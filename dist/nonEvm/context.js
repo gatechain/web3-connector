@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -10,13 +33,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useNonEVMReact = exports.NonEVMProvider = void 0;
-const react_1 = require("react");
+const react_1 = __importStar(require("react"));
 const unisat_1 = require("./connectors/unisat");
 const gatewalllet_1 = require("./connectors/gatewalllet");
 const connection_1 = require("../connection");
 const types_1 = require("../types");
 const zustand_1 = require("zustand");
 const phantom_1 = require("./connectors/phantom");
+const wallet_kit_1 = require("@suiet/wallet-kit");
 const useStore = (0, zustand_1.create)((set) => ({
     isConnecting: false,
     isConnected: false,
@@ -73,7 +97,7 @@ const nonEVMReducer = (state, action) => {
     }
 };
 const NonEVMProvider = ({ children }) => {
-    return children;
+    return react_1.default.createElement(react_1.default.Fragment, null, "children");
 };
 exports.NonEVMProvider = NonEVMProvider;
 const useNonEVMReact = () => {
@@ -216,6 +240,7 @@ const useNonEVMReact = () => {
         var _g;
         return (_g = connector === null || connector === void 0 ? void 0 : connector.signMessage) === null || _g === void 0 ? void 0 : _g.call(connector, message);
     }), [connector]);
+    const wallet = (0, wallet_kit_1.useWallet)();
     return {
         isConnecting: ctx.isConnecting,
         isConnected: ctx.isConnected,

@@ -4,7 +4,7 @@ import { Connector } from "./connectors/types";
 type NonEVMProviderProps = {
     children: React.ReactNode;
 };
-export declare const NonEVMProvider: ({ children }: NonEVMProviderProps) => React.ReactNode;
+export declare const NonEVMProvider: ({ children }: NonEVMProviderProps) => JSX.Element;
 export declare const useNonEVMReact: () => {
     isConnecting: boolean;
     isConnected: boolean;

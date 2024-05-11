@@ -141,6 +141,8 @@ export class MetaMask extends Connector {
     let cancelActivation: () => void;
     if (!this.provider?.isConnected?.())
       cancelActivation = this.actions.startActivation();
+    
+    console.log('eth_5')
 
     return this.isomorphicInitialize()
       .then(async () => {
@@ -152,15 +154,20 @@ export class MetaMask extends Connector {
             string[]
           >,
         ]).then(([chainId, accounts]) => {
+          console.log('eth_1', chainId, accounts)
           const receivedChainId = parseChainId(chainId);
           const desiredChainId =
             typeof desiredChainIdOrChainParameters === "number"
               ? desiredChainIdOrChainParameters
               : desiredChainIdOrChainParameters?.chainId;
+            
+          console.log('eth_2')
 
           // if there's no desired chain, or it's equal to the received, update
           if (!desiredChainId || receivedChainId === desiredChainId)
             return this.actions.update({ chainId: receivedChainId, accounts });
+
+          console.log('eth_3', this.provider, window.ethereum)
 
           const desiredChainIdHex = `0x${desiredChainId.toString(16)}`;
 
@@ -171,6 +178,7 @@ export class MetaMask extends Connector {
             params: [{ chainId: desiredChainIdHex }],
           })
             .catch((error: ProviderRpcError) => {
+              console.log('eth_4')
               if (
                 error.code === 4902 &&
                 typeof desiredChainIdOrChainParameters !== "number"
