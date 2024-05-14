@@ -29,6 +29,6 @@ export declare const useNonEVMReact: () => {
     disconnect: () => void;
     connector: Connector | null;
     signMessage: (message?: string) => Promise<string | undefined>;
-    connectEagerly: (connectorName: NonEVMConnectorName) => Promise<void>;
+    connectEagerly: (connectorName: Exclude<NonEVMConnectorName, "Sui">) => Promise<void>;
 };
 export {};

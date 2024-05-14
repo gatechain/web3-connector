@@ -97,7 +97,7 @@ const nonEVMReducer = (state, action) => {
     }
 };
 const NonEVMProvider = ({ children }) => {
-    return react_1.default.createElement(react_1.default.Fragment, null, "children");
+    return react_1.default.createElement(wallet_kit_1.WalletProvider, null, children);
 };
 exports.NonEVMProvider = NonEVMProvider;
 const useNonEVMReact = () => {
@@ -146,60 +146,88 @@ const useNonEVMReact = () => {
         Phantom: phantom_1.PhantomConnector.getInstance(defaultConnectorOptions),
     }), [defaultConnectorOptions]);
     const connector = (0, react_1.useMemo)(() => {
-        if (!ctx.connectorName)
+        if (!ctx.connectorName || ctx.connectorName === "Sui")
             return null;
         return ConnectorMap[ctx.connectorName];
     }, [ConnectorMap, ctx.connectorName]);
+    const wallet = (0, wallet_kit_1.useWallet)();
     const disconnect = (0, react_1.useCallback)(() => {
         var _a, _b;
         ctx.dispatch({ type: "disconnected" });
         connector === null || connector === void 0 ? void 0 : connector.disconnect();
+        wallet.disconnect().catch(() => { });
         const storage = (0, connection_1.getStorage)();
         const connection = (0, connection_1.getConnection)(storage.getItem(connection_1.selectedWalletKey));
         (_b = (_a = connection === null || connection === void 0 ? void 0 : connection.connector) === null || _a === void 0 ? void 0 : _a.deactivate) === null || _b === void 0 ? void 0 : _b.call(_a);
         storage.removeItem(connection_1.selectedWalletKey);
-    }, [connector, ctx]);
+    }, [connector, ctx, wallet]);
     const connect = (0, react_1.useCallback)((connectorName) => __awaiter(void 0, void 0, void 0, function* () {
-        var _a, _b, _c;
+        var _a, _b, _c, _d, _e, _f;
         try {
             if (ctx.isConnected) {
-                disconnect();
+                if (connectorName === "Sui" && ctx.connectorName === "Sui") {
+                }
+                else {
+                    disconnect();
+                }
             }
             // TODO: avoid dispatch if is connected
             ctx.dispatch({
                 type: "on connect",
                 connectorName,
             });
-            const { address, publicKey, network, gateAccountInfo } = (yield ConnectorMap[connectorName].connect()) || {};
-            console.log("address", address);
-            const storage = (0, connection_1.getStorage)();
-            const map = {
-                Unisat: types_1.ConnectionType.Unisat,
-                GateWallet: types_1.ConnectionType.GATEWALLET,
-                Phantom: types_1.ConnectionType.PHANTOM,
-            };
-            storage.setItem(connection_1.selectedWalletKey, map[connectorName]);
-            const hasEvmNetwork = !!((_a = gateAccountInfo === null || gateAccountInfo === void 0 ? void 0 : gateAccountInfo.accountNetworkArr) === null || _a === void 0 ? void 0 : _a.find((x) => x.network === "EVM"));
-            if (hasEvmNetwork) {
-                const connection = (0, connection_1.getConnection)(types_1.ConnectionType.GATEWALLET);
-                (_c = (_b = connection.connector).connectEagerly) === null || _c === void 0 ? void 0 : _c.call(_b);
+            if (connectorName === "Sui") {
+                const allWallets = [
+                    ...wallet.configuredWallets,
+                    ...wallet.detectedWallets,
+                ];
+                const suietWallet = allWallets.find((x) => x.name === "Suiet");
+                console.log(suietWallet, suietWallet === null || suietWallet === void 0 ? void 0 : suietWallet.installed);
+                if (!(suietWallet === null || suietWallet === void 0 ? void 0 : suietWallet.installed))
+                    return;
+                console.log("sui", suietWallet.installed);
+                yield wallet.select(suietWallet.name);
+                const address = (_c = (_b = (_a = suietWallet.adapter) === null || _a === void 0 ? void 0 : _a.accounts) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.address;
+                console.log("walletaddress", address, suietWallet);
+                const storage = (0, connection_1.getStorage)();
+                storage.setItem(connection_1.selectedWalletKey, "Sui");
+                ctx.dispatch({
+                    type: "connected",
+                    connectorName,
+                    address: address,
+                });
             }
-            ctx.dispatch({
-                type: "connected",
-                connectorName,
-                address,
-                publicKey,
-                network,
-                gateAccountInfo,
-            });
+            else {
+                const { address, publicKey, network, gateAccountInfo } = (yield ConnectorMap[connectorName].connect()) || {};
+                const storage = (0, connection_1.getStorage)();
+                const map = {
+                    Unisat: types_1.ConnectionType.Unisat,
+                    GateWallet: types_1.ConnectionType.GATEWALLET,
+                    Phantom: types_1.ConnectionType.PHANTOM,
+                };
+                storage.setItem(connection_1.selectedWalletKey, map[connectorName]);
+                const hasEvmNetwork = !!((_d = gateAccountInfo === null || gateAccountInfo === void 0 ? void 0 : gateAccountInfo.accountNetworkArr) === null || _d === void 0 ? void 0 : _d.find((x) => x.network === "EVM"));
+                if (hasEvmNetwork) {
+                    const connection = (0, connection_1.getConnection)(types_1.ConnectionType.GATEWALLET);
+                    (_f = (_e = connection.connector).connectEagerly) === null || _f === void 0 ? void 0 : _f.call(_e);
+                }
+                ctx.dispatch({
+                    type: "connected",
+                    connectorName,
+                    address,
+                    publicKey,
+                    network,
+                    gateAccountInfo,
+                });
+            }
         }
         catch (error) {
             ctx.dispatch({ type: "connect failed" });
             throw error;
         }
-    }), [ConnectorMap, ctx, disconnect]);
+    }), [ConnectorMap, ctx, disconnect, wallet]);
     const connectEagerly = (0, react_1.useCallback)((connectorName) => __awaiter(void 0, void 0, void 0, function* () {
-        var _d, _e, _f;
+        var _g, _h, _j;
         try {
             if (ctx.isConnected) {
                 disconnect();
@@ -217,10 +245,10 @@ const useNonEVMReact = () => {
                 Phantom: types_1.ConnectionType.PHANTOM,
             };
             storage.setItem(connection_1.selectedWalletKey, map[connectorName]);
-            const hasEvmNetwork = !!((_d = gateAccountInfo === null || gateAccountInfo === void 0 ? void 0 : gateAccountInfo.accountNetworkArr) === null || _d === void 0 ? void 0 : _d.find((x) => x.network === "EVM"));
+            const hasEvmNetwork = !!((_g = gateAccountInfo === null || gateAccountInfo === void 0 ? void 0 : gateAccountInfo.accountNetworkArr) === null || _g === void 0 ? void 0 : _g.find((x) => x.network === "EVM"));
             if (hasEvmNetwork) {
                 const connection = (0, connection_1.getConnection)(types_1.ConnectionType.GATEWALLET);
-                (_f = (_e = connection.connector).connectEagerly) === null || _f === void 0 ? void 0 : _f.call(_e);
+                (_j = (_h = connection.connector).connectEagerly) === null || _j === void 0 ? void 0 : _j.call(_h);
             }
             ctx.dispatch({
                 type: "connected",
@@ -235,12 +263,11 @@ const useNonEVMReact = () => {
             ctx.dispatch({ type: "connect failed" });
             throw error;
         }
-    }), [ConnectorMap, ctx, disconnect]);
+    }), [ConnectorMap, ctx, disconnect, wallet]);
     const signMessage = (0, react_1.useCallback)((message) => __awaiter(void 0, void 0, void 0, function* () {
-        var _g;
-        return (_g = connector === null || connector === void 0 ? void 0 : connector.signMessage) === null || _g === void 0 ? void 0 : _g.call(connector, message);
+        var _k;
+        return (_k = connector === null || connector === void 0 ? void 0 : connector.signMessage) === null || _k === void 0 ? void 0 : _k.call(connector, message);
     }), [connector]);
-    const wallet = (0, wallet_kit_1.useWallet)();
     return {
         isConnecting: ctx.isConnecting,
         isConnected: ctx.isConnected,

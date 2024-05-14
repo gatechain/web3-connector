@@ -3,4 +3,4 @@ export * from "@web3-react/types";
 export * from "./connection";
 export * from "./types";
 export * from "./utils";
-export { useNonEVMReact } from "./nonEvm/context";
+export { useNonEVMReact, NonEVMProvider } from "./nonEvm/context";

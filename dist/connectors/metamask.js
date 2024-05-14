@@ -137,7 +137,6 @@ class MetaMask extends types_1.Connector {
             let cancelActivation;
             if (!((_b = (_a = this.provider) === null || _a === void 0 ? void 0 : _a.isConnected) === null || _b === void 0 ? void 0 : _b.call(_a)))
                 cancelActivation = this.actions.startActivation();
-            console.log('eth_5');
             return this.isomorphicInitialize()
                 .then(() => __awaiter(this, void 0, void 0, function* () {
                 if (!this.provider)
@@ -146,16 +145,13 @@ class MetaMask extends types_1.Connector {
                     this.provider.request({ method: "eth_chainId" }),
                     this.provider.request({ method: "eth_requestAccounts" }),
                 ]).then(([chainId, accounts]) => {
-                    console.log('eth_1', chainId, accounts);
                     const receivedChainId = parseChainId(chainId);
                     const desiredChainId = typeof desiredChainIdOrChainParameters === "number"
                         ? desiredChainIdOrChainParameters
                         : desiredChainIdOrChainParameters === null || desiredChainIdOrChainParameters === void 0 ? void 0 : desiredChainIdOrChainParameters.chainId;
-                    console.log('eth_2');
                     // if there's no desired chain, or it's equal to the received, update
                     if (!desiredChainId || receivedChainId === desiredChainId)
                         return this.actions.update({ chainId: receivedChainId, accounts });
-                    console.log('eth_3', this.provider, window.ethereum);
                     const desiredChainIdHex = `0x${desiredChainId.toString(16)}`;
                     // if we're here, we can try to switch networks
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -164,7 +160,6 @@ class MetaMask extends types_1.Connector {
                         params: [{ chainId: desiredChainIdHex }],
                     })
                         .catch((error) => {
-                        console.log('eth_4');
                         if (error.code === 4902 &&
                             typeof desiredChainIdOrChainParameters !== "number") {
                             // if we're here, we can try to add a new network

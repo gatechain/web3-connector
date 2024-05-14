@@ -7,7 +7,8 @@ export enum ConnectionType {
   PHANTOM = "PHANTOM",
   WALLET_CONNECT = "WALLET_CONNECT",
   WALLET_CONNECT_NOTQR = "WALLET_CONNECT_NOTQR",
-  Unisat = "UNISAT"
+  Unisat = "UNISAT",
+  SUI = "SUI"
 }
 
 export interface Connection {
