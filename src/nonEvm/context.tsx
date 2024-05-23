@@ -152,7 +152,7 @@ const nonEVMReducer = (state: State, action: Action): State => {
 };
 
 export const NonEVMProvider = ({ children }: NonEVMProviderProps) => {
-  return <WalletProvider>{children}</WalletProvider>;
+  return <WalletProvider autoConnect={false}>{children}</WalletProvider>;
 };
 
 export const useNonEVMReact = () => {

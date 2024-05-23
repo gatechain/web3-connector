@@ -97,7 +97,7 @@ const nonEVMReducer = (state, action) => {
     }
 };
 const NonEVMProvider = ({ children }) => {
-    return react_1.default.createElement(wallet_kit_1.WalletProvider, null, children);
+    return react_1.default.createElement(wallet_kit_1.WalletProvider, { autoConnect: false }, children);
 };
 exports.NonEVMProvider = NonEVMProvider;
 const useNonEVMReact = () => {
