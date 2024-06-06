@@ -12,7 +12,6 @@ import { ConnectionType } from "../types";
 
 import { create } from "zustand";
 import { PhantomConnector } from "./connectors/phantom";
-import { SuiWallet, WalletProvider, useWallet } from "@suiet/wallet-kit";
 
 type Action =
   | { type: "on connect"; connectorName: NonEVMConnectorName }
@@ -152,7 +151,7 @@ const nonEVMReducer = (state: State, action: Action): State => {
 };
 
 export const NonEVMProvider = ({ children }: NonEVMProviderProps) => {
-  return <WalletProvider autoConnect={false}>{children}</WalletProvider>;
+  return children;
 };
 
 export const useNonEVMReact = () => {
@@ -214,16 +213,13 @@ export const useNonEVMReact = () => {
   );
 
   const connector = useMemo(() => {
-    if (!ctx.connectorName || ctx.connectorName === "Sui") return null;
+    if (!ctx.connectorName) return null;
     return ConnectorMap[ctx.connectorName];
   }, [ConnectorMap, ctx.connectorName]);
-
-  const wallet = useWallet();
 
   const disconnect = useCallback(() => {
     ctx.dispatch({ type: "disconnected" });
     connector?.disconnect();
-    wallet.disconnect().catch(() => {});
 
     const storage = getStorage();
 
@@ -232,16 +228,13 @@ export const useNonEVMReact = () => {
     );
     connection?.connector?.deactivate?.();
     storage.removeItem(selectedWalletKey);
-  }, [connector, ctx, wallet]);
+  }, [connector, ctx]);
 
   const connect = useCallback(
     async (connectorName: NonEVMConnectorName) => {
       try {
         if (ctx.isConnected) {
-          if (connectorName === "Sui" && ctx.connectorName === "Sui") {
-          } else {
-            disconnect();
-          }
+          disconnect();
         }
 
         // TODO: avoid dispatch if is connected
@@ -250,69 +243,42 @@ export const useNonEVMReact = () => {
           connectorName,
         });
 
-        if (connectorName === "Sui") {
-          const allWallets = [
-            ...wallet.configuredWallets,
-            ...wallet.detectedWallets,
-          ];
-          const suietWallet = allWallets.find((x) => x.name === "Suiet");
-          console.log(suietWallet, suietWallet?.installed);
+        const { address, publicKey, network, gateAccountInfo } =
+          (await ConnectorMap[connectorName].connect()) || {};
 
-          if (!suietWallet?.installed) return;
+        const storage = getStorage();
 
-          console.log("sui", suietWallet.installed);
+        const map = {
+          Unisat: ConnectionType.Unisat,
+          GateWallet: ConnectionType.GATEWALLET,
+          Phantom: ConnectionType.PHANTOM,
+        };
 
-          await wallet.select(suietWallet.name);
+        storage.setItem(selectedWalletKey, map[connectorName]);
 
-          const address = suietWallet.adapter?.accounts?.[0]?.address;
+        const hasEvmNetwork = !!gateAccountInfo?.accountNetworkArr?.find(
+          (x: any) => x.network === "EVM"
+        );
 
-          console.log("walletaddress", address, suietWallet);
-          const storage = getStorage();
-          storage.setItem(selectedWalletKey, "Sui");
-
-          ctx.dispatch({
-            type: "connected",
-            connectorName,
-            address: address,
-          });
-        } else {
-          const { address, publicKey, network, gateAccountInfo } =
-            (await ConnectorMap[connectorName].connect()) || {};
-
-          const storage = getStorage();
-
-          const map = {
-            Unisat: ConnectionType.Unisat,
-            GateWallet: ConnectionType.GATEWALLET,
-            Phantom: ConnectionType.PHANTOM,
-          };
-
-          storage.setItem(selectedWalletKey, map[connectorName]);
-
-          const hasEvmNetwork = !!gateAccountInfo?.accountNetworkArr?.find(
-            (x: any) => x.network === "EVM"
-          );
-
-          if (hasEvmNetwork) {
-            const connection = getConnection(ConnectionType.GATEWALLET);
-            connection.connector.connectEagerly?.();
-          }
-
-          ctx.dispatch({
-            type: "connected",
-            connectorName,
-            address,
-            publicKey,
-            network,
-            gateAccountInfo,
-          });
+        if (hasEvmNetwork) {
+          const connection = getConnection(ConnectionType.GATEWALLET);
+          connection.connector.connectEagerly?.();
         }
+
+        ctx.dispatch({
+          type: "connected",
+          connectorName,
+          address,
+          publicKey,
+          network,
+          gateAccountInfo,
+        });
       } catch (error) {
         ctx.dispatch({ type: "connect failed" });
         throw error;
       }
     },
-    [ConnectorMap, ctx, disconnect, wallet]
+    [ConnectorMap, ctx, disconnect]
   );
 
   const connectEagerly = useCallback(
@@ -363,7 +329,7 @@ export const useNonEVMReact = () => {
         throw error;
       }
     },
-    [ConnectorMap, ctx, disconnect, wallet]
+    [ConnectorMap, ctx, disconnect]
   );
 
   const signMessage = useCallback(

@@ -17,6 +17,12 @@ export class WalletConnectV2 extends WalletConnect {
     super({
       actions,
       options: {
+        metadata: {
+          name: "",
+          description: "",
+          url: "",
+          icons: [],
+        },
         projectId: "49cf6ec6179f8d21bf525adc78d6900a",
         chains: [defaultChainId || 1],
         optionalChains: [56],
