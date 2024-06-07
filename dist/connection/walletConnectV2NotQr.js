@@ -7,17 +7,18 @@ const walletConnectV2_1 = require("../connectors/walletConnectV2");
 // c6c9bacd35afa3eb9e6cccf6d8464395
 class WalletConnectNotQrConnector {
     constructor() { }
-    static getInstance() {
+    static getInstance(metadata) {
         if (!this.instance) {
             this.instance = (0, core_1.initializeConnector)((actions) => new walletConnectV2_1.GatewalletConnect({
                 actions,
                 defaultChainId: 1,
+                metadata,
             }));
         }
         return this.instance;
     }
-    static getConnection() {
-        const [web3WalletConnect, web3WalletConnectHooks] = WalletConnectNotQrConnector.getInstance();
+    static getConnection(metadata) {
+        const [web3WalletConnect, web3WalletConnectHooks] = WalletConnectNotQrConnector.getInstance(metadata);
         const walletConnectNotQrConnection = {
             connector: web3WalletConnect,
             hooks: web3WalletConnectHooks,

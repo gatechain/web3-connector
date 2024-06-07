@@ -40,12 +40,12 @@ function initConnector() {
     ];
 }
 exports.initConnector = initConnector;
-function getConnectionMap() {
+function getConnectionMap(metadata) {
     const phantomConnection = phantom_1.PhantomConnector.getConnection();
     const injectedConnection = metaMask_1.MetaMaskConnector.getConnection();
     const getWalletConnection = gateWallet_1.GateWalletConnector.getConnection();
     const walletConnectConnection = walletConnectV2_1.WalletConnectConnector.getConnection();
-    const walletConnectNotQrConnection = walletConnectV2NotQr_1.WalletConnectNotQrConnector.getConnection();
+    const walletConnectNotQrConnection = walletConnectV2NotQr_1.WalletConnectNotQrConnector.getConnection(metadata);
     return [
         injectedConnection,
         phantomConnection,
@@ -55,8 +55,8 @@ function getConnectionMap() {
     ];
 }
 exports.getConnectionMap = getConnectionMap;
-function getConnection(c) {
-    const CONNECTIONS = getConnectionMap();
+function getConnection(c, metadata) {
+    const CONNECTIONS = getConnectionMap(metadata);
     if (c instanceof types_1.Connector) {
         const connection = CONNECTIONS.find((connection) => connection.connector === c);
         if (!connection) {
@@ -116,10 +116,10 @@ function useEagerlyConnect(onError) {
     }, []);
 }
 exports.useEagerlyConnect = useEagerlyConnect;
-function connectWallet(connectionType, resolve, reject) {
+function connectWallet(connectionType, resolve, reject, metadata) {
     var _a, _b, _c;
     const storage = getStorage();
-    let connection = getConnection(connectionType);
+    let connection = getConnection(connectionType, metadata);
     if (!connection) {
         return;
     }

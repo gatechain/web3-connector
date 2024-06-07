@@ -14,3 +14,9 @@ export interface Connection {
     hooks: Web3ReactHooks;
     type: ConnectionType;
 }
+export type MetadataType = {
+    name?: string;
+    description?: string;
+    url?: string;
+    icons?: Array<string>;
+};

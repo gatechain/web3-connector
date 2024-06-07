@@ -3,15 +3,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GatewalletConnect = exports.WalletConnectV2 = void 0;
 const walletconnect_v2_1 = require("@web3-react/walletconnect-v2");
 class WalletConnectV2 extends walletconnect_v2_1.WalletConnect {
-    constructor({ actions, defaultChainId, qrcode = true, onError, }) {
+    constructor({ actions, defaultChainId, qrcode = true, metadata, onError, }) {
         super({
             actions,
             options: {
                 metadata: {
-                    name: "",
-                    description: "",
-                    url: "",
-                    icons: [],
+                    name: (metadata === null || metadata === void 0 ? void 0 : metadata.name) || 'Gate Web3',
+                    description: (metadata === null || metadata === void 0 ? void 0 : metadata.description) || 'GateWeb3 WalletConnect',
+                    url: (metadata === null || metadata === void 0 ? void 0 : metadata.url) || 'https://www.gate.io/web3',
+                    icons: (metadata === null || metadata === void 0 ? void 0 : metadata.icons) || ['https://www.gate.io/images/apple-touch-icon-120x120.png'],
                 },
                 projectId: "49cf6ec6179f8d21bf525adc78d6900a",
                 chains: [defaultChainId || 1],
@@ -43,9 +43,9 @@ class WalletConnectV2 extends walletconnect_v2_1.WalletConnect {
 exports.WalletConnectV2 = WalletConnectV2;
 // Custom class for Gate Wallet specific functionality
 class GatewalletConnect extends WalletConnectV2 {
-    constructor({ actions, onError, }) {
+    constructor({ actions, metadata, onError, }) {
         // disables walletconnect's proprietary qr code modal; instead GatewalletModal will listen for events to trigger our custom modal
-        super({ actions, defaultChainId: 1, qrcode: false, onError });
+        super({ actions, defaultChainId: 1, qrcode: false, metadata, onError });
         this.ANALYTICS_EVENT = "Gate Wallet QR Scan";
         this.events.once(walletconnect_v2_1.URI_AVAILABLE, () => {
             var _a;
