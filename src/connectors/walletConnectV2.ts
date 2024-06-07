@@ -22,10 +22,10 @@ export class WalletConnectV2 extends WalletConnect {
       actions,
       options: {
         metadata: {
-          name: metadata?.name || 'Gate Web3',
-          description: metadata?.description || 'GateWeb3 WalletConnect',
-          url: metadata?.url || 'https://www.gate.io/web3',
-          icons: metadata?.icons || ['https://www.gate.io/images/apple-touch-icon-120x120.png'],
+          name: 'GateWallet',
+          description: 'GateWallet WalletConnect',
+          url: 'https://www.gate.io/web3',
+          icons: ['https://www.gate.io/images/apple-touch-icon-120x120.png'],
         },
         projectId: "49cf6ec6179f8d21bf525adc78d6900a",
         chains: [defaultChainId || 1],

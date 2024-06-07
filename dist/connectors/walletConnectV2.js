@@ -8,10 +8,10 @@ class WalletConnectV2 extends walletconnect_v2_1.WalletConnect {
             actions,
             options: {
                 metadata: {
-                    name: (metadata === null || metadata === void 0 ? void 0 : metadata.name) || 'Gate Web3',
-                    description: (metadata === null || metadata === void 0 ? void 0 : metadata.description) || 'GateWeb3 WalletConnect',
-                    url: (metadata === null || metadata === void 0 ? void 0 : metadata.url) || 'https://www.gate.io/web3',
-                    icons: (metadata === null || metadata === void 0 ? void 0 : metadata.icons) || ['https://www.gate.io/images/apple-touch-icon-120x120.png'],
+                    name: 'GateWallet',
+                    description: 'GateWallet WalletConnect',
+                    url: 'https://www.gate.io/web3',
+                    icons: ['https://www.gate.io/images/apple-touch-icon-120x120.png'],
                 },
                 projectId: "49cf6ec6179f8d21bf525adc78d6900a",
                 chains: [defaultChainId || 1],
