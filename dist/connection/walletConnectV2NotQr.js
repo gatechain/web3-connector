@@ -15,6 +15,15 @@ class WalletConnectNotQrConnector {
                 metadata,
             }));
         }
+        // 因子应用中调用了getConnectors，导致instance有值，因此这里根据metadata情况，再创建一次实例。
+        if (this.instance && metadata) {
+            this.instance = null;
+            this.instance = (0, core_1.initializeConnector)((actions) => new walletConnectV2_1.GatewalletConnect({
+                actions,
+                defaultChainId: 1,
+                metadata,
+            }));
+        }
         return this.instance;
     }
     static getConnection(metadata) {
