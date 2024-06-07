@@ -3,25 +3,29 @@ import {
   WalletConnectConstructorArgs,
   URI_AVAILABLE,
 } from "@web3-react/walletconnect-v2";
+import { MetadataType } from "../types";
+
 export class WalletConnectV2 extends WalletConnect {
   ANALYTICS_EVENT = "Wallet Connect QR Scan";
   constructor({
     actions,
     defaultChainId,
     qrcode = true,
+    metadata,
     onError,
   }: Omit<WalletConnectConstructorArgs, "options"> & {
     defaultChainId: number;
     qrcode?: boolean;
+    metadata?: MetadataType;
   }) {
     super({
       actions,
       options: {
         metadata: {
-          name: "",
-          description: "",
-          url: "",
-          icons: [],
+          name: metadata?.name || 'Gate Web3',
+          description: metadata?.description || 'GateWeb3 WalletConnect',
+          url: metadata?.url || 'https://www.gate.io/web3',
+          icons: metadata?.icons || ['https://www.gate.io/images/apple-touch-icon-120x120.png'],
         },
         projectId: "49cf6ec6179f8d21bf525adc78d6900a",
         chains: [defaultChainId || 1],
@@ -57,10 +61,15 @@ export class GatewalletConnect extends WalletConnectV2 {
 
   constructor({
     actions,
+    metadata,
     onError,
-  }: Omit<WalletConnectConstructorArgs, "options">) {
+  }: Omit<WalletConnectConstructorArgs, "options"> & {
+    defaultChainId: number;
+    qrcode?: boolean;
+    metadata?: MetadataType;
+  }) {
     // disables walletconnect's proprietary qr code modal; instead GatewalletModal will listen for events to trigger our custom modal
-    super({ actions, defaultChainId: 1, qrcode: false, onError });
+    super({ actions, defaultChainId: 1, qrcode: false, metadata, onError });
 
     this.events.once(URI_AVAILABLE, () => {
       this.provider?.events.on("disconnect", this.deactivate);

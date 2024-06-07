@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Web3ReactHooks } from "@web3-react/core";
 import { Connector } from "@web3-react/types";
-import { Connection, ConnectionType } from "../types";
+import { Connection, ConnectionType, MetadataType } from "../types";
 import { createStorage, noopStorage } from "../storage";
 import { MetaMaskConnector, MetaMask } from "./metaMask";
 import { PhantomConnector, Phantom } from "./phantom";
@@ -38,13 +38,13 @@ export function initConnector(): InitConnectorReturnType {
   ];
 }
 
-export function getConnectionMap(): Connection[] {
+export function getConnectionMap(metadata?: MetadataType): Connection[] {
   const phantomConnection = PhantomConnector.getConnection();
   const injectedConnection = MetaMaskConnector.getConnection();
   const getWalletConnection = GateWalletConnector.getConnection();
   const walletConnectConnection = WalletConnectConnector.getConnection();
   const walletConnectNotQrConnection =
-    WalletConnectNotQrConnector.getConnection();
+    WalletConnectNotQrConnector.getConnection(metadata);
 
   return [
     injectedConnection,
@@ -55,8 +55,8 @@ export function getConnectionMap(): Connection[] {
   ];
 }
 
-export function getConnection(c: Connector | ConnectionType): Connection {
-  const CONNECTIONS = getConnectionMap();
+export function getConnection(c: Connector | ConnectionType, metadata?: MetadataType): Connection {
+  const CONNECTIONS = getConnectionMap(metadata);
 
   if (c instanceof Connector) {
     const connection = CONNECTIONS.find(
@@ -126,10 +126,11 @@ export function useEagerlyConnect(onError?: Function) {
 export function connectWallet(
   connectionType: ConnectionType,
   resolve?: (uri: string) => void,
-  reject?: (err: any) => void
+  reject?: (err: any) => void,
+  metadata?: MetadataType
 ) {
   const storage = getStorage();
-  let connection: Connection = getConnection(connectionType);
+  let connection: Connection = getConnection(connectionType, metadata);
   if (!connection) {
     return;
   }
