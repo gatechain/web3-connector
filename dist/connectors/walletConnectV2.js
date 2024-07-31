@@ -15,7 +15,7 @@ class WalletConnectV2 extends walletconnect_v2_1.WalletConnect {
                 },
                 projectId: "49cf6ec6179f8d21bf525adc78d6900a",
                 chains: [defaultChainId || 1],
-                optionalChains: [56],
+                optionalChains: [10, 56, 86, 137, 324, 42161, 43114, 81457],
                 showQrModal: qrcode,
                 optionalMethods: [
                     "eth_signTypedData",
