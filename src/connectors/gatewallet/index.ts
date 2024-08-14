@@ -219,11 +219,12 @@ export class GateWallet extends Connector {
         const result = await this.provider?.connect?.().catch((err) => {
           throw err;
         });
-        console.log("result", result);
+
+        const provider = (window as any).gatewallet || this.provider
 
         return Promise.all([
-          this.provider.request({ method: "eth_chainId" }) as Promise<string>,
-          this.provider.request({ method: "eth_requestAccounts" }) as Promise<
+          provider.request({ method: "eth_chainId" }) as Promise<string>,
+          provider.request({ method: "eth_requestAccounts" }) as Promise<
             string[]
           >,
         ]).then(([chainId, accounts]) => {
@@ -242,7 +243,7 @@ export class GateWallet extends Connector {
 
           // if we're here, we can try to switch networks
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return this.provider!.request({
+          return provider!.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: desiredChainIdHex }],
           })
@@ -253,7 +254,7 @@ export class GateWallet extends Connector {
               ) {
                 // if we're here, we can try to add a new network
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                return this.provider!.request({
+                return provider!.request({
                   method: "wallet_addEthereumChain",
                   params: [
                     {
