@@ -29,12 +29,14 @@ export class WalletConnectV2 extends WalletConnect {
         },
         projectId: "49cf6ec6179f8d21bf525adc78d6900a",
         chains: [defaultChainId || 1],
-        optionalChains: [10, 56, 86, 137, 324, 42161, 43114, 81457],
+        optionalChains: [10, 56, 86, 137, 324, 42161, 43114, 81457, 42793, 2222, 66, 59144, 169, 397],
         showQrModal: qrcode,
         optionalMethods: [
           "eth_signTypedData",
           "eth_signTypedData_v4",
           "eth_sign",
+          'wallet_switchEthereumChain',
+          'wallet_addEthereumChain'
         ],
         qrModalOptions: {
           explorerRecommendedWalletIds: [
