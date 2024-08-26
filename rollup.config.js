@@ -10,13 +10,13 @@ export default {
     name: "index",
     // format: "cjs",
   },
-  treeshake: {
-    moduleSideEffects: false,
-  },
+  // treeshake: {
+  //   moduleSideEffects: false,
+  // },
   plugins: [
     commonjs({ exclude: ["node_modules/pino-pretty/**"] }),
     ts(),
     json(),
   ],
-  external: ["react"],
+  // external: ["react"],
 };
