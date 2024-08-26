@@ -1,12 +1,12 @@
 {
   "name": "web3-connector",
-  "version": "v0.3.31",
+  "version": "v3.3.4",
   "description": "This is a tool for connecting Web3 wallets.",
   "author": "Thone Liu <thorne_lew@126.com>",
   "homepage": "",
   "license": "ISC",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
   "directories": {},
   "files": [
@@ -17,21 +17,23 @@
   },
   "scripts": {
     "dev": "webpack -c ./webpack.config.js -w",
-    "build": "rm -rf dist/ && rollup -c rollup.config.js",
+    "build": "rm -rf dist/ && rollup -c rollup.config.js --bundleConfigAsCjs",
     "build:tsc": "rm -rf dist/ && tsc"
   },
   "dependencies": {
-    "@suiet/wallet-kit": "^0.2.24",
-    "@web3-react/core": "^8.2.0",
-    "@web3-react/metamask": "^8.2.0",
-    "@web3-react/walletconnect-v2": "^8.3.7"
+    "@metamask/detect-provider": "^2.0.0",
+    "@walletconnect/ethereum-provider": "^2.15.1",
+    "react": "18.2.0"
   },
   "devDependencies": {
-    "rollup": "^4.21.0",
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",
     "@tsconfig/recommended": "^1.0.1",
     "@types/react": "^18.3.4",
-    "react": "^18.3.1",
+    "@web3-react/types": "^8.2.3",
+    "rollup": "^4.21.0",
     "ts-loader": "^9.4.2",
     "typescript": "^5.0.4",
     "webpack": "^5.82.1",
@@ -39,7 +41,7 @@
     "webpack-cli": "^5.1.1"
   },
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
   }
 }
