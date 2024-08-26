@@ -1,0 +1,30 @@
+import { ConnectionType, Network } from "./types";
+import { AbstractWallet } from "./connectors/AbstractWallet";
+import { connectWallet, disconnect } from ".";
+declare let store: IStore;
+export { store };
+type IStore = {
+    chainId?: number | string | null;
+    isActive: boolean;
+    isActivating: boolean;
+    account?: string | null;
+    accounts: string[];
+    gateAccountInfo?: any;
+    currentWallet?: ConnectionType;
+    connector?: AbstractWallet;
+    network?: Network;
+};
+export declare function updateStore(s: Partial<IStore>): void;
+export declare function resetStore(): void;
+export declare function useWeb3React(): IStore;
+export declare function useNonEVMReact(): {
+    isConnected: boolean;
+    isConnecting: boolean;
+    address: string | null | undefined;
+    gateAcountInfo: any;
+    chainId: string | number | null | undefined;
+    connector: AbstractWallet | undefined;
+    connectiorName: ConnectionType | undefined;
+    connect: typeof connectWallet;
+    disconnect: typeof disconnect;
+};
