@@ -220,7 +220,7 @@ class GateWallet extends AbstractWallet {
         }
     }
     handleConnectEvent({ chainId }) {
-        updateStore({ chainId });
+        updateStore({ chainId, isActive: true });
     }
     handleChainChanged(chainId) {
         updateStore({ chainId });

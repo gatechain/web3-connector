@@ -135,7 +135,7 @@ class GateWallet extends AbstractWallet {
   }
 
   private handleConnectEvent({ chainId }: any) {
-    updateStore({ chainId });
+    updateStore({ chainId, isActive: true });
   }
 
   private handleChainChanged(chainId: string) {
