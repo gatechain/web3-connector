@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.useEagerlyConnect = exports.disconnect = exports.connectWallet = exports.useWeb3React = void 0;
+exports.useEagerlyConnect = exports.disconnect = exports.connectWallet = exports.ConnectionType = exports.useNonEVMReact = exports.useWeb3React = void 0;
 const react_1 = require("react");
 const GateWallet_1 = __importDefault(require("./connectors/GateWallet"));
 const MetaMaskWallet_1 = __importDefault(require("./connectors/MetaMaskWallet"));
@@ -11,11 +11,13 @@ const PhantomWallet_1 = __importDefault(require("./connectors/PhantomWallet"));
 const UnisatWallet_1 = __importDefault(require("./connectors/UnisatWallet"));
 const constant_1 = require("./constant");
 const types_1 = require("./types");
+Object.defineProperty(exports, "ConnectionType", { enumerable: true, get: function () { return types_1.ConnectionType; } });
 const useWeb3ReactHook_1 = require("./useWeb3ReactHook");
 const WalletConnect_1 = __importDefault(require("./connectors/WalletConnect"));
 const WalletConnectNoQr_1 = __importDefault(require("./connectors/WalletConnectNoQr"));
 var useWeb3ReactHook_2 = require("./useWeb3ReactHook");
 Object.defineProperty(exports, "useWeb3React", { enumerable: true, get: function () { return useWeb3ReactHook_2.useWeb3React; } });
+Object.defineProperty(exports, "useNonEVMReact", { enumerable: true, get: function () { return useWeb3ReactHook_2.useNonEVMReact; } });
 function connectWallet(connectionType, resolve, reject) {
     const { currentWallet, connector } = useWeb3ReactHook_1.store;
     if (currentWallet) {
