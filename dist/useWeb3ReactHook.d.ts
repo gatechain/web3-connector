@@ -13,6 +13,7 @@ type IStore = {
     currentWallet?: ConnectionType;
     connector?: AbstractWallet;
     network?: Network;
+    provider: any;
 };
 export declare function updateStore(s: Partial<IStore>): void;
 export declare function resetStore(): void;

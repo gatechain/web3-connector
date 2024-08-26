@@ -10,6 +10,7 @@ let initialStore: IStore = {
   isActivating: false,
   account: null,
   accounts: [],
+  provider: undefined
 };
 
 let store: IStore = initialStore;
@@ -26,6 +27,7 @@ type IStore = {
   currentWallet?: ConnectionType;
   connector?: AbstractWallet;
   network?: Network;
+  provider: any;
 };
 
 let listeners: any[] = [];
@@ -42,10 +44,20 @@ function getSnapshot() {
 }
 
 export function updateStore(s: Partial<IStore>) {
-  store = {
-    ...store,
-    ...s,
-  };
+  const provider = s.connector?.provider;
+  if (provider) {
+    store = {
+      ...store,
+      ...s,
+      provider,
+    };
+  } else {
+    store = {
+      ...store,
+      ...s,
+    };
+  }
+
   emitChange();
 }
 
@@ -77,6 +89,6 @@ export function useNonEVMReact() {
     connector: store.connector,
     connectiorName: store.currentWallet,
     connect: connectWallet,
-    disconnect: disconnect
+    disconnect: disconnect,
   };
 }

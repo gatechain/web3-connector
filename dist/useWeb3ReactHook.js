@@ -9,6 +9,7 @@ let initialStore = {
     isActivating: false,
     account: null,
     accounts: [],
+    provider: undefined
 };
 let store = initialStore;
 exports.store = store;
@@ -23,7 +24,14 @@ function getSnapshot() {
     return store;
 }
 function updateStore(s) {
-    exports.store = store = Object.assign(Object.assign({}, store), s);
+    var _a;
+    const provider = (_a = s.connector) === null || _a === void 0 ? void 0 : _a.provider;
+    if (provider) {
+        exports.store = store = Object.assign(Object.assign(Object.assign({}, store), s), { provider });
+    }
+    else {
+        exports.store = store = Object.assign(Object.assign({}, store), s);
+    }
     emitChange();
 }
 exports.updateStore = updateStore;
@@ -53,7 +61,7 @@ function useNonEVMReact() {
         connector: store.connector,
         connectiorName: store.currentWallet,
         connect: _1.connectWallet,
-        disconnect: _1.disconnect
+        disconnect: _1.disconnect,
     };
 }
 exports.useNonEVMReact = useNonEVMReact;
