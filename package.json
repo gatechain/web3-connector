@@ -16,7 +16,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "webpack -c ./webpack.config.js -w",
+    "dev": "rollup -c rollup.config.js --bundleConfigAsCjs --watch",
     "build": "rm -rf dist/ && rollup -c rollup.config.js --bundleConfigAsCjs",
     "build:tsc": "rm -rf dist/ && tsc"
   },
