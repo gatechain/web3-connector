@@ -48,7 +48,7 @@ let initialStore = {
     isActivating: false,
     account: null,
     accounts: [],
-    provider: undefined
+    provider: undefined,
 };
 let store = initialStore;
 let listeners = [];
@@ -62,7 +62,9 @@ function getSnapshot() {
     return store;
 }
 function updateStore(s) {
+    // const isChanged = diff(store, s);
     var _a;
+    // if (!isChanged) return;
     const provider = (_a = s.connector) === null || _a === void 0 ? void 0 : _a.provider;
     if (provider) {
         store = Object.assign(Object.assign(Object.assign({}, store), s), { provider });
@@ -290,11 +292,11 @@ class MetaMaskWallet extends AbstractWallet {
     }
     handleConnectEvent({ chainId }) {
         console.log("connect chainId", chainId);
-        updateStore({ chainId });
+        updateStore({ chainId: parseChainId(chainId) });
     }
     handleChainChanged(chainId) {
         console.log("chainChanged chainId", chainId);
-        updateStore({ chainId });
+        updateStore({ chainId: parseChainId(chainId) });
     }
     /**
      * connect
@@ -785,6 +787,7 @@ class WalletConnectNoQr extends WalletConnect {
         super(Object.assign(Object.assign({}, options), { showQrModal: false }));
         const { setUri } = options;
         this.handleDisplayURI = setUri || function () { };
+        this.activate();
     }
     static getInstance(setUri) {
         if (WalletConnectNoQr.instance)

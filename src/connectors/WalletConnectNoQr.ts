@@ -7,6 +7,7 @@ class WalletConnectNoQr extends WalletConnect {
     super({ ...options, showQrModal: false });
     const { setUri } = options;
     this.handleDisplayURI = setUri || function () {};
+    this.activate()
   }
 
   static instance: WalletConnectNoQr;

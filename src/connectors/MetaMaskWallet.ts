@@ -58,12 +58,12 @@ class MetaMaskWallet extends AbstractWallet {
 
   private handleConnectEvent({ chainId }: any) {
     console.log("connect chainId", chainId);
-    updateStore({ chainId });
+    updateStore({ chainId: parseChainId(chainId) });
   }
 
   private handleChainChanged(chainId: string) {
     console.log("chainChanged chainId", chainId);
-    updateStore({ chainId });
+    updateStore({ chainId: parseChainId(chainId) });
   }
 
   /**

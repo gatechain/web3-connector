@@ -10,7 +10,7 @@ let initialStore: IStore = {
   isActivating: false,
   account: null,
   accounts: [],
-  provider: undefined
+  provider: undefined,
 };
 
 let store: IStore = initialStore;
@@ -43,7 +43,20 @@ function getSnapshot() {
   return store;
 }
 
+function diff(prev: Partial<IStore>, curr: Partial<IStore>) {
+  for (const key in curr) {
+    if (prev[key as keyof IStore] != curr[key as keyof IStore]) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function updateStore(s: Partial<IStore>) {
+  // const isChanged = diff(store, s);
+
+  // if (!isChanged) return;
+
   const provider = s.connector?.provider;
   if (provider) {
     store = {
