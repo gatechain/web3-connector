@@ -44,10 +44,10 @@ var ConnectionType;
 })(ConnectionType || (ConnectionType = {}));
 
 let initialStore = {
-    chainId: null,
+    chainId: undefined,
     isActive: false,
     isActivating: false,
-    account: null,
+    account: undefined,
     accounts: [],
     provider: undefined,
 };

@@ -4,10 +4,10 @@ import { connectWallet, disconnect } from ".";
 declare let store: IStore;
 export { store };
 type IStore = {
-    chainId?: number | string | null;
+    chainId?: number | string;
     isActive: boolean;
     isActivating: boolean;
-    account?: string | null;
+    account?: string;
     accounts: string[];
     gateAccountInfo?: any;
     currentWallet?: ConnectionType;
@@ -21,9 +21,9 @@ export declare function useWeb3React(): IStore;
 export declare function useNonEVMReact(): {
     isConnected: boolean;
     isConnecting: boolean;
-    address: string | null | undefined;
+    address: string | undefined;
     gateAcountInfo: any;
-    chainId: string | number | null | undefined;
+    chainId: string | number | undefined;
     connector: AbstractWallet | undefined;
     connectiorName: ConnectionType | undefined;
     connect: typeof connectWallet;

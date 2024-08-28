@@ -5,10 +5,10 @@ import { connectWallet, disconnect } from ".";
 import { Web3Provider } from "@ethersproject/providers";
 
 let initialStore: IStore = {
-  chainId: null,
+  chainId: undefined,
   isActive: false,
   isActivating: false,
-  account: null,
+  account: undefined,
   accounts: [],
   provider: undefined,
 };
@@ -18,10 +18,10 @@ let store: IStore = initialStore;
 export { store };
 
 type IStore = {
-  chainId?: number | string | null;
+  chainId?: number | string;
   isActive: boolean;
   isActivating: boolean;
-  account?: string | null;
+  account?: string;
   accounts: string[];
   gateAccountInfo?: any;
   currentWallet?: ConnectionType;
