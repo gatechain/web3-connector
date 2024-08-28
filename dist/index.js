@@ -787,7 +787,6 @@ class WalletConnectNoQr extends WalletConnect {
         super(Object.assign(Object.assign({}, options), { showQrModal: false }));
         const { setUri } = options;
         this.handleDisplayURI = setUri || function () { };
-        this.activate();
     }
     activate(desiredChainId = this.defaultChainId) {
         var _a;
