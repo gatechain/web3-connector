@@ -259,7 +259,12 @@ class MetaMaskWallet extends AbstractWallet {
     detectProvider() {
         return detectEthereumProvider()
             .then((provider) => {
+            var _a, _b;
             this.provider = provider;
+            if ((_a = this.provider.providers) === null || _a === void 0 ? void 0 : _a.length) {
+                this.provider =
+                    (_b = this.provider.providers.find((p) => p.isMetaMask)) !== null && _b !== void 0 ? _b : this.provider.providers[0];
+            }
         })
             .catch((error) => {
             console.error(error);
