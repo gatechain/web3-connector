@@ -5,7 +5,7 @@ export type ArrayOneOrMore<T> = {
 export declare function isArrayOneOrMore<T>(input?: T[]): input is ArrayOneOrMore<T>;
 declare class WalletConnect extends AbstractWallet {
     provider: any;
-    private readonly defaultChainId;
+    protected readonly defaultChainId = 1;
     constructor({ showQrModal }: {
         showQrModal: boolean;
     });
@@ -32,7 +32,7 @@ declare class WalletConnect extends AbstractWallet {
     };
     private getChainProps;
     detectProvider(desiredChainId?: number | undefined): Promise<unknown>;
-    private initialize;
+    protected initialize(desiredChainId?: number | undefined): Promise<void>;
     private handleChainChange;
     protected handleDisplayURI(url: string): void;
     connectEagerly(): Promise<void>;

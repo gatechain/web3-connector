@@ -4,6 +4,7 @@ declare class WalletConnectNoQr extends WalletConnect {
     constructor(options: {
         setUri?: UriCallback;
     });
+    activate(desiredChainId?: number): Promise<any>;
     static instance: WalletConnectNoQr;
     static getInstance(setUri?: UriCallback): WalletConnectNoQr;
 }

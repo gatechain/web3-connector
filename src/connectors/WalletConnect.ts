@@ -47,7 +47,7 @@ function getChainsWithDefault(
 class WalletConnect extends AbstractWallet {
   public provider: any;
 
-  private readonly defaultChainId = 1;
+  protected readonly defaultChainId = 1;
 
   constructor({ showQrModal }: { showQrModal: boolean }) {
     super();
@@ -141,7 +141,7 @@ class WalletConnect extends AbstractWallet {
       });
   }
 
-  private async initialize(
+  protected async initialize(
     desiredChainId: number | undefined = this.defaultChainId
   ) {
     await this.detectProvider(desiredChainId);

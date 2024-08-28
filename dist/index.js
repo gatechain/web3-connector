@@ -789,6 +789,48 @@ class WalletConnectNoQr extends WalletConnect {
         this.handleDisplayURI = setUri || function () { };
         this.activate();
     }
+    activate(desiredChainId = this.defaultChainId) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.initialize(desiredChainId);
+            const provider = this.provider;
+            window.wc = provider;
+            if (!provider)
+                return;
+            if (provider.session) {
+                if (!desiredChainId || desiredChainId === provider.chainId)
+                    return;
+                // WalletConnect exposes connected accounts, not chains: `eip155:${chainId}:${address}`
+                const isConnectedToDesiredChain = provider.session.namespaces.eip155.accounts.some((account) => account.startsWith(`eip155:${desiredChainId}:`));
+                if (!isConnectedToDesiredChain) {
+                    if ((_a = this.options.optionalChains) === null || _a === void 0 ? void 0 : _a.includes(desiredChainId)) {
+                        throw new Error(`Cannot activate an optional chain (${desiredChainId}), as the wallet is not connected to it.\n\tYou should handle this error in application code, as there is no guarantee that a wallet is connected to a chain configured in "optionalChains".`);
+                    }
+                    throw new Error(`Unknown chain (${desiredChainId}). Make sure to include any chains you might connect to in the "chains" or "optionalChains" parameters when initializing WalletConnect.`);
+                }
+                return provider.request({
+                    method: "wallet_switchEthereumChain",
+                    params: [{ chainId: `0x${desiredChainId.toString(16)}` }],
+                });
+            }
+            try {
+                yield provider.enable();
+                updateStore({
+                    isActive: true,
+                    chainId: provider.chainId,
+                    accounts: provider.accounts,
+                    account: provider.accounts[0],
+                    connector: this,
+                    currentWallet: ConnectionType.WALLET_CONNECT_NOTQR,
+                });
+            }
+            catch (error) {
+                yield this.deactivate();
+                resetStore();
+                throw error;
+            }
+        });
+    }
     static getInstance(setUri) {
         if (WalletConnectNoQr.instance)
             return WalletConnectNoQr.instance;
