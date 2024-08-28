@@ -5,7 +5,6 @@ import { ConnectionType } from "../types";
 import { selectedWalletKey } from "../constant";
 import { AddEthereumChainParameter, ProviderRpcError } from "@web3-react/types";
 import { parseChainId } from "../utils";
-import { Web3Provider } from "@ethersproject/providers";
 
 class MetaMaskWallet extends AbstractWallet {
   constructor() {
@@ -27,7 +26,7 @@ class MetaMaskWallet extends AbstractWallet {
             provider$1.providers[0]
           : provider$1;
 
-        this.provider = new Web3Provider(provider);
+        this.provider = provider;
       })
       .catch((error) => {
         console.error(error);

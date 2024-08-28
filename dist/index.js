@@ -1,7 +1,7 @@
 import { useSyncExternalStore, useEffect } from 'react';
 import detectEthereumProvider from '@metamask/detect-provider';
-import { Web3Provider } from '@ethersproject/providers';
 import ethProviderModule from '@walletconnect/ethereum-provider';
+import { Web3Provider } from '@ethersproject/providers';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -66,8 +66,12 @@ function updateStore(s) {
     // const isChanged = diff(store, s);
     var _a;
     // if (!isChanged) return;
-    const provider = (_a = s.connector) === null || _a === void 0 ? void 0 : _a.provider;
+    let provider = (_a = s.connector) === null || _a === void 0 ? void 0 : _a.provider;
     if (provider) {
+        if (s.currentWallet === ConnectionType.INJECTED &&
+            !(provider instanceof Web3Provider)) {
+            provider = new Web3Provider(provider);
+        }
         store = Object.assign(Object.assign(Object.assign({}, store), s), { provider });
     }
     else {
@@ -264,7 +268,7 @@ class MetaMaskWallet extends AbstractWallet {
             const provider = ((_a = provider$1 === null || provider$1 === void 0 ? void 0 : provider$1.providers) === null || _a === void 0 ? void 0 : _a.length)
                 ? (_b = provider$1 === null || provider$1 === void 0 ? void 0 : provider$1.providers.find((p) => p.isMetaMask)) !== null && _b !== void 0 ? _b : provider$1.providers[0]
                 : provider$1;
-            this.provider = new Web3Provider(provider);
+            this.provider = provider;
         })
             .catch((error) => {
             console.error(error);

@@ -1,8 +1,8 @@
 import { useSyncExternalStore } from "react";
 import { ConnectionType, Network } from "./types";
 import { AbstractWallet } from "./connectors/AbstractWallet";
-import { parseChainId } from "./utils";
 import { connectWallet, disconnect } from ".";
+import { Web3Provider } from "@ethersproject/providers";
 
 let initialStore: IStore = {
   chainId: null,
@@ -57,8 +57,16 @@ export function updateStore(s: Partial<IStore>) {
 
   // if (!isChanged) return;
 
-  const provider = s.connector?.provider;
+  let provider = s.connector?.provider;
+
   if (provider) {
+    if (
+      s.currentWallet === ConnectionType.INJECTED &&
+      !(provider instanceof Web3Provider)
+    ) {
+      provider = new Web3Provider(provider);
+    }
+
     store = {
       ...store,
       ...s,
