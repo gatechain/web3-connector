@@ -21,6 +21,7 @@
     "build:tsc": "rm -rf dist/ && tsc"
   },
   "dependencies": {
+    "@ethersproject/providers": "^5.7.2",
     "@metamask/detect-provider": "^2.0.0",
     "@walletconnect/ethereum-provider": "^2.15.1",
     "react": "18.2.0"

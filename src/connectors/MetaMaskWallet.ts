@@ -5,6 +5,7 @@ import { ConnectionType } from "../types";
 import { selectedWalletKey } from "../constant";
 import { AddEthereumChainParameter, ProviderRpcError } from "@web3-react/types";
 import { parseChainId } from "../utils";
+import { Web3Provider } from "@ethersproject/providers";
 
 class MetaMaskWallet extends AbstractWallet {
   constructor() {
@@ -20,14 +21,13 @@ class MetaMaskWallet extends AbstractWallet {
    */
   public detectProvider() {
     return detectEthereumProvider()
-      .then((provider) => {
-        this.provider = provider;
+      .then((provider$1: any) => {
+        const provider = provider$1?.providers?.length
+          ? provider$1?.providers.find((p: any) => p.isMetaMask) ??
+            provider$1.providers[0]
+          : provider$1;
 
-        if (this.provider.providers?.length) {
-          this.provider =
-            this.provider.providers.find((p: any) => p.isMetaMask) ??
-            this.provider.providers[0];
-        }
+        this.provider = new Web3Provider(provider);
       })
       .catch((error) => {
         console.error(error);

@@ -1,5 +1,6 @@
 import { useSyncExternalStore, useEffect } from 'react';
 import detectEthereumProvider from '@metamask/detect-provider';
+import { Web3Provider } from '@ethersproject/providers';
 import ethProviderModule from '@walletconnect/ethereum-provider';
 
 /*! *****************************************************************************
@@ -258,13 +259,12 @@ class MetaMaskWallet extends AbstractWallet {
      */
     detectProvider() {
         return detectEthereumProvider()
-            .then((provider) => {
+            .then((provider$1) => {
             var _a, _b;
-            this.provider = provider;
-            if ((_a = this.provider.providers) === null || _a === void 0 ? void 0 : _a.length) {
-                this.provider =
-                    (_b = this.provider.providers.find((p) => p.isMetaMask)) !== null && _b !== void 0 ? _b : this.provider.providers[0];
-            }
+            const provider = ((_a = provider$1 === null || provider$1 === void 0 ? void 0 : provider$1.providers) === null || _a === void 0 ? void 0 : _a.length)
+                ? (_b = provider$1 === null || provider$1 === void 0 ? void 0 : provider$1.providers.find((p) => p.isMetaMask)) !== null && _b !== void 0 ? _b : provider$1.providers[0]
+                : provider$1;
+            this.provider = new Web3Provider(provider);
         })
             .catch((error) => {
             console.error(error);
