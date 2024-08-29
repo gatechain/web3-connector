@@ -18,7 +18,7 @@ let store: IStore = initialStore;
 export { store };
 
 type IStore = {
-  chainId?: number | string;
+  chainId?: number;
   isActive: boolean;
   isActivating: boolean;
   account?: string;

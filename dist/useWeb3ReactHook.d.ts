@@ -4,7 +4,7 @@ import { connectWallet, disconnect } from ".";
 declare let store: IStore;
 export { store };
 type IStore = {
-    chainId?: number | string;
+    chainId?: number;
     isActive: boolean;
     isActivating: boolean;
     account?: string;
@@ -23,7 +23,7 @@ export declare function useNonEVMReact(): {
     isConnecting: boolean;
     address: string | undefined;
     gateAcountInfo: any;
-    chainId: string | number | undefined;
+    chainId: number | undefined;
     connector: AbstractWallet | undefined;
     connectiorName: ConnectionType | undefined;
     connect: typeof connectWallet;
