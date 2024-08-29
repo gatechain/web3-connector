@@ -107,6 +107,10 @@ function useNonEVMReact() {
     };
 }
 
+function parseChainId(chainId) {
+    return Number.parseInt(chainId, 16);
+}
+
 class AbstractWallet {
 }
 
@@ -123,7 +127,7 @@ class GateWallet extends AbstractWallet {
                 updateStore({
                     gateAccountInfo: gateWallet,
                     account: this.provider.selectedAddress,
-                    chainId: this.provider.chainId,
+                    chainId: parseChainId(this.provider.chainId),
                 });
             }
         };
@@ -227,10 +231,10 @@ class GateWallet extends AbstractWallet {
         }
     }
     handleConnectEvent({ chainId }) {
-        updateStore({ chainId, isActive: true });
+        updateStore({ chainId: parseChainId(chainId), isActive: true });
     }
     handleChainChanged(chainId) {
-        updateStore({ chainId });
+        updateStore({ chainId: parseChainId(chainId) });
     }
     deactivate() {
         var _a;
@@ -244,10 +248,6 @@ class GateWallet extends AbstractWallet {
         GateWallet.instance = new GateWallet();
         return GateWallet.instance;
     }
-}
-
-function parseChainId(chainId) {
-    return Number.parseInt(chainId, 16);
 }
 
 class MetaMaskWallet extends AbstractWallet {

@@ -1,6 +1,7 @@
 import { selectedWalletKey } from "../constant";
 import { ConnectionType } from "../types";
 import { resetStore, updateStore } from "../useWeb3ReactHook";
+import { parseChainId } from "../utils";
 import { AbstractWallet } from "./AbstractWallet";
 
 class GateWallet extends AbstractWallet {
@@ -117,7 +118,7 @@ class GateWallet extends AbstractWallet {
       updateStore({
         gateAccountInfo: gateWallet,
         account: this.provider.selectedAddress,
-        chainId: this.provider.chainId,
+        chainId: parseChainId(this.provider.chainId),
       });
     }
   };
@@ -135,11 +136,11 @@ class GateWallet extends AbstractWallet {
   }
 
   private handleConnectEvent({ chainId }: any) {
-    updateStore({ chainId, isActive: true });
+    updateStore({ chainId: parseChainId(chainId), isActive: true });
   }
 
   private handleChainChanged(chainId: string) {
-    updateStore({ chainId });
+    updateStore({ chainId: parseChainId(chainId) });
   }
 
   public deactivate() {
