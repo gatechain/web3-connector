@@ -68,7 +68,7 @@ function updateStore(s) {
     // if (!isChanged) return;
     let provider = (_a = s.connector) === null || _a === void 0 ? void 0 : _a.provider;
     if (provider) {
-        if ([ConnectionType.INJECTED, ConnectionType.WALLET_CONNECT, ConnectionType.WALLET_CONNECT_NOTQR].includes(s.currentWallet) &&
+        if ([ConnectionType.INJECTED, ConnectionType.WALLET_CONNECT, ConnectionType.WALLET_CONNECT_NOTQR, ConnectionType.GATEWALLET].includes(s.currentWallet) &&
             !(provider instanceof Web3Provider)) {
             provider = new Web3Provider(provider);
         }

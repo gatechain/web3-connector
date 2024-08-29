@@ -61,7 +61,7 @@ export function updateStore(s: Partial<IStore>) {
 
   if (provider) {
     if (
-      [ConnectionType.INJECTED, ConnectionType.WALLET_CONNECT, ConnectionType.WALLET_CONNECT_NOTQR].includes(s.currentWallet as ConnectionType) &&
+      [ConnectionType.INJECTED, ConnectionType.WALLET_CONNECT, ConnectionType.WALLET_CONNECT_NOTQR, ConnectionType.GATEWALLET].includes(s.currentWallet as ConnectionType) &&
       !(provider instanceof Web3Provider)
     ) {
       provider = new Web3Provider(provider);
