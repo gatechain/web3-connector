@@ -89,3 +89,23 @@ export function useEagerlyConnect(onError?: Function) {
     selectedWallet.connectEagerly();
   }, []);
 }
+
+type ISWalletType = "MetaMask" | "TokenPocket";
+export interface EthereumProvider {
+  isMetaMask?: boolean;
+  isTokenPocket?: boolean;
+  [key: string]: any;
+}
+export const isWallet = (params: ISWalletType): boolean => {
+  const ethereum = (window as any)?.ethereum as EthereumProvider;
+
+  if (params === "MetaMask") {
+    return ethereum?.isMetaMask || false;
+  }
+
+  if (params === "TokenPocket") {
+    return ethereum?.isTokenPocket || false;
+  }
+
+  return false;
+};
