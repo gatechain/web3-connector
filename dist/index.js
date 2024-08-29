@@ -800,7 +800,6 @@ class WalletConnectNoQr extends WalletConnect {
     activate(desiredChainId = this.defaultChainId) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            this.deactivate();
             yield this.initialize(desiredChainId);
             const provider = this.provider;
             window.wc = provider;
@@ -841,8 +840,10 @@ class WalletConnectNoQr extends WalletConnect {
         });
     }
     static getInstance(setUri) {
-        if (WalletConnectNoQr.instance)
+        if (WalletConnectNoQr.instance) {
+            WalletConnectNoQr.instance.handleDisplayURI = setUri || function () { };
             return WalletConnectNoQr.instance;
+        }
         WalletConnectNoQr.instance = new WalletConnectNoQr({
             setUri,
         });

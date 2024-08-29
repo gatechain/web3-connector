@@ -161,7 +161,7 @@ class WalletConnect extends AbstractWallet {
     });
   }
 
-  protected handleDisplayURI(url: string) {
+  public handleDisplayURI(url: string) {
     console.log("url", url);
   }
 

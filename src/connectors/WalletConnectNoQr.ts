@@ -12,7 +12,6 @@ class WalletConnectNoQr extends WalletConnect {
   }
 
   public async activate(desiredChainId: number = this.defaultChainId) {
-    this.deactivate()
     await this.initialize(desiredChainId);
     const provider = this.provider;
 
@@ -63,7 +62,10 @@ class WalletConnectNoQr extends WalletConnect {
   static instance: WalletConnectNoQr;
 
   static getInstance(setUri?: UriCallback) {
-    if (WalletConnectNoQr.instance) return WalletConnectNoQr.instance;
+    if (WalletConnectNoQr.instance) {
+      WalletConnectNoQr.instance.handleDisplayURI = setUri || function () {};
+      return WalletConnectNoQr.instance;
+    }
     WalletConnectNoQr.instance = new WalletConnectNoQr({
       setUri,
     });
