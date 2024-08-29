@@ -34,7 +34,7 @@ declare class WalletConnect extends AbstractWallet {
     detectProvider(desiredChainId?: number | undefined): Promise<unknown>;
     protected initialize(desiredChainId?: number | undefined): Promise<void>;
     private handleChainChange;
-    handleDisplayURI(url: string): void;
+    protected handleDisplayURI(url: string): void;
     connectEagerly(): Promise<void>;
     activate(desiredChainId?: number): Promise<any>;
     private handleAccountsChanged;

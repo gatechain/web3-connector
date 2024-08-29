@@ -795,7 +795,11 @@ class WalletConnectNoQr extends WalletConnect {
     constructor(options) {
         super(Object.assign(Object.assign({}, options), { showQrModal: false }));
         const { setUri } = options;
-        this.handleDisplayURI = setUri || function () { };
+        this.setUri = setUri || function () { };
+    }
+    setUri(uri) { }
+    handleDisplayURI(url) {
+        this.setUri(url);
     }
     activate(desiredChainId = this.defaultChainId) {
         var _a;
@@ -841,7 +845,7 @@ class WalletConnectNoQr extends WalletConnect {
     }
     static getInstance(setUri) {
         if (WalletConnectNoQr.instance) {
-            WalletConnectNoQr.instance.handleDisplayURI = setUri || function () { };
+            WalletConnectNoQr.instance.setUri = setUri || function () { };
             return WalletConnectNoQr.instance;
         }
         WalletConnectNoQr.instance = new WalletConnectNoQr({
@@ -908,5 +912,15 @@ function useEagerlyConnect(onError) {
         selectedWallet.connectEagerly();
     }, []);
 }
+const isWallet = (params) => {
+    const ethereum = window === null || window === void 0 ? void 0 : window.ethereum;
+    if (params === "MetaMask") {
+        return (ethereum === null || ethereum === void 0 ? void 0 : ethereum.isMetaMask) || false;
+    }
+    if (params === "TokenPocket") {
+        return (ethereum === null || ethereum === void 0 ? void 0 : ethereum.isTokenPocket) || false;
+    }
+    return false;
+};
 
-export { ConnectionType, connectWallet, disconnect, useEagerlyConnect, useNonEVMReact, useWeb3React };
+export { ConnectionType, connectWallet, disconnect, isWallet, useEagerlyConnect, useNonEVMReact, useWeb3React };

@@ -8,7 +8,13 @@ class WalletConnectNoQr extends WalletConnect {
   constructor(options: { setUri?: UriCallback }) {
     super({ ...options, showQrModal: false });
     const { setUri } = options;
-    this.handleDisplayURI = setUri || function () {};
+    this.setUri = setUri || function () {};
+  }
+
+  public setUri(uri: string) {}
+
+  protected handleDisplayURI(url: string): void {
+    this.setUri(url);
   }
 
   public async activate(desiredChainId: number = this.defaultChainId) {
@@ -63,7 +69,7 @@ class WalletConnectNoQr extends WalletConnect {
 
   static getInstance(setUri?: UriCallback) {
     if (WalletConnectNoQr.instance) {
-      WalletConnectNoQr.instance.handleDisplayURI = setUri || function () {};
+      WalletConnectNoQr.instance.setUri = setUri || function () {};
       return WalletConnectNoQr.instance;
     }
     WalletConnectNoQr.instance = new WalletConnectNoQr({
