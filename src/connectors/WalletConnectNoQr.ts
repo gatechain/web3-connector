@@ -12,6 +12,7 @@ class WalletConnectNoQr extends WalletConnect {
   }
 
   public async activate(desiredChainId: number = this.defaultChainId) {
+    this.deactivate()
     await this.initialize(desiredChainId);
     const provider = this.provider;
 
