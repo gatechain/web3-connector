@@ -33,7 +33,7 @@ export function connectWallet(
   connector$1
     .activate()
     .then(() => {
-      localStorage.setItem(selectedWalletKey, connectionType);
+      localStorage.setItem(selectedWalletKey, JSON.stringify(connectionType));
     })
     .catch((err: Error) => {
       console.error(err);
@@ -77,16 +77,23 @@ export function disconnect() {
 
 export function useEagerlyConnect(onError?: Function) {
   useEffect(() => {
-    const selectedWalletString = localStorage.getItem(selectedWalletKey);
+    const selectedWalletString$1 = localStorage.getItem(selectedWalletKey);
 
-    if (!selectedWalletString) {
-      onError?.();
-      return;
+    try {
+      if (!selectedWalletString$1) {
+        onError?.();
+        return;
+      }
+      const selectedWalletString = JSON.parse(selectedWalletString$1);
+
+      const selectedWallet = getConnector(
+        selectedWalletString as ConnectionType
+      );
+
+      selectedWallet.connectEagerly();
+    } catch (error) {
+      console.error(error);
     }
-
-    const selectedWallet = getConnector(selectedWalletString as ConnectionType);
-
-    selectedWallet.connectEagerly();
   }, []);
 }
 
