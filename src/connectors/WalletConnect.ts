@@ -227,7 +227,6 @@ class WalletConnect extends AbstractWallet {
       });
     } catch (error) {
       await this.deactivate();
-      resetStore();
       throw error;
     }
   }

@@ -759,7 +759,6 @@ class WalletConnect extends AbstractWallet {
             }
             catch (error) {
                 yield this.deactivate();
-                resetStore();
                 throw error;
             }
         });
@@ -857,7 +856,7 @@ class WalletConnectNoQr extends WalletConnect {
 
 function connectWallet(connectionType, resolve, reject) {
     const { currentWallet, connector } = store;
-    if (currentWallet) {
+    if (currentWallet && connectionType !== ConnectionType.WALLET_CONNECT_NOTQR) {
         connector === null || connector === void 0 ? void 0 : connector.deactivate();
     }
     const connector$1 = getConnector(connectionType, resolve);

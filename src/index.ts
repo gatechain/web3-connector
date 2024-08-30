@@ -20,7 +20,7 @@ export function connectWallet(
 ) {
   const { currentWallet, connector } = store;
 
-  if (currentWallet) {
+  if (currentWallet && connectionType !== ConnectionType.WALLET_CONNECT_NOTQR) {
     connector?.deactivate();
   }
 
