@@ -207,6 +207,8 @@ class GateWallet extends AbstractWallet {
             try {
                 const gateAccountInfo = yield provider.connect();
                 updateStore({
+                    chainId: parseChainId(provider.chainId),
+                    account: provider.selectedAddress,
                     isActive: true,
                     gateAccountInfo,
                     connector: this,
@@ -231,14 +233,21 @@ class GateWallet extends AbstractWallet {
         }
     }
     handleConnectEvent({ chainId }) {
+        console.log("chainId", chainId);
         updateStore({ chainId: parseChainId(chainId), isActive: true });
     }
     handleChainChanged(chainId) {
         updateStore({ chainId: parseChainId(chainId) });
     }
     deactivate() {
-        var _a;
-        (_a = this.provider) === null || _a === void 0 ? void 0 : _a.removeAllListeners();
+        const provider = this.provider;
+        if (!provider)
+            return;
+        provider.removeListener("connect", this.handleConnectEvent);
+        provider.removeListener("gateAccountChange", this.handleGateAccountChange);
+        provider.removeListener("chainChanged", this.handleChainChanged);
+        provider.removeListener("accountsChanged", this.handleAccountsChanged);
+        provider.removeListener("disconnect", this.deactivate);
         localStorage.removeItem(selectedWalletKey);
         resetStore();
     }
@@ -373,7 +382,7 @@ class MetaMaskWallet extends AbstractWallet {
                 ]);
                 updateStore({
                     isActive: true,
-                    chainId,
+                    chainId: parseChainId(chainId),
                     accounts,
                     account: accounts === null || accounts === void 0 ? void 0 : accounts[0],
                     currentWallet: ConnectionType.INJECTED,
@@ -389,8 +398,13 @@ class MetaMaskWallet extends AbstractWallet {
      * disconnect
      */
     deactivate() {
-        var _a;
-        (_a = this.provider) === null || _a === void 0 ? void 0 : _a.removeAllListeners();
+        const provider = this.provider;
+        if (!provider)
+            return;
+        provider.removeListener("connect", this.handleConnectEvent);
+        provider.removeListener("chainChanged", this.handleChainChanged);
+        provider.removeListener("accountsChanged", this.handleAccountsChanged);
+        provider.removeListener("disconnect", this.deactivate);
         localStorage.removeItem(selectedWalletKey);
         resetStore();
     }
@@ -485,8 +499,12 @@ class PhantomWallet extends AbstractWallet {
         updateStore({ account: publicKey.toBase58() });
     }
     deactivate() {
-        var _a;
-        (_a = this.provider) === null || _a === void 0 ? void 0 : _a.removeAllListeners();
+        const provider = this.provider;
+        if (!provider)
+            return;
+        provider.removeListener("connect", this.handleConnectEvent);
+        provider.removeListener("accountChanged", this.handleAccountsChanged);
+        provider.removeListener("disconnect", this.deactivate);
         localStorage.removeItem(selectedWalletKey);
         resetStore();
     }
@@ -594,8 +612,11 @@ class UnisatWallet extends AbstractWallet {
         }
     }
     deactivate() {
-        var _a;
-        (_a = this.provider) === null || _a === void 0 ? void 0 : _a.removeAllListeners();
+        const provider = this.provider;
+        if (!provider)
+            return;
+        provider.removeListener("networkChanged", this.handleNetworkChanged);
+        provider.removeListener("accountsChanged", this.handleAccountsChanged);
         localStorage.removeItem(selectedWalletKey);
         resetStore();
     }

@@ -155,7 +155,7 @@ class MetaMaskWallet extends AbstractWallet {
 
       updateStore({
         isActive: true,
-        chainId,
+        chainId: parseChainId(chainId),
         accounts,
         account: accounts?.[0],
         currentWallet: ConnectionType.INJECTED,
@@ -170,7 +170,16 @@ class MetaMaskWallet extends AbstractWallet {
    * disconnect
    */
   public deactivate() {
-    this.provider?.removeAllListeners();
+    const provider = this.provider;
+
+    if (!provider) return;
+
+    provider.removeListener("connect", this.handleConnectEvent);
+
+    provider.removeListener("chainChanged", this.handleChainChanged);
+    provider.removeListener("accountsChanged", this.handleAccountsChanged);
+
+    provider.removeListener("disconnect", this.deactivate);
     localStorage.removeItem(selectedWalletKey);
     resetStore();
   }

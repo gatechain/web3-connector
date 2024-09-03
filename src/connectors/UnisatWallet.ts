@@ -108,7 +108,12 @@ class UnisatWallet extends AbstractWallet {
   }
 
   public deactivate() {
-    this.provider?.removeAllListeners();
+    const provider = this.provider;
+
+    if (!provider) return;
+    provider.removeListener("networkChanged", this.handleNetworkChanged);
+
+    provider.removeListener("accountsChanged", this.handleAccountsChanged);
     localStorage.removeItem(selectedWalletKey);
     resetStore();
   }

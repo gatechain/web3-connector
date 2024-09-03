@@ -95,6 +95,8 @@ class GateWallet extends AbstractWallet {
       const gateAccountInfo = await provider.connect();
 
       updateStore({
+        chainId: parseChainId(provider.chainId),
+        account: provider.selectedAddress,
         isActive: true,
         gateAccountInfo,
         connector: this,
@@ -136,6 +138,7 @@ class GateWallet extends AbstractWallet {
   }
 
   private handleConnectEvent({ chainId }: any) {
+    console.log("chainId", chainId);
     updateStore({ chainId: parseChainId(chainId), isActive: true });
   }
 
@@ -144,7 +147,16 @@ class GateWallet extends AbstractWallet {
   }
 
   public deactivate() {
-    this.provider?.removeAllListeners();
+    const provider = this.provider;
+    if (!provider) return;
+    provider.removeListener("connect", this.handleConnectEvent);
+
+    provider.removeListener("gateAccountChange", this.handleGateAccountChange);
+
+    provider.removeListener("chainChanged", this.handleChainChanged);
+    provider.removeListener("accountsChanged", this.handleAccountsChanged);
+
+    provider.removeListener("disconnect", this.deactivate);
     localStorage.removeItem(selectedWalletKey);
     resetStore();
   }

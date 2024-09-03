@@ -96,8 +96,15 @@ class PhantomWallet extends AbstractWallet {
   }
 
   public deactivate() {
-    this.provider?.removeAllListeners();
-    localStorage.removeItem(selectedWalletKey)
+    const provider = this.provider;
+
+    if (!provider) return;
+    provider.removeListener("connect", this.handleConnectEvent);
+
+    provider.removeListener("accountChanged", this.handleAccountsChanged);
+
+    provider.removeListener("disconnect", this.deactivate);
+    localStorage.removeItem(selectedWalletKey);
     resetStore();
   }
 
