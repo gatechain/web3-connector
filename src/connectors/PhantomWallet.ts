@@ -68,11 +68,15 @@ class PhantomWallet extends AbstractWallet {
     if (!provider) return;
 
     try {
-      const gateAccountInfo = await provider.connect();
+      const resp = await provider.connect();
+
+      const publicKey = resp?.publicKey?.toString();
+
+      const account = resp?.publicKey?.toBase58();
 
       updateStore({
         isActive: true,
-        gateAccountInfo,
+        account: account,
         currentWallet: ConnectionType.PHANTOM,
         connector: this,
       });
@@ -87,12 +91,12 @@ class PhantomWallet extends AbstractWallet {
 
   private handleAccountsChanged(publicKey: any) {
     updateStore({
-      account: publicKey.toBase58(),
+      account: publicKey?.toBase58(),
     });
   }
 
   private handleConnectEvent(publicKey: any) {
-    updateStore({ account: publicKey.toBase58() });
+    updateStore({ account: publicKey?.toBase58() });
   }
 
   public deactivate() {

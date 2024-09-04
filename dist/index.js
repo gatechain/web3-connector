@@ -466,16 +466,19 @@ class PhantomWallet extends AbstractWallet {
         });
     }
     activate() {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             yield this.initialize();
             const provider = this.provider;
             if (!provider)
                 return;
             try {
-                const gateAccountInfo = yield provider.connect();
+                const resp = yield provider.connect();
+                const publicKey = (_a = resp === null || resp === void 0 ? void 0 : resp.publicKey) === null || _a === void 0 ? void 0 : _a.toString();
+                const account = (_b = resp === null || resp === void 0 ? void 0 : resp.publicKey) === null || _b === void 0 ? void 0 : _b.toBase58();
                 updateStore({
                     isActive: true,
-                    gateAccountInfo,
+                    account: account,
                     currentWallet: ConnectionType.PHANTOM,
                     connector: this,
                 });
@@ -492,11 +495,11 @@ class PhantomWallet extends AbstractWallet {
     }
     handleAccountsChanged(publicKey) {
         updateStore({
-            account: publicKey.toBase58(),
+            account: publicKey === null || publicKey === void 0 ? void 0 : publicKey.toBase58(),
         });
     }
     handleConnectEvent(publicKey) {
-        updateStore({ account: publicKey.toBase58() });
+        updateStore({ account: publicKey === null || publicKey === void 0 ? void 0 : publicKey.toBase58() });
     }
     deactivate() {
         const provider = this.provider;
