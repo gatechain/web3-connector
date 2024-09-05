@@ -707,6 +707,8 @@ class WalletConnect extends AbstractWallet {
             .init(Object.assign(Object.assign({}, this.options), chainProps))
             .then((provider) => {
             this.provider = provider;
+        }).catch(err => {
+            console.error(err);
         });
     }
     initialize(desiredChainId = this.defaultChainId) {

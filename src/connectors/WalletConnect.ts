@@ -138,7 +138,9 @@ class WalletConnect extends AbstractWallet {
       })
       .then((provider) => {
         this.provider = provider;
-      });
+      }).catch(err => {
+        console.error(err)
+      })
   }
 
   protected async initialize(
