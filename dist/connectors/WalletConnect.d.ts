@@ -36,6 +36,7 @@ declare class WalletConnect extends AbstractWallet {
     private handleChainChange;
     protected handleDisplayURI(url: string): void;
     connectEagerly(): Promise<void>;
+    private isLoading;
     activate(desiredChainId?: number): Promise<any>;
     private handleAccountsChanged;
     deactivate(): void;

@@ -675,6 +675,7 @@ class WalletConnect extends AbstractWallet {
                 },
             },
         };
+        this.isLoading = false;
         this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
         this.deactivate = this.deactivate.bind(this);
         this.handleChainChange = this.handleChainChange.bind(this);
@@ -749,6 +750,10 @@ class WalletConnect extends AbstractWallet {
     activate(desiredChainId = this.defaultChainId) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('isLoading', this.isLoading);
+            if (this.isLoading)
+                return;
+            this.isLoading = true;
             yield this.initialize(desiredChainId);
             const provider = this.provider;
             window.wc = provider;
@@ -780,8 +785,10 @@ class WalletConnect extends AbstractWallet {
                     connector: this,
                     currentWallet: ConnectionType.WALLET_CONNECT,
                 });
+                this.isLoading = true;
             }
             catch (error) {
+                this.isLoading = false;
                 yield this.deactivate();
                 throw error;
             }
@@ -803,6 +810,7 @@ class WalletConnect extends AbstractWallet {
             provider.removeListener("display_uri", this.handleDisplayURI);
             provider.disconnect();
         }
+        this.isLoading = false;
         localStorage.removeItem(selectedWalletKey);
         resetStore();
     }
