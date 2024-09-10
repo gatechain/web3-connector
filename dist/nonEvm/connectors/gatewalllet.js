@@ -88,8 +88,8 @@ class NonEVMGateWalletConnector {
                     });
                 }
                 if (window.isWeb3App) {
-                    const res = yield provider.gateAccounts();
-                    return { gateAccountInfo: res };
+                    const res = yield provider.requestAccountInfo();
+                    return { gateAccountInfo: res.accountDic };
                 }
                 else {
                     const info = yield provider.connect();
