@@ -54,6 +54,9 @@ class NonEVMGateWalletConnector {
         this.onChainChange = options === null || options === void 0 ? void 0 : options.onChainChange;
     }
     getProvider() {
+        if (window.isWeb3App) {
+            return window.gateBridgeWallet;
+        }
         if (typeof window.gatewallet !== "undefined") {
             console.log("Gate Wallet is installed!");
             return window.gatewallet;
@@ -84,8 +87,14 @@ class NonEVMGateWalletConnector {
                         console.log(error, "error");
                     });
                 }
-                const info = yield provider.connect();
-                return { gateAccountInfo: info };
+                if (window.isWeb3App) {
+                    const res = yield provider.gateAccounts();
+                    return { gateAccountInfo: res };
+                }
+                else {
+                    const info = yield provider.connect();
+                    return { gateAccountInfo: info };
+                }
             }
             catch (error) {
                 console.log("connnector error: ", error);

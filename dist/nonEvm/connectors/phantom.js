@@ -33,8 +33,8 @@ class PhantomConnector {
         console.error(new errors_1.ConnectorNotFoundError());
     }
     connect() {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
             try {
                 const provider = this.getProvider();
                 if (provider === null || provider === void 0 ? void 0 : provider.on) {
@@ -68,8 +68,8 @@ class PhantomConnector {
         });
     }
     connectEagerly() {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
             try {
                 const provider = this.getProvider();
                 if (provider === null || provider === void 0 ? void 0 : provider.on) {

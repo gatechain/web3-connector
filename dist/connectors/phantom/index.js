@@ -115,8 +115,8 @@ class Phantom extends types_1.Connector {
      * to the chain.
      */
     activate(desiredChainIdOrChainParameters) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
             let cancelActivation;
             if (!((_b = (_a = this.provider) === null || _a === void 0 ? void 0 : _a.isConnected) === null || _b === void 0 ? void 0 : _b.call(_a)))
                 cancelActivation = this.actions.startActivation();

@@ -132,8 +132,8 @@ class MetaMask extends types_1.Connector {
      * specified parameters first, before being prompted to switch.
      */
     activate(desiredChainIdOrChainParameters) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
             let cancelActivation;
             if (!((_b = (_a = this.provider) === null || _a === void 0 ? void 0 : _a.isConnected) === null || _b === void 0 ? void 0 : _b.call(_a)))
                 cancelActivation = this.actions.startActivation();
@@ -182,19 +182,19 @@ class MetaMask extends types_1.Connector {
             });
         });
     }
-    watchAsset(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ address, symbol, decimals, image, }) {
+    watchAsset({ address, symbol, decimals, image, }) {
+        return __awaiter(this, void 0, void 0, function* () {
             if (!this.provider)
                 throw new Error("No provider");
             return this.provider
                 .request({
                 method: "wallet_watchAsset",
                 params: {
-                    type: "ERC20", // Initially only supports ERC20, but eventually more!
+                    type: "ERC20",
                     options: {
-                        address, // The address that the token is at.
-                        symbol, // A ticker symbol or shorthand, up to 5 chars.
-                        decimals, // The number of decimals in the token
+                        address,
+                        symbol,
+                        decimals,
                         image, // A string url of the token logo
                     },
                 },
