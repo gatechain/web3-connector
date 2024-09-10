@@ -78,8 +78,8 @@ export class NonEVMGateWalletConnector implements Connector {
       }
 
       if ((window as any).isWeb3App) {
-        const res = await provider.gateAccounts();
-        return { gateAccountInfo: res };
+        const res = await provider.requestAccountInfo();
+        return { gateAccountInfo: res.accountDic };
       } else {
         const info = await provider.connect();
 
