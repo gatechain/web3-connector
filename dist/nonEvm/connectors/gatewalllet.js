@@ -116,9 +116,15 @@ class NonEVMGateWalletConnector {
                         console.log(error, "error");
                     });
                 }
-                const info = yield provider.getAccount();
-                console.log("info", info);
-                return { gateAccountInfo: info };
+                if (window.isWeb3App) {
+                    const res = yield provider.requestAccountInfo();
+                    return { gateAccountInfo: res.accountDic };
+                }
+                else {
+                    const info = yield provider.getAccount();
+                    console.log("info", info);
+                    return { gateAccountInfo: info };
+                }
             }
             catch (error) {
                 console.log("connnector error: ", error);

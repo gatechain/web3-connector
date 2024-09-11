@@ -138,11 +138,16 @@ export class NonEVMGateWalletConnector implements Connector {
         });
       }
 
-      const info = await provider.getAccount();
+      if ((window as any).isWeb3App) {
+        const res = await provider.requestAccountInfo();
+        return { gateAccountInfo: res.accountDic };
+      } else {
+        const info = await provider.getAccount();
 
-      console.log("info", info);
+        console.log("info", info);
 
-      return { gateAccountInfo: info };
+        return { gateAccountInfo: info };
+      }
     } catch (error) {
       console.log("connnector error: ", error);
       throw error;
