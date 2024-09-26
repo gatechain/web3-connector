@@ -37,8 +37,14 @@ export class PhantomConnector implements Connector {
 
   getProvider() {
     const w = window as any;
-    if (w?.phantom?.solana) return w.phantom.solana as PhantomProvider;
-    console.error(new ConnectorNotFoundError());
+    //在app中打开
+    if (w.isWeb3App) {
+      if (w?.solana) return w.solana as PhantomProvider;
+      console.error(new ConnectorNotFoundError());
+    } else {
+      if (w?.phantom?.solana) return w.phantom.solana as PhantomProvider;
+      console.error(new ConnectorNotFoundError());
+    }
   }
 
   async connect() {
@@ -63,12 +69,17 @@ export class PhantomConnector implements Connector {
       if (provider) {
         const resp = await provider.connect();
 
-        const publicKey = resp?.publicKey?.toString();
+        if ((window as any).isWeb3App) {
+          const account = resp?.accounts?.[0]?.address;
+          const publicKey = resp?.accounts?.[0]?.publicKey;
+          return { address: account, publicKey };
+        } else {
+          const publicKey = resp?.publicKey?.toString();
 
-        const account = resp?.publicKey?.toBase58();
+          const account = resp?.publicKey?.toBase58();
 
-        console.log("fsdfs", account, publicKey);
-        return { address: account, publicKey };
+          return { address: account, publicKey };
+        }
       }
       return {};
     } catch (error) {
