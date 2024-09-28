@@ -108,14 +108,19 @@ export class PhantomConnector implements Connector {
       }
 
       if (provider) {
-        const resp = await provider.connect({ onlyIfTrusted: true });
+        const resp = await provider.connect();
 
-        const publicKey = resp?.publicKey?.toString();
+        if ((window as any).isWeb3App) {
+          const account = resp?.accounts?.[0]?.address;
+          const publicKey = resp?.accounts?.[0]?.publicKey;
+          return { address: account, publicKey };
+        } else {
+          const publicKey = resp?.publicKey?.toString();
 
-        const account = resp?.publicKey?.toBase58();
+          const account = resp?.publicKey?.toBase58();
 
-        console.log("fsdfs", account, publicKey);
-        return { address: account, publicKey };
+          return { address: account, publicKey };
+        }
       }
       return {};
     } catch (error) {

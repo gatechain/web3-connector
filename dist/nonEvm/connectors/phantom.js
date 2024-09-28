@@ -82,7 +82,7 @@ class PhantomConnector {
         });
     }
     connectEagerly() {
-        var _a, _b;
+        var _a, _b, _c, _d, _e, _f;
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const provider = this.getProvider();
@@ -102,11 +102,17 @@ class PhantomConnector {
                     });
                 }
                 if (provider) {
-                    const resp = yield provider.connect({ onlyIfTrusted: true });
-                    const publicKey = (_a = resp === null || resp === void 0 ? void 0 : resp.publicKey) === null || _a === void 0 ? void 0 : _a.toString();
-                    const account = (_b = resp === null || resp === void 0 ? void 0 : resp.publicKey) === null || _b === void 0 ? void 0 : _b.toBase58();
-                    console.log("fsdfs", account, publicKey);
-                    return { address: account, publicKey };
+                    const resp = yield provider.connect();
+                    if (window.isWeb3App) {
+                        const account = (_b = (_a = resp === null || resp === void 0 ? void 0 : resp.accounts) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.address;
+                        const publicKey = (_d = (_c = resp === null || resp === void 0 ? void 0 : resp.accounts) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.publicKey;
+                        return { address: account, publicKey };
+                    }
+                    else {
+                        const publicKey = (_e = resp === null || resp === void 0 ? void 0 : resp.publicKey) === null || _e === void 0 ? void 0 : _e.toString();
+                        const account = (_f = resp === null || resp === void 0 ? void 0 : resp.publicKey) === null || _f === void 0 ? void 0 : _f.toBase58();
+                        return { address: account, publicKey };
+                    }
                 }
                 return {};
             }
