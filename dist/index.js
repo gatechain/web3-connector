@@ -3,33 +3,6 @@ import detectEthereumProvider from '@metamask/detect-provider';
 import ethProviderModule from '@walletconnect/ethereum-provider';
 import { Web3Provider } from '@ethersproject/providers';
 
-/*! *****************************************************************************
-Copyright (c) Microsoft Corporation.
-
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.
-***************************************************************************** */
-/* global Reflect, Promise */
-
-
-function __awaiter(thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, [])).next());
-    });
-}
-
 const selectedWalletKey = "web3.selectedWallet";
 
 var ConnectionType;
@@ -64,18 +37,24 @@ function getSnapshot() {
 }
 function updateStore(s) {
     // const isChanged = diff(store, s);
-    var _a;
     // if (!isChanged) return;
-    let provider = (_a = s.connector) === null || _a === void 0 ? void 0 : _a.provider;
+    let provider = s.connector?.provider;
     if (provider) {
         if ([ConnectionType.INJECTED, ConnectionType.WALLET_CONNECT, ConnectionType.WALLET_CONNECT_NOTQR, ConnectionType.GATEWALLET].includes(s.currentWallet) &&
             !(provider instanceof Web3Provider)) {
             provider = new Web3Provider(provider);
         }
-        store = Object.assign(Object.assign(Object.assign({}, store), s), { provider });
+        store = {
+            ...store,
+            ...s,
+            provider,
+        };
     }
     else {
-        store = Object.assign(Object.assign({}, store), s);
+        store = {
+            ...store,
+            ...s,
+        };
     }
     emitChange();
 }
@@ -112,25 +91,13 @@ function parseChainId(chainId) {
 }
 
 class AbstractWallet {
+    provider;
 }
 
 class GateWallet extends AbstractWallet {
+    provider;
     constructor() {
         super();
-        this.handleGateAccountChange = (gateWallet) => {
-            var _a;
-            console.log("gateAccountChange", gateWallet, JSON.stringify(gateWallet) === "{}");
-            if (!gateWallet || JSON.stringify(gateWallet) === "{}") {
-                (_a = this.deactivate) === null || _a === void 0 ? void 0 : _a.call(this);
-            }
-            else {
-                updateStore({
-                    gateAccountInfo: gateWallet,
-                    account: this.provider.selectedAddress,
-                    chainId: parseChainId(this.provider.chainId),
-                });
-            }
-        };
         this.handleGateAccountChange = this.handleGateAccountChange.bind(this);
         this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
         this.deactivate = this.deactivate.bind(this);
@@ -165,61 +132,68 @@ class GateWallet extends AbstractWallet {
             }
         });
     }
-    initialize() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.detectProvider();
-            const provider = this.provider;
-            if (!provider)
-                return;
-            provider.on("connect", this.handleConnectEvent);
-            provider.on("gateAccountChange", this.handleGateAccountChange);
-            provider.on("chainChanged", this.handleChainChanged);
-            provider.on("accountsChanged", this.handleAccountsChanged);
-            provider.on("disconnect", this.deactivate);
-        });
+    async initialize() {
+        await this.detectProvider();
+        const provider = this.provider;
+        if (!provider)
+            return;
+        provider.on("connect", this.handleConnectEvent);
+        provider.on("gateAccountChange", this.handleGateAccountChange);
+        provider.on("chainChanged", this.handleChainChanged);
+        provider.on("accountsChanged", this.handleAccountsChanged);
+        provider.on("disconnect", this.deactivate);
     }
-    connectEagerly() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.initialize();
-            const provider = this.provider;
-            if (!provider)
-                return;
-            try {
-                const gateAccountInfo = yield provider.getAccount();
-                updateStore({
-                    isActive: true,
-                    gateAccountInfo,
-                    connector: this,
-                    currentWallet: ConnectionType.GATEWALLET,
-                });
-            }
-            catch (error) {
-                console.error(error);
-            }
-        });
+    async connectEagerly() {
+        await this.initialize();
+        const provider = this.provider;
+        if (!provider)
+            return;
+        try {
+            const gateAccountInfo = await provider.getAccount();
+            updateStore({
+                isActive: true,
+                gateAccountInfo,
+                connector: this,
+                currentWallet: ConnectionType.GATEWALLET,
+            });
+        }
+        catch (error) {
+            console.error(error);
+        }
     }
-    activate() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.initialize();
-            const provider = this.provider;
-            if (!provider)
-                return;
-            try {
-                const gateAccountInfo = yield provider.connect();
-                updateStore({
-                    chainId: parseChainId(provider.chainId),
-                    account: provider.selectedAddress,
-                    isActive: true,
-                    gateAccountInfo,
-                    connector: this,
-                    currentWallet: ConnectionType.GATEWALLET,
-                });
-            }
-            catch (error) {
-                console.error(error);
-            }
-        });
+    async activate() {
+        await this.initialize();
+        const provider = this.provider;
+        if (!provider)
+            return;
+        try {
+            const gateAccountInfo = await provider.connect();
+            updateStore({
+                chainId: parseChainId(provider.chainId),
+                account: provider.selectedAddress,
+                isActive: true,
+                gateAccountInfo,
+                connector: this,
+                currentWallet: ConnectionType.GATEWALLET,
+            });
+        }
+        catch (error) {
+            console.error(error);
+        }
     }
+    handleGateAccountChange = (gateWallet) => {
+        console.log("gateAccountChange", gateWallet, JSON.stringify(gateWallet) === "{}");
+        if (!gateWallet || JSON.stringify(gateWallet) === "{}") {
+            this.deactivate?.();
+        }
+        else {
+            updateStore({
+                gateAccountInfo: gateWallet,
+                account: this.provider.selectedAddress,
+                chainId: parseChainId(this.provider.chainId),
+            });
+        }
+    };
     handleAccountsChanged(accounts) {
         if (accounts.length === 0) {
             this.deactivate();
@@ -251,6 +225,7 @@ class GateWallet extends AbstractWallet {
         localStorage.removeItem(selectedWalletKey);
         resetStore();
     }
+    static instance;
     static getInstance() {
         if (GateWallet.instance)
             return GateWallet.instance;
@@ -267,15 +242,16 @@ class MetaMaskWallet extends AbstractWallet {
         this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
         this.deactivate = this.deactivate.bind(this);
     }
+    provider;
     /**
      * detectProvider
      */
     detectProvider() {
         return detectEthereumProvider()
             .then((provider$1) => {
-            var _a, _b;
-            const provider = ((_a = provider$1 === null || provider$1 === void 0 ? void 0 : provider$1.providers) === null || _a === void 0 ? void 0 : _a.length)
-                ? (_b = provider$1 === null || provider$1 === void 0 ? void 0 : provider$1.providers.find((p) => p.isMetaMask)) !== null && _b !== void 0 ? _b : provider$1.providers[0]
+            const provider = provider$1?.providers?.length
+                ? provider$1?.providers.find((p) => p.isMetaMask) ??
+                    provider$1.providers[0]
                 : provider$1;
             this.provider = provider;
         })
@@ -283,17 +259,15 @@ class MetaMaskWallet extends AbstractWallet {
             console.error(error);
         });
     }
-    initialize() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.detectProvider();
-            const provider = this.provider;
-            if (!provider)
-                return;
-            provider.on("connect", this.handleConnectEvent);
-            provider.on("chainChanged", this.handleChainChanged);
-            provider.on("accountsChanged", this.handleAccountsChanged);
-            provider.on("disconnect", this.deactivate);
-        });
+    async initialize() {
+        await this.detectProvider();
+        const provider = this.provider;
+        if (!provider)
+            return;
+        provider.on("connect", this.handleConnectEvent);
+        provider.on("chainChanged", this.handleChainChanged);
+        provider.on("accountsChanged", this.handleAccountsChanged);
+        provider.on("disconnect", this.deactivate);
     }
     handleAccountsChanged(accounts) {
         if (accounts.length === 0) {
@@ -331,14 +305,14 @@ class MetaMaskWallet extends AbstractWallet {
                 const receivedChainId = parseChainId(chainId);
                 const desiredChainId = typeof desiredChainIdOrChainParameters === "number"
                     ? desiredChainIdOrChainParameters
-                    : desiredChainIdOrChainParameters === null || desiredChainIdOrChainParameters === void 0 ? void 0 : desiredChainIdOrChainParameters.chainId;
+                    : desiredChainIdOrChainParameters?.chainId;
                 // if there's no desired chain, or it's equal to the received, update
                 if (!desiredChainId || receivedChainId === desiredChainId) {
                     updateStore({
                         isActive: true,
                         chainId: parseChainId(chainId),
                         accounts,
-                        account: accounts === null || accounts === void 0 ? void 0 : accounts[0],
+                        account: accounts?.[0],
                         currentWallet: ConnectionType.INJECTED,
                         connector: this,
                     });
@@ -359,7 +333,10 @@ class MetaMaskWallet extends AbstractWallet {
                         return this.provider.request({
                             method: "wallet_addEthereumChain",
                             params: [
-                                Object.assign(Object.assign({}, desiredChainIdOrChainParameters), { chainId: desiredChainIdHex }),
+                                {
+                                    ...desiredChainIdOrChainParameters,
+                                    chainId: desiredChainIdHex,
+                                },
                             ],
                         });
                     }
@@ -369,30 +346,28 @@ class MetaMaskWallet extends AbstractWallet {
             });
         });
     }
-    connectEagerly() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.initialize();
-            const provider = this.provider;
-            if (!provider)
-                return;
-            try {
-                const [chainId, accounts] = yield Promise.all([
-                    this.provider.request({ method: "eth_chainId" }),
-                    this.provider.request({ method: "eth_requestAccounts" }),
-                ]);
-                updateStore({
-                    isActive: true,
-                    chainId: parseChainId(chainId),
-                    accounts,
-                    account: accounts === null || accounts === void 0 ? void 0 : accounts[0],
-                    currentWallet: ConnectionType.INJECTED,
-                    connector: this,
-                });
-            }
-            catch (error) {
-                console.error(error);
-            }
-        });
+    async connectEagerly() {
+        await this.initialize();
+        const provider = this.provider;
+        if (!provider)
+            return;
+        try {
+            const [chainId, accounts] = await Promise.all([
+                this.provider.request({ method: "eth_chainId" }),
+                this.provider.request({ method: "eth_requestAccounts" }),
+            ]);
+            updateStore({
+                isActive: true,
+                chainId: parseChainId(chainId),
+                accounts,
+                account: accounts?.[0],
+                currentWallet: ConnectionType.INJECTED,
+                connector: this,
+            });
+        }
+        catch (error) {
+            console.error(error);
+        }
     }
     /**
      * disconnect
@@ -408,6 +383,7 @@ class MetaMaskWallet extends AbstractWallet {
         localStorage.removeItem(selectedWalletKey);
         resetStore();
     }
+    static instance;
     static getInstance() {
         if (MetaMaskWallet.instance)
             return MetaMaskWallet.instance;
@@ -417,6 +393,7 @@ class MetaMaskWallet extends AbstractWallet {
 }
 
 class PhantomWallet extends AbstractWallet {
+    provider;
     constructor() {
         super();
         this.detectProvider = this.detectProvider.bind(this);
@@ -427,8 +404,7 @@ class PhantomWallet extends AbstractWallet {
         let handled = false;
         let that = this;
         return new Promise((resolve, reject) => {
-            var _a;
-            if ((_a = window.phantom) === null || _a === void 0 ? void 0 : _a.solana) {
+            if (window.phantom?.solana) {
                 handlePhantomwallet();
             }
             else {
@@ -442,7 +418,7 @@ class PhantomWallet extends AbstractWallet {
                 }
                 handled = true;
                 const { phantom } = window;
-                if (phantom === null || phantom === void 0 ? void 0 : phantom.solana) {
+                if (phantom?.solana) {
                     that.provider = phantom.solana;
                     resolve(phantom);
                 }
@@ -454,52 +430,45 @@ class PhantomWallet extends AbstractWallet {
             }
         });
     }
-    initialize() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.detectProvider();
-            const provider = this.provider;
-            if (!provider)
-                return;
-            provider.on("connect", this.handleConnectEvent);
-            provider.on("accountChanged", this.handleAccountsChanged);
-            provider.on("disconnect", this.deactivate);
-        });
+    async initialize() {
+        await this.detectProvider();
+        const provider = this.provider;
+        if (!provider)
+            return;
+        provider.on("connect", this.handleConnectEvent);
+        provider.on("accountChanged", this.handleAccountsChanged);
+        provider.on("disconnect", this.deactivate);
     }
-    activate() {
-        var _a, _b;
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.initialize();
-            const provider = this.provider;
-            if (!provider)
-                return;
-            try {
-                const resp = yield provider.connect();
-                const publicKey = (_a = resp === null || resp === void 0 ? void 0 : resp.publicKey) === null || _a === void 0 ? void 0 : _a.toString();
-                const account = (_b = resp === null || resp === void 0 ? void 0 : resp.publicKey) === null || _b === void 0 ? void 0 : _b.toBase58();
-                updateStore({
-                    isActive: true,
-                    account: account,
-                    currentWallet: ConnectionType.PHANTOM,
-                    connector: this,
-                });
-            }
-            catch (error) {
-                console.error(error);
-            }
-        });
+    async activate() {
+        await this.initialize();
+        const provider = this.provider;
+        if (!provider)
+            return;
+        try {
+            const resp = await provider.connect();
+            const publicKey = resp?.publicKey?.toString();
+            const account = resp?.publicKey?.toBase58();
+            updateStore({
+                isActive: true,
+                account: account,
+                currentWallet: ConnectionType.PHANTOM,
+                connector: this,
+            });
+        }
+        catch (error) {
+            console.error(error);
+        }
     }
-    connectEagerly() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.activate();
-        });
+    async connectEagerly() {
+        this.activate();
     }
     handleAccountsChanged(publicKey) {
         updateStore({
-            account: publicKey === null || publicKey === void 0 ? void 0 : publicKey.toBase58(),
+            account: publicKey?.toBase58(),
         });
     }
     handleConnectEvent(publicKey) {
-        updateStore({ account: publicKey === null || publicKey === void 0 ? void 0 : publicKey.toBase58() });
+        updateStore({ account: publicKey?.toBase58() });
     }
     deactivate() {
         const provider = this.provider;
@@ -511,6 +480,7 @@ class PhantomWallet extends AbstractWallet {
         localStorage.removeItem(selectedWalletKey);
         resetStore();
     }
+    static instance;
     static getInstance() {
         if (PhantomWallet.instance)
             return PhantomWallet.instance;
@@ -520,6 +490,7 @@ class PhantomWallet extends AbstractWallet {
 }
 
 class UnisatWallet extends AbstractWallet {
+    provider;
     constructor() {
         super();
         this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
@@ -556,51 +527,45 @@ class UnisatWallet extends AbstractWallet {
             }
         });
     }
-    initialize() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.detectProvider();
-            const provider = this.provider;
-            if (!provider)
-                return;
-            provider.on("networkChanged", this.handleNetworkChanged);
-            provider.on("accountsChanged", this.handleAccountsChanged);
-        });
+    async initialize() {
+        await this.detectProvider();
+        const provider = this.provider;
+        if (!provider)
+            return;
+        provider.on("networkChanged", this.handleNetworkChanged);
+        provider.on("accountsChanged", this.handleAccountsChanged);
     }
     handleNetworkChanged(network) {
         updateStore({
             network: network,
         });
     }
-    connectEagerly() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.activate();
-        });
+    async connectEagerly() {
+        this.activate();
     }
-    activate() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.initialize();
-            const provider = this.provider;
-            if (!provider)
-                return;
-            try {
-                const [accounts, publicKey, network] = yield Promise.all([
-                    provider.requestAccounts(),
-                    provider.getPublicKey(),
-                    provider.getNetwork(),
-                ]);
-                updateStore({
-                    isActive: true,
-                    connector: this,
-                    currentWallet: ConnectionType.Unisat,
-                    account: accounts[0],
-                    accounts: accounts,
-                    network: network,
-                });
-            }
-            catch (error) {
-                console.error(error);
-            }
-        });
+    async activate() {
+        await this.initialize();
+        const provider = this.provider;
+        if (!provider)
+            return;
+        try {
+            const [accounts, publicKey, network] = await Promise.all([
+                provider.requestAccounts(),
+                provider.getPublicKey(),
+                provider.getNetwork(),
+            ]);
+            updateStore({
+                isActive: true,
+                connector: this,
+                currentWallet: ConnectionType.Unisat,
+                account: accounts[0],
+                accounts: accounts,
+                network: network,
+            });
+        }
+        catch (error) {
+            console.error(error);
+        }
     }
     handleAccountsChanged(accounts) {
         if (accounts.length === 0) {
@@ -623,6 +588,7 @@ class UnisatWallet extends AbstractWallet {
         localStorage.removeItem(selectedWalletKey);
         resetStore();
     }
+    static instance;
     static getInstance() {
         if (UnisatWallet.instance)
             return UnisatWallet.instance;
@@ -647,35 +613,10 @@ function getChainsWithDefault(chains, defaultChainId) {
     return [defaultChainId, ...ordered];
 }
 class WalletConnect extends AbstractWallet {
+    provider;
+    defaultChainId = 1;
     constructor({ showQrModal }) {
         super();
-        this.defaultChainId = 1;
-        this.options = {
-            metadata: {
-                name: "GateWallet",
-                description: "GateWallet WalletConnect",
-                url: "https://www.gate.io/web3",
-                icons: ["https://www.gate.io/images/apple-touch-icon-120x120.png"],
-            },
-            projectId: "49cf6ec6179f8d21bf525adc78d6900a",
-            chains: [this.defaultChainId || 1],
-            optionalChains: [1, 10, 56, 86, 137, 324, 42161, 43114, 81457],
-            showQrModal: true,
-            optionalMethods: ["eth_signTypedData", "eth_signTypedData_v4", "eth_sign"],
-            qrModalOptions: {
-                explorerRecommendedWalletIds: [
-                    // "aba1f652e61fd536e8a7a5cd5e0319c9047c435ef8f7e907717361ff33bb3588",
-                    "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96",
-                    "1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369",
-                    "ef333840daf915aafdc4a004525502d6d49d77bd9c65e0642dbaefb3c2893bef",
-                    "20459438007b75f4f4acb98bf29aa3b800550309646d375da5fd4aac6c2a2c66",
-                ],
-                themeVariables: {
-                    "--wcm-z-index": "10000",
-                },
-            },
-        };
-        this.isLoading = false;
         this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
         this.deactivate = this.deactivate.bind(this);
         this.handleChainChange = this.handleChainChange.bind(this);
@@ -685,6 +626,33 @@ class WalletConnect extends AbstractWallet {
         this.chains = chains;
         this.optionalChains = optionalChains;
     }
+    chains;
+    optionalChains;
+    options = {
+        metadata: {
+            name: "GateWallet",
+            description: "GateWallet WalletConnect",
+            url: "https://www.gate.io/web3",
+            icons: ["https://www.gate.io/images/apple-touch-icon-120x120.png"],
+        },
+        projectId: "49cf6ec6179f8d21bf525adc78d6900a",
+        chains: [this.defaultChainId || 1],
+        optionalChains: [1, 10, 56, 86, 137, 324, 42161, 43114, 81457],
+        showQrModal: true,
+        optionalMethods: ["eth_signTypedData", "eth_signTypedData_v4", "eth_sign"],
+        qrModalOptions: {
+            explorerRecommendedWalletIds: [
+                // "aba1f652e61fd536e8a7a5cd5e0319c9047c435ef8f7e907717361ff33bb3588",
+                "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96",
+                "1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369",
+                "ef333840daf915aafdc4a004525502d6d49d77bd9c65e0642dbaefb3c2893bef",
+                "20459438007b75f4f4acb98bf29aa3b800550309646d375da5fd4aac6c2a2c66",
+            ],
+            themeVariables: {
+                "--wcm-z-index": "10000",
+            },
+        },
+    };
     getChainProps(chains, optionalChains, desiredChainId = this.defaultChainId) {
         // Reorder chains and optionalChains if necessary
         const orderedChains = getChainsWithDefault(chains, desiredChainId);
@@ -704,24 +672,25 @@ class WalletConnect extends AbstractWallet {
             return Promise.resolve();
         const chainProps = this.getChainProps(this.chains, this.optionalChains, desiredChainId);
         return ethProviderModule
-            .init(Object.assign(Object.assign({}, this.options), chainProps))
+            .init({
+            ...this.options,
+            ...chainProps,
+        })
             .then((provider) => {
             this.provider = provider;
         }).catch(err => {
             console.error(err);
         });
     }
-    initialize(desiredChainId = this.defaultChainId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.detectProvider(desiredChainId);
-            const provider = this.provider;
-            if (!provider)
-                return;
-            provider.on("disconnect", this.deactivate);
-            provider.on("chainChanged", this.handleChainChange);
-            provider.on("accountsChanged", this.handleAccountsChanged);
-            provider.on("display_uri", this.handleDisplayURI);
-        });
+    async initialize(desiredChainId = this.defaultChainId) {
+        await this.detectProvider(desiredChainId);
+        const provider = this.provider;
+        if (!provider)
+            return;
+        provider.on("disconnect", this.deactivate);
+        provider.on("chainChanged", this.handleChainChange);
+        provider.on("accountsChanged", this.handleAccountsChanged);
+        provider.on("display_uri", this.handleDisplayURI);
     }
     handleChainChange(chainId) {
         updateStore({
@@ -731,14 +700,51 @@ class WalletConnect extends AbstractWallet {
     handleDisplayURI(url) {
         console.log("url", url);
     }
-    connectEagerly() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.initialize();
-            const provider = this.provider;
-            if (!provider.session) {
-                console.error(new Error("No active session found. Connect your wallet first."));
+    async connectEagerly() {
+        await this.initialize();
+        const provider = this.provider;
+        if (!provider.session) {
+            console.error(new Error("No active session found. Connect your wallet first."));
+            return;
+        }
+        updateStore({
+            isActive: true,
+            chainId: provider.chainId,
+            accounts: provider.accounts,
+            account: provider.accounts[0],
+            connector: this,
+            currentWallet: ConnectionType.WALLET_CONNECT,
+        });
+    }
+    isLoading = false;
+    async activate(desiredChainId = this.defaultChainId) {
+        console.log('isLoading', this.isLoading);
+        if (this.isLoading)
+            return;
+        this.isLoading = true;
+        await this.initialize(desiredChainId);
+        const provider = this.provider;
+        window.wc = provider;
+        if (!provider)
+            return;
+        if (provider.session) {
+            if (!desiredChainId || desiredChainId === provider.chainId)
                 return;
+            // WalletConnect exposes connected accounts, not chains: `eip155:${chainId}:${address}`
+            const isConnectedToDesiredChain = provider.session.namespaces.eip155.accounts.some((account) => account.startsWith(`eip155:${desiredChainId}:`));
+            if (!isConnectedToDesiredChain) {
+                if (this.options.optionalChains?.includes(desiredChainId)) {
+                    throw new Error(`Cannot activate an optional chain (${desiredChainId}), as the wallet is not connected to it.\n\tYou should handle this error in application code, as there is no guarantee that a wallet is connected to a chain configured in "optionalChains".`);
+                }
+                throw new Error(`Unknown chain (${desiredChainId}). Make sure to include any chains you might connect to in the "chains" or "optionalChains" parameters when initializing WalletConnect.`);
             }
+            return provider.request({
+                method: "wallet_switchEthereumChain",
+                params: [{ chainId: `0x${desiredChainId.toString(16)}` }],
+            });
+        }
+        try {
+            await provider.enable();
             updateStore({
                 isActive: true,
                 chainId: provider.chainId,
@@ -747,54 +753,13 @@ class WalletConnect extends AbstractWallet {
                 connector: this,
                 currentWallet: ConnectionType.WALLET_CONNECT,
             });
-        });
-    }
-    activate(desiredChainId = this.defaultChainId) {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log('isLoading', this.isLoading);
-            if (this.isLoading)
-                return;
             this.isLoading = true;
-            yield this.initialize(desiredChainId);
-            const provider = this.provider;
-            window.wc = provider;
-            if (!provider)
-                return;
-            if (provider.session) {
-                if (!desiredChainId || desiredChainId === provider.chainId)
-                    return;
-                // WalletConnect exposes connected accounts, not chains: `eip155:${chainId}:${address}`
-                const isConnectedToDesiredChain = provider.session.namespaces.eip155.accounts.some((account) => account.startsWith(`eip155:${desiredChainId}:`));
-                if (!isConnectedToDesiredChain) {
-                    if ((_a = this.options.optionalChains) === null || _a === void 0 ? void 0 : _a.includes(desiredChainId)) {
-                        throw new Error(`Cannot activate an optional chain (${desiredChainId}), as the wallet is not connected to it.\n\tYou should handle this error in application code, as there is no guarantee that a wallet is connected to a chain configured in "optionalChains".`);
-                    }
-                    throw new Error(`Unknown chain (${desiredChainId}). Make sure to include any chains you might connect to in the "chains" or "optionalChains" parameters when initializing WalletConnect.`);
-                }
-                return provider.request({
-                    method: "wallet_switchEthereumChain",
-                    params: [{ chainId: `0x${desiredChainId.toString(16)}` }],
-                });
-            }
-            try {
-                yield provider.enable();
-                updateStore({
-                    isActive: true,
-                    chainId: provider.chainId,
-                    accounts: provider.accounts,
-                    account: provider.accounts[0],
-                    connector: this,
-                    currentWallet: ConnectionType.WALLET_CONNECT,
-                });
-                this.isLoading = true;
-            }
-            catch (error) {
-                this.isLoading = false;
-                yield this.deactivate();
-                throw error;
-            }
-        });
+        }
+        catch (error) {
+            this.isLoading = false;
+            await this.deactivate();
+            throw error;
+        }
     }
     handleAccountsChanged(accounts) {
         const currentAccount = accounts[0];
@@ -816,6 +781,7 @@ class WalletConnect extends AbstractWallet {
         localStorage.removeItem(selectedWalletKey);
         resetStore();
     }
+    static instance;
     static getInstance() {
         if (WalletConnect.instance)
             return WalletConnect.instance;
@@ -826,7 +792,7 @@ class WalletConnect extends AbstractWallet {
 
 class WalletConnectNoQr extends WalletConnect {
     constructor(options) {
-        super(Object.assign(Object.assign({}, options), { showQrModal: false }));
+        super({ ...options, showQrModal: false });
         const { setUri } = options;
         this.setUri = setUri || function () { };
     }
@@ -834,48 +800,46 @@ class WalletConnectNoQr extends WalletConnect {
     handleDisplayURI(url) {
         this.setUri(url);
     }
-    activate(desiredChainId = this.defaultChainId) {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.initialize(desiredChainId);
-            const provider = this.provider;
-            window.wc = provider;
-            if (!provider)
+    async activate(desiredChainId = this.defaultChainId) {
+        await this.initialize(desiredChainId);
+        const provider = this.provider;
+        window.wc = provider;
+        if (!provider)
+            return;
+        if (provider.session) {
+            if (!desiredChainId || desiredChainId === provider.chainId)
                 return;
-            if (provider.session) {
-                if (!desiredChainId || desiredChainId === provider.chainId)
-                    return;
-                // WalletConnect exposes connected accounts, not chains: `eip155:${chainId}:${address}`
-                const isConnectedToDesiredChain = provider.session.namespaces.eip155.accounts.some((account) => account.startsWith(`eip155:${desiredChainId}:`));
-                if (!isConnectedToDesiredChain) {
-                    if ((_a = this.options.optionalChains) === null || _a === void 0 ? void 0 : _a.includes(desiredChainId)) {
-                        throw new Error(`Cannot activate an optional chain (${desiredChainId}), as the wallet is not connected to it.\n\tYou should handle this error in application code, as there is no guarantee that a wallet is connected to a chain configured in "optionalChains".`);
-                    }
-                    throw new Error(`Unknown chain (${desiredChainId}). Make sure to include any chains you might connect to in the "chains" or "optionalChains" parameters when initializing WalletConnect.`);
+            // WalletConnect exposes connected accounts, not chains: `eip155:${chainId}:${address}`
+            const isConnectedToDesiredChain = provider.session.namespaces.eip155.accounts.some((account) => account.startsWith(`eip155:${desiredChainId}:`));
+            if (!isConnectedToDesiredChain) {
+                if (this.options.optionalChains?.includes(desiredChainId)) {
+                    throw new Error(`Cannot activate an optional chain (${desiredChainId}), as the wallet is not connected to it.\n\tYou should handle this error in application code, as there is no guarantee that a wallet is connected to a chain configured in "optionalChains".`);
                 }
-                return provider.request({
-                    method: "wallet_switchEthereumChain",
-                    params: [{ chainId: `0x${desiredChainId.toString(16)}` }],
-                });
+                throw new Error(`Unknown chain (${desiredChainId}). Make sure to include any chains you might connect to in the "chains" or "optionalChains" parameters when initializing WalletConnect.`);
             }
-            try {
-                yield provider.enable();
-                updateStore({
-                    isActive: true,
-                    chainId: provider.chainId,
-                    accounts: provider.accounts,
-                    account: provider.accounts[0],
-                    connector: this,
-                    currentWallet: ConnectionType.WALLET_CONNECT_NOTQR,
-                });
-            }
-            catch (error) {
-                yield this.deactivate();
-                resetStore();
-                throw error;
-            }
-        });
+            return provider.request({
+                method: "wallet_switchEthereumChain",
+                params: [{ chainId: `0x${desiredChainId.toString(16)}` }],
+            });
+        }
+        try {
+            await provider.enable();
+            updateStore({
+                isActive: true,
+                chainId: provider.chainId,
+                accounts: provider.accounts,
+                account: provider.accounts[0],
+                connector: this,
+                currentWallet: ConnectionType.WALLET_CONNECT_NOTQR,
+            });
+        }
+        catch (error) {
+            await this.deactivate();
+            resetStore();
+            throw error;
+        }
     }
+    static instance;
     static getInstance(setUri) {
         if (WalletConnectNoQr.instance) {
             WalletConnectNoQr.instance.setUri = setUri || function () { };
@@ -891,7 +855,7 @@ class WalletConnectNoQr extends WalletConnect {
 function connectWallet(connectionType, resolve, reject) {
     const { currentWallet, connector } = store;
     if (currentWallet && connectionType !== ConnectionType.WALLET_CONNECT_NOTQR) {
-        connector === null || connector === void 0 ? void 0 : connector.deactivate();
+        connector?.deactivate();
     }
     const connector$1 = getConnector(connectionType, resolve);
     if (connectionType !== ConnectionType.WALLET_CONNECT_NOTQR) {
@@ -904,7 +868,7 @@ function connectWallet(connectionType, resolve, reject) {
     })
         .catch((err) => {
         console.error(err);
-        reject === null || reject === void 0 ? void 0 : reject(err);
+        reject?.(err);
     })
         .finally(() => {
         updateStore({ isActivating: false });
@@ -932,14 +896,14 @@ function disconnect() {
     const { currentWallet } = store;
     const connector = getConnector(currentWallet);
     localStorage.removeItem(selectedWalletKey);
-    connector === null || connector === void 0 ? void 0 : connector.deactivate();
+    connector?.deactivate();
 }
 function useEagerlyConnect(onError) {
     useEffect(() => {
         const selectedWalletString$1 = localStorage.getItem(selectedWalletKey);
         try {
             if (!selectedWalletString$1) {
-                onError === null || onError === void 0 ? void 0 : onError();
+                onError?.();
                 return;
             }
             const selectedWalletString = JSON.parse(selectedWalletString$1);
@@ -952,12 +916,12 @@ function useEagerlyConnect(onError) {
     }, []);
 }
 const isWallet = (params) => {
-    const ethereum = window === null || window === void 0 ? void 0 : window.ethereum;
+    const ethereum = window?.ethereum;
     if (params === "MetaMask") {
-        return (ethereum === null || ethereum === void 0 ? void 0 : ethereum.isMetaMask) || false;
+        return ethereum?.isMetaMask || false;
     }
     if (params === "TokenPocket") {
-        return (ethereum === null || ethereum === void 0 ? void 0 : ethereum.isTokenPocket) || false;
+        return ethereum?.isTokenPocket || false;
     }
     return false;
 };
