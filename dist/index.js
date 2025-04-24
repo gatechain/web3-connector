@@ -1,7 +1,9 @@
-import { useSyncExternalStore, useEffect } from 'react';
-import detectEthereumProvider from '@metamask/detect-provider';
-import ethProviderModule from '@walletconnect/ethereum-provider';
+import React, { createContext, useContext, useEffect } from 'react';
+import { makeAutoObservable, configure } from 'mobx';
 import { Web3Provider } from '@ethersproject/providers';
+import detectEthereumProvider from '@metamask/detect-provider';
+import Cookies from 'js-cookie';
+import { enableStaticRendering } from 'mobx-react-lite';
 
 const selectedWalletKey = "web3.selectedWallet";
 
@@ -16,82 +18,207 @@ var ConnectionType;
     ConnectionType["SUI"] = "SUI";
 })(ConnectionType || (ConnectionType = {}));
 
-let initialStore = {
-    chainId: undefined,
-    isActive: false,
-    isActivating: false,
-    account: undefined,
-    accounts: [],
-    provider: undefined,
+const isServer = typeof window === 'undefined';
+function runOnlyInBrowser(fn, fallback) {
+    if (isServer)
+        return fallback;
+    return fn();
+}
+
+const cookieStorage = {
+    async getItem(key) {
+        if (isServer)
+            return null;
+        return Cookies.get(key) || null;
+    },
+    async setItem(key, value) {
+        if (isServer)
+            return;
+        Cookies.set(key, value, {
+            expires: 30, // 30 days
+            sameSite: 'strict',
+            secure: window.location.protocol === 'https:',
+        });
+    },
+    async removeItem(key) {
+        if (isServer)
+            return;
+        Cookies.remove(key);
+    },
 };
-let store = initialStore;
-let listeners = [];
-function subscribe(listener) {
-    listeners = [...listeners, listener];
-    return () => {
-        listeners = listeners.filter((l) => l !== listener);
+function createStorage(config) {
+    const { storage, key = 'web3_state' } = config;
+    return {
+        async getItem(customKey) {
+            return storage.getItem(customKey || key);
+        },
+        async setItem(value, customKey) {
+            return storage.setItem(customKey || key, value);
+        },
+        async removeItem(customKey) {
+            return storage.removeItem(customKey || key);
+        },
     };
 }
-function getSnapshot() {
-    return store;
-}
-function updateStore(s) {
-    // const isChanged = diff(store, s);
-    // if (!isChanged) return;
-    let provider = s.connector?.provider;
-    if (provider) {
-        if ([ConnectionType.INJECTED, ConnectionType.WALLET_CONNECT, ConnectionType.WALLET_CONNECT_NOTQR, ConnectionType.GATEWALLET].includes(s.currentWallet) &&
-            !(provider instanceof Web3Provider)) {
-            provider = new Web3Provider(provider);
+
+const storage = createStorage({
+    storage: cookieStorage,
+    key: 'web3_store_state'
+});
+class Web3Store {
+    rootStore;
+    chainId = undefined;
+    isActive = false;
+    isActivating = false;
+    account = undefined;
+    accounts = [];
+    gateAccountInfo = undefined;
+    currentWallet = undefined;
+    connector = undefined;
+    network = undefined;
+    provider = null;
+    constructor(rootStore) {
+        this.rootStore = rootStore;
+        // 只在客户端进行 observable 初始化
+        if (!isServer) {
+            makeAutoObservable(this, {}, { autoBind: true });
+            // 从 cookie 中恢复状态
+            this.hydrate();
         }
-        store = {
-            ...store,
-            ...s,
-            provider,
-        };
     }
-    else {
-        store = {
-            ...store,
-            ...s,
-        };
+    hydrate = async () => {
+        try {
+            const state = await storage.getItem('web3_store_state');
+            if (state) {
+                Object.assign(this, JSON.parse(state));
+            }
+        }
+        catch (error) {
+            console.error('Failed to hydrate web3 store:', error);
+        }
+    };
+    persist = async () => {
+        if (isServer)
+            return;
+        try {
+            const state = {
+                chainId: this.chainId,
+                isActive: this.isActive,
+                account: this.account,
+                accounts: this.accounts,
+                currentWallet: this.currentWallet,
+                network: this.network,
+            };
+            await storage.setItem('web3_store_state', JSON.stringify(state));
+        }
+        catch (error) {
+            console.error('Failed to persist web3 store:', error);
+        }
+    };
+    updateStore = (update) => {
+        if (isServer)
+            return;
+        Object.assign(this, update);
+        // 特殊处理 provider
+        if (update.connector?.provider) {
+            const provider = update.connector.provider;
+            if ([ConnectionType.INJECTED, ConnectionType.WALLET_CONNECT, ConnectionType.WALLET_CONNECT_NOTQR, ConnectionType.GATEWALLET].includes(update.currentWallet) &&
+                typeof provider.request === 'function') {
+                this.provider = new Web3Provider(provider);
+            }
+            else {
+                this.provider = provider;
+            }
+        }
+        // 持久化状态到 cookie
+        this.persist();
+    };
+    reset = () => {
+        if (isServer)
+            return;
+        this.chainId = undefined;
+        this.isActive = false;
+        this.isActivating = false;
+        this.account = undefined;
+        this.accounts = [];
+        this.gateAccountInfo = undefined;
+        this.currentWallet = undefined;
+        this.connector = undefined;
+        this.network = undefined;
+        this.provider = null;
+        // 清除持久化的状态
+        storage.removeItem('web3_store_state');
+    };
+    connect = async (connectionType) => {
+        if (isServer)
+            return;
+        await connectWallet(connectionType);
+    };
+    disconnect = () => {
+        if (isServer)
+            return;
+        disconnect();
+        this.reset();
+    };
+}
+
+// 启用服务端静态渲染
+enableStaticRendering(isServer);
+// MobX 配置
+configure({
+    // 在服务端禁用响应式
+    useProxies: 'ifavailable',
+    // 强制执行操作必须在 action 中
+    enforceActions: 'never',
+});
+
+class RootStore {
+    web3Store;
+    constructor() {
+        this.web3Store = new Web3Store(this);
+        // 在服务端不初始化 MobX
+        if (!isServer) {
+            makeAutoObservable(this);
+        }
     }
-    emitChange();
+}
+// 创建一个单例实例
+const rootStore = new RootStore();
+
+const store = rootStore.web3Store;
+function updateStore(update) {
+    if (isServer)
+        return;
+    store.updateStore(update);
 }
 function resetStore() {
-    store = initialStore;
-    emitChange();
+    if (isServer)
+        return;
+    store.reset();
 }
-function emitChange() {
-    for (let listener of listeners) {
-        listener();
-    }
-}
-function useWeb3React() {
-    const store = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+const useWeb3React = () => {
     return store;
-}
-function useNonEVMReact() {
-    const store = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+};
+const useNonEVMReact = () => {
+    const web3Store = useWeb3React();
     return {
-        isConnected: store.isActive,
-        isConnecting: store.isActivating,
-        address: store.account,
-        gateAcountInfo: store.gateAccountInfo,
-        chainId: store.chainId,
-        connector: store.connector,
-        connectiorName: store.currentWallet,
-        connect: connectWallet,
-        disconnect: disconnect,
+        isConnected: web3Store.isActive,
+        isConnecting: web3Store.isActivating,
+        address: web3Store.account,
+        gateAcountInfo: web3Store.gateAccountInfo,
+        chainId: web3Store.chainId,
+        connector: web3Store.connector,
+        connectiorName: web3Store.currentWallet,
+        connect: web3Store.connect.bind(web3Store),
+        disconnect: web3Store.disconnect.bind(web3Store),
     };
-}
+};
 
 function parseChainId(chainId) {
     return Number.parseInt(chainId, 16);
 }
 
 class AbstractWallet {
-    provider;
 }
 
 class GateWallet extends AbstractWallet {
@@ -237,17 +364,16 @@ class GateWallet extends AbstractWallet {
 class MetaMaskWallet extends AbstractWallet {
     constructor() {
         super();
-        this.handleConnectEvent = this.handleConnectEvent.bind(this);
-        this.handleChainChanged = this.handleChainChanged.bind(this);
-        this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
-        this.deactivate = this.deactivate.bind(this);
+        if (!isServer) {
+            this.handleConnectEvent = this.handleConnectEvent.bind(this);
+            this.handleChainChanged = this.handleChainChanged.bind(this);
+            this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
+            this.deactivate = this.deactivate.bind(this);
+        }
     }
     provider;
-    /**
-     * detectProvider
-     */
     detectProvider() {
-        return detectEthereumProvider()
+        return runOnlyInBrowser(() => detectEthereumProvider()
             .then((provider$1) => {
             const provider = provider$1?.providers?.length
                 ? provider$1?.providers.find((p) => p.isMetaMask) ??
@@ -257,9 +383,11 @@ class MetaMaskWallet extends AbstractWallet {
         })
             .catch((error) => {
             console.error(error);
-        });
+        }), Promise.resolve());
     }
     async initialize() {
+        if (isServer)
+            return;
         await this.detectProvider();
         const provider = this.provider;
         if (!provider)
@@ -270,8 +398,9 @@ class MetaMaskWallet extends AbstractWallet {
         provider.on("disconnect", this.deactivate);
     }
     handleAccountsChanged(accounts) {
+        if (isServer)
+            return;
         if (accounts.length === 0) {
-            // MetaMask is locked or the user has not connected any accounts.
             this.deactivate();
         }
         else {
@@ -283,17 +412,20 @@ class MetaMaskWallet extends AbstractWallet {
         }
     }
     handleConnectEvent({ chainId }) {
+        if (isServer)
+            return;
         console.log("connect chainId", chainId);
         updateStore({ chainId: parseChainId(chainId) });
     }
     handleChainChanged(chainId) {
+        if (isServer)
+            return;
         console.log("chainChanged chainId", chainId);
         updateStore({ chainId: parseChainId(chainId) });
     }
-    /**
-     * connect
-     */
     activate(desiredChainIdOrChainParameters) {
+        if (isServer)
+            return Promise.resolve();
         return this.initialize().then(() => {
             const provider = this.provider;
             if (!provider)
@@ -306,7 +438,6 @@ class MetaMaskWallet extends AbstractWallet {
                 const desiredChainId = typeof desiredChainIdOrChainParameters === "number"
                     ? desiredChainIdOrChainParameters
                     : desiredChainIdOrChainParameters?.chainId;
-                // if there's no desired chain, or it's equal to the received, update
                 if (!desiredChainId || receivedChainId === desiredChainId) {
                     updateStore({
                         isActive: true,
@@ -319,8 +450,6 @@ class MetaMaskWallet extends AbstractWallet {
                     return;
                 }
                 const desiredChainIdHex = `0x${desiredChainId.toString(16)}`;
-                // if we're here, we can try to switch networks
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 return this.provider.request({
                     method: "wallet_switchEthereumChain",
                     params: [{ chainId: desiredChainIdHex }],
@@ -328,8 +457,6 @@ class MetaMaskWallet extends AbstractWallet {
                     .catch((error) => {
                     if (error.code === 4902 &&
                         typeof desiredChainIdOrChainParameters !== "number") {
-                        // if we're here, we can try to add a new network
-                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                         return this.provider.request({
                             method: "wallet_addEthereumChain",
                             params: [
@@ -347,6 +474,8 @@ class MetaMaskWallet extends AbstractWallet {
         });
     }
     async connectEagerly() {
+        if (isServer)
+            return;
         await this.initialize();
         const provider = this.provider;
         if (!provider)
@@ -369,10 +498,9 @@ class MetaMaskWallet extends AbstractWallet {
             console.error(error);
         }
     }
-    /**
-     * disconnect
-     */
     deactivate() {
+        if (isServer)
+            return;
         const provider = this.provider;
         if (!provider)
             return;
@@ -597,6 +725,13 @@ class UnisatWallet extends AbstractWallet {
     }
 }
 
+// 动态导入 WalletConnect provider
+const getEthProviderModule = async () => {
+    if (isServer)
+        return null;
+    const module = await import('@walletconnect/ethereum-provider');
+    return module.default;
+};
 function isArrayOneOrMore(input = []) {
     return input.length > 0;
 }
@@ -613,18 +748,19 @@ function getChainsWithDefault(chains, defaultChainId) {
     return [defaultChainId, ...ordered];
 }
 class WalletConnect extends AbstractWallet {
-    provider;
     defaultChainId = 1;
     constructor({ showQrModal }) {
         super();
-        this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
-        this.deactivate = this.deactivate.bind(this);
-        this.handleChainChange = this.handleChainChange.bind(this);
-        this.handleDisplayURI = this.handleDisplayURI.bind(this);
-        this.options.showQrModal = showQrModal;
-        const { chains, optionalChains } = this.getChainProps(this.options.chains, this.options.optionalChains, this.defaultChainId);
-        this.chains = chains;
-        this.optionalChains = optionalChains;
+        if (!isServer) {
+            this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
+            this.deactivate = this.deactivate.bind(this);
+            this.handleChainChange = this.handleChainChange.bind(this);
+            this.handleDisplayURI = this.handleDisplayURI.bind(this);
+            this.options.showQrModal = showQrModal;
+            const { chains, optionalChains } = this.getChainProps(this.options.chains, this.options.optionalChains, this.defaultChainId);
+            this.chains = chains;
+            this.optionalChains = optionalChains;
+        }
     }
     chains;
     optionalChains;
@@ -642,7 +778,6 @@ class WalletConnect extends AbstractWallet {
         optionalMethods: ["eth_signTypedData", "eth_signTypedData_v4", "eth_sign"],
         qrModalOptions: {
             explorerRecommendedWalletIds: [
-                // "aba1f652e61fd536e8a7a5cd5e0319c9047c435ef8f7e907717361ff33bb3588",
                 "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96",
                 "1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369",
                 "ef333840daf915aafdc4a004525502d6d49d77bd9c65e0642dbaefb3c2893bef",
@@ -654,11 +789,10 @@ class WalletConnect extends AbstractWallet {
         },
     };
     getChainProps(chains, optionalChains, desiredChainId = this.defaultChainId) {
-        // Reorder chains and optionalChains if necessary
+        if (isServer)
+            return { chains: [1], optionalChains: [1] };
         const orderedChains = getChainsWithDefault(chains, desiredChainId);
         const orderedOptionalChains = getChainsWithDefault(optionalChains, desiredChainId);
-        // Validate and return the result.
-        // Type discrimination requires that we use these typeguard checks to guarantee a valid return type.
         if (isArrayOneOrMore(orderedChains)) {
             return { chains: orderedChains, optionalChains: orderedOptionalChains };
         }
@@ -667,8 +801,13 @@ class WalletConnect extends AbstractWallet {
         }
         throw new Error("Either chains or optionalChains must have at least one item.");
     }
-    detectProvider(desiredChainId = this.defaultChainId) {
+    async detectProvider(desiredChainId = this.defaultChainId) {
+        if (isServer)
+            return Promise.resolve();
         if (this.provider)
+            return Promise.resolve();
+        const ethProviderModule = await getEthProviderModule();
+        if (!ethProviderModule)
             return Promise.resolve();
         const chainProps = this.getChainProps(this.chains, this.optionalChains, desiredChainId);
         return ethProviderModule
@@ -678,11 +817,14 @@ class WalletConnect extends AbstractWallet {
         })
             .then((provider) => {
             this.provider = provider;
-        }).catch(err => {
+        })
+            .catch((err) => {
             console.error(err);
         });
     }
     async initialize(desiredChainId = this.defaultChainId) {
+        if (isServer)
+            return;
         await this.detectProvider(desiredChainId);
         const provider = this.provider;
         if (!provider)
@@ -693,17 +835,23 @@ class WalletConnect extends AbstractWallet {
         provider.on("display_uri", this.handleDisplayURI);
     }
     handleChainChange(chainId) {
+        if (isServer)
+            return;
         updateStore({
             chainId: parseChainId(chainId),
         });
     }
     handleDisplayURI(url) {
+        if (isServer)
+            return;
         console.log("url", url);
     }
     async connectEagerly() {
+        if (isServer)
+            return;
         await this.initialize();
         const provider = this.provider;
-        if (!provider.session) {
+        if (!provider?.session) {
             console.error(new Error("No active session found. Connect your wallet first."));
             return;
         }
@@ -718,57 +866,50 @@ class WalletConnect extends AbstractWallet {
     }
     isLoading = false;
     async activate(desiredChainId = this.defaultChainId) {
-        console.log('isLoading', this.isLoading);
+        if (isServer)
+            return;
         if (this.isLoading)
             return;
         this.isLoading = true;
         await this.initialize(desiredChainId);
         const provider = this.provider;
-        window.wc = provider;
         if (!provider)
             return;
-        if (provider.session) {
-            if (!desiredChainId || desiredChainId === provider.chainId)
-                return;
-            // WalletConnect exposes connected accounts, not chains: `eip155:${chainId}:${address}`
-            const isConnectedToDesiredChain = provider.session.namespaces.eip155.accounts.some((account) => account.startsWith(`eip155:${desiredChainId}:`));
-            if (!isConnectedToDesiredChain) {
-                if (this.options.optionalChains?.includes(desiredChainId)) {
-                    throw new Error(`Cannot activate an optional chain (${desiredChainId}), as the wallet is not connected to it.\n\tYou should handle this error in application code, as there is no guarantee that a wallet is connected to a chain configured in "optionalChains".`);
-                }
-                throw new Error(`Unknown chain (${desiredChainId}). Make sure to include any chains you might connect to in the "chains" or "optionalChains" parameters when initializing WalletConnect.`);
-            }
-            return provider.request({
-                method: "wallet_switchEthereumChain",
-                params: [{ chainId: `0x${desiredChainId.toString(16)}` }],
-            });
-        }
         try {
-            await provider.enable();
+            const accounts = await provider.enable();
             updateStore({
                 isActive: true,
                 chainId: provider.chainId,
-                accounts: provider.accounts,
-                account: provider.accounts[0],
+                accounts,
+                account: accounts[0],
                 connector: this,
                 currentWallet: ConnectionType.WALLET_CONNECT,
             });
-            this.isLoading = true;
         }
         catch (error) {
+            console.error("Failed to activate:", error);
+            this.deactivate();
+        }
+        finally {
             this.isLoading = false;
-            await this.deactivate();
-            throw error;
         }
     }
     handleAccountsChanged(accounts) {
-        const currentAccount = accounts[0];
-        updateStore({
-            accounts: accounts,
-            account: currentAccount,
-        });
+        if (isServer)
+            return;
+        if (accounts.length === 0) {
+            this.deactivate();
+        }
+        else {
+            updateStore({
+                accounts,
+                account: accounts[0],
+            });
+        }
     }
     deactivate() {
+        if (isServer)
+            return;
         const provider = this.provider;
         if (provider) {
             provider.removeListener("disconnect", this.deactivate);
@@ -777,15 +918,15 @@ class WalletConnect extends AbstractWallet {
             provider.removeListener("display_uri", this.handleDisplayURI);
             provider.disconnect();
         }
-        this.isLoading = false;
         localStorage.removeItem(selectedWalletKey);
         resetStore();
+        this.provider = null;
     }
     static instance;
-    static getInstance() {
+    static getInstance(showQrModal = true) {
         if (WalletConnect.instance)
             return WalletConnect.instance;
-        WalletConnect.instance = new WalletConnect({ showQrModal: true });
+        WalletConnect.instance = new WalletConnect({ showQrModal });
         return WalletConnect.instance;
     }
 }
@@ -851,6 +992,43 @@ class WalletConnectNoQr extends WalletConnect {
         return WalletConnectNoQr.instance;
     }
 }
+
+const initialState = {
+    isActive: false,
+    isActivating: false,
+    accounts: [],
+    provider: null
+};
+// 创建一个空的 context 值用于服务端渲染
+const defaultContextValue = {
+    ...initialState,
+    connect: async () => { },
+    disconnect: () => { }
+};
+const Web3Context = createContext(defaultContextValue);
+let ClientProvider = null;
+// 服务端直接返回 null，避免使用任何 hooks
+const Web3StateProvider = ({ children }) => {
+    if (isServer) {
+        return (React.createElement(Web3Context.Provider, { value: defaultContextValue }, children));
+    }
+    // 客户端才动态加载组件
+    if (!ClientProvider) {
+        try {
+            // 同步加载客户端组件
+            ClientProvider = require('./Web3ClientProvider').default;
+        }
+        catch (e) {
+            console.error('Failed to load Web3ClientProvider:', e);
+            return (React.createElement(Web3Context.Provider, { value: defaultContextValue }, children));
+        }
+    }
+    return React.createElement(ClientProvider, null, children);
+};
+const useWeb3State = () => {
+    const context = useContext(Web3Context);
+    return context;
+};
 
 function connectWallet(connectionType, resolve, reject) {
     const { currentWallet, connector } = store;
@@ -926,4 +1104,4 @@ const isWallet = (params) => {
     return false;
 };
 
-export { ConnectionType, connectWallet, disconnect, isWallet, useEagerlyConnect, useNonEVMReact, useWeb3React };
+export { ConnectionType, Web3StateProvider, connectWallet, disconnect, isWallet, useEagerlyConnect, useNonEVMReact, useWeb3React, useWeb3State };

@@ -1,7 +1,7 @@
 import { AddEthereumChainParameter } from "@web3-react/types";
 
 export abstract class AbstractWallet {
-  public provider: any;
+  declare public provider: any;
   public abstract detectProvider(): Promise<unknown>;
 
   public abstract activate(

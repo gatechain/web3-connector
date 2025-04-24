@@ -1,31 +1,17 @@
-import { ConnectionType, Network } from "./types";
-import { AbstractWallet } from "./connectors/AbstractWallet";
-import { connectWallet, disconnect } from ".";
-declare let store: IStore;
-export { store };
-type IStore = {
-    chainId?: number;
-    isActive: boolean;
-    isActivating: boolean;
-    account?: string;
-    accounts: string[];
-    gateAccountInfo?: any;
-    currentWallet?: ConnectionType;
-    connector?: AbstractWallet;
-    network?: Network;
-    provider: any;
-};
-export declare function updateStore(s: Partial<IStore>): void;
+import { ConnectionType } from "./types";
+import type { IWeb3Store } from './stores/types';
+export declare const store: import("./stores/Web3Store").Web3Store;
+export declare function updateStore(update: Partial<IWeb3Store>): void;
 export declare function resetStore(): void;
-export declare function useWeb3React(): IStore;
-export declare function useNonEVMReact(): {
+export declare const useWeb3React: () => import("./stores/Web3Store").Web3Store;
+export declare const useNonEVMReact: () => {
     isConnected: boolean;
     isConnecting: boolean;
     address: string | undefined;
     gateAcountInfo: any;
     chainId: number | undefined;
-    connector: AbstractWallet | undefined;
+    connector: any;
     connectiorName: ConnectionType | undefined;
-    connect: typeof connectWallet;
-    disconnect: typeof disconnect;
+    connect: (connectionType: ConnectionType) => Promise<void>;
+    disconnect: () => void;
 };

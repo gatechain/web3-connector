@@ -37,10 +37,10 @@ declare class WalletConnect extends AbstractWallet {
     protected handleDisplayURI(url: string): void;
     connectEagerly(): Promise<void>;
     private isLoading;
-    activate(desiredChainId?: number): Promise<any>;
+    activate(desiredChainId?: number): Promise<void>;
     private handleAccountsChanged;
     deactivate(): void;
     static instance: WalletConnect;
-    static getInstance(): WalletConnect;
+    static getInstance(showQrModal?: boolean): WalletConnect;
 }
 export default WalletConnect;

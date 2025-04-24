@@ -3,7 +3,14 @@ import { ConnectionType } from "../types";
 import { resetStore, updateStore } from "../useWeb3ReactHook";
 import { parseChainId } from "../utils";
 import { AbstractWallet } from "./AbstractWallet";
-import ethProviderModule from "@walletconnect/ethereum-provider";
+import { isServer, runOnlyInBrowser } from "../utils/env";
+
+// 动态导入 WalletConnect provider
+const getEthProviderModule = async () => {
+  if (isServer) return null;
+  const module = await import("@walletconnect/ethereum-provider");
+  return module.default;
+};
 
 export type ArrayOneOrMore<T> = {
   0: T;
@@ -45,27 +52,29 @@ function getChainsWithDefault(
 }
 
 class WalletConnect extends AbstractWallet {
-  public provider: any;
+  declare public provider: any;
 
   protected readonly defaultChainId = 1;
 
   constructor({ showQrModal }: { showQrModal: boolean }) {
     super();
-    this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
-    this.deactivate = this.deactivate.bind(this);
-    this.handleChainChange = this.handleChainChange.bind(this);
-    this.handleDisplayURI = this.handleDisplayURI.bind(this);
+    if (!isServer) {
+      this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
+      this.deactivate = this.deactivate.bind(this);
+      this.handleChainChange = this.handleChainChange.bind(this);
+      this.handleDisplayURI = this.handleDisplayURI.bind(this);
 
-    this.options.showQrModal = showQrModal;
+      this.options.showQrModal = showQrModal;
 
-    const { chains, optionalChains } = this.getChainProps(
-      this.options.chains,
-      this.options.optionalChains,
-      this.defaultChainId
-    );
+      const { chains, optionalChains } = this.getChainProps(
+        this.options.chains,
+        this.options.optionalChains,
+        this.defaultChainId
+      );
 
-    this.chains = chains;
-    this.optionalChains = optionalChains;
+      this.chains = chains;
+      this.optionalChains = optionalChains;
+    }
   }
 
   private readonly chains;
@@ -85,7 +94,6 @@ class WalletConnect extends AbstractWallet {
     optionalMethods: ["eth_signTypedData", "eth_signTypedData_v4", "eth_sign"],
     qrModalOptions: {
       explorerRecommendedWalletIds: [
-        // "aba1f652e61fd536e8a7a5cd5e0319c9047c435ef8f7e907717361ff33bb3588",
         "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96",
         "1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369",
         "ef333840daf915aafdc4a004525502d6d49d77bd9c65e0642dbaefb3c2893bef",
@@ -102,15 +110,14 @@ class WalletConnect extends AbstractWallet {
     optionalChains: number[] | ArrayOneOrMore<number> | undefined,
     desiredChainId: number | undefined = this.defaultChainId
   ): ChainsProps {
-    // Reorder chains and optionalChains if necessary
+    if (isServer) return { chains: [1], optionalChains: [1] };
+
     const orderedChains = getChainsWithDefault(chains, desiredChainId);
     const orderedOptionalChains = getChainsWithDefault(
       optionalChains,
       desiredChainId
     );
 
-    // Validate and return the result.
-    // Type discrimination requires that we use these typeguard checks to guarantee a valid return type.
     if (isArrayOneOrMore(orderedChains)) {
       return { chains: orderedChains, optionalChains: orderedOptionalChains };
     } else if (isArrayOneOrMore(orderedOptionalChains)) {
@@ -122,15 +129,21 @@ class WalletConnect extends AbstractWallet {
     );
   }
 
-  public detectProvider(
+  public async detectProvider(
     desiredChainId: number | undefined = this.defaultChainId
   ): Promise<unknown> {
+    if (isServer) return Promise.resolve();
     if (this.provider) return Promise.resolve();
+
+    const ethProviderModule = await getEthProviderModule();
+    if (!ethProviderModule) return Promise.resolve();
+
     const chainProps = this.getChainProps(
       this.chains,
       this.optionalChains,
       desiredChainId
     );
+
     return ethProviderModule
       .init({
         ...this.options,
@@ -138,14 +151,17 @@ class WalletConnect extends AbstractWallet {
       })
       .then((provider) => {
         this.provider = provider;
-      }).catch(err => {
-        console.error(err)
       })
+      .catch((err) => {
+        console.error(err);
+      });
   }
 
   protected async initialize(
     desiredChainId: number | undefined = this.defaultChainId
   ) {
+    if (isServer) return;
+
     await this.detectProvider(desiredChainId);
     const provider = this.provider;
 
@@ -158,19 +174,23 @@ class WalletConnect extends AbstractWallet {
   }
 
   private handleChainChange(chainId: string) {
+    if (isServer) return;
     updateStore({
       chainId: parseChainId(chainId),
     });
   }
 
   protected handleDisplayURI(url: string) {
+    if (isServer) return;
     console.log("url", url);
   }
 
   public async connectEagerly() {
+    if (isServer) return;
+
     await this.initialize();
     const provider = this.provider;
-    if (!provider.session) {
+    if (!provider?.session) {
       console.error(
         new Error("No active session found. Connect your wallet first.")
       );
@@ -189,68 +209,49 @@ class WalletConnect extends AbstractWallet {
   private isLoading = false;
 
   public async activate(desiredChainId: number = this.defaultChainId) {
-    console.log('isLoading', this.isLoading)
+    if (isServer) return;
     if (this.isLoading) return;
+
     this.isLoading = true;
     await this.initialize(desiredChainId);
     const provider = this.provider;
 
-    (window as any).wc = provider;
-
     if (!provider) return;
-    if (provider.session) {
-      if (!desiredChainId || desiredChainId === provider.chainId) return;
-      // WalletConnect exposes connected accounts, not chains: `eip155:${chainId}:${address}`
-      const isConnectedToDesiredChain =
-        provider.session.namespaces.eip155.accounts.some((account: any) =>
-          account.startsWith(`eip155:${desiredChainId}:`)
-        );
-      if (!isConnectedToDesiredChain) {
-        if (this.options.optionalChains?.includes(desiredChainId)) {
-          throw new Error(
-            `Cannot activate an optional chain (${desiredChainId}), as the wallet is not connected to it.\n\tYou should handle this error in application code, as there is no guarantee that a wallet is connected to a chain configured in "optionalChains".`
-          );
-        }
-        throw new Error(
-          `Unknown chain (${desiredChainId}). Make sure to include any chains you might connect to in the "chains" or "optionalChains" parameters when initializing WalletConnect.`
-        );
-      }
-      return provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: `0x${desiredChainId.toString(16)}` }],
-      });
-    }
 
     try {
-      await provider.enable();
-
+      const accounts = await provider.enable();
       updateStore({
         isActive: true,
         chainId: provider.chainId,
-        accounts: provider.accounts,
-        account: provider.accounts[0],
+        accounts,
+        account: accounts[0],
         connector: this,
         currentWallet: ConnectionType.WALLET_CONNECT,
       });
-      this.isLoading = true
     } catch (error) {
-      this.isLoading = false
-      await this.deactivate();
-      throw error;
+      console.error("Failed to activate:", error);
+      this.deactivate();
+    } finally {
+      this.isLoading = false;
     }
   }
 
   private handleAccountsChanged(accounts: string[]) {
-    const currentAccount = accounts[0];
-    updateStore({
-      accounts: accounts,
-      account: currentAccount,
-    });
+    if (isServer) return;
+    if (accounts.length === 0) {
+      this.deactivate();
+    } else {
+      updateStore({
+        accounts,
+        account: accounts[0],
+      });
+    }
   }
 
   public deactivate() {
-    const provider = this.provider;
+    if (isServer) return;
 
+    const provider = this.provider;
     if (provider) {
       provider.removeListener("disconnect", this.deactivate);
       provider.removeListener("chainChanged", this.handleChainChange);
@@ -258,18 +259,17 @@ class WalletConnect extends AbstractWallet {
       provider.removeListener("display_uri", this.handleDisplayURI);
       provider.disconnect();
     }
-    this.isLoading = false
 
     localStorage.removeItem(selectedWalletKey);
-
     resetStore();
+    this.provider = null;
   }
 
   static instance: WalletConnect;
 
-  static getInstance() {
+  static getInstance(showQrModal = true) {
     if (WalletConnect.instance) return WalletConnect.instance;
-    WalletConnect.instance = new WalletConnect({ showQrModal: true });
+    WalletConnect.instance = new WalletConnect({ showQrModal });
     return WalletConnect.instance;
   }
 }

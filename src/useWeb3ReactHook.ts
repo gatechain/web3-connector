@@ -1,115 +1,37 @@
-import { useSyncExternalStore } from "react";
-import { ConnectionType, Network } from "./types";
-import { AbstractWallet } from "./connectors/AbstractWallet";
-import { connectWallet, disconnect } from ".";
-import { Web3Provider } from "@ethersproject/providers";
+import { observer } from 'mobx-react-lite';
+import { ConnectionType } from "./types";
+import { rootStore } from './stores/RootStore';
+import { isServer } from "./utils/env";
+import type { IWeb3Store } from './stores/types';
 
-let initialStore: IStore = {
-  chainId: undefined,
-  isActive: false,
-  isActivating: false,
-  account: undefined,
-  accounts: [],
-  provider: undefined,
-};
+export const store = rootStore.web3Store;
 
-let store: IStore = initialStore;
-
-export { store };
-
-type IStore = {
-  chainId?: number;
-  isActive: boolean;
-  isActivating: boolean;
-  account?: string;
-  accounts: string[];
-  gateAccountInfo?: any;
-  currentWallet?: ConnectionType;
-  connector?: AbstractWallet;
-  network?: Network;
-  provider: any;
-};
-
-let listeners: any[] = [];
-
-function subscribe(listener: any) {
-  listeners = [...listeners, listener];
-  return () => {
-    listeners = listeners.filter((l) => l !== listener);
-  };
-}
-
-function getSnapshot() {
-  return store;
-}
-
-function diff(prev: Partial<IStore>, curr: Partial<IStore>) {
-  for (const key in curr) {
-    if (prev[key as keyof IStore] != curr[key as keyof IStore]) {
-      return true;
-    }
-  }
-  return false;
-}
-
-export function updateStore(s: Partial<IStore>) {
-  // const isChanged = diff(store, s);
-
-  // if (!isChanged) return;
-
-  let provider = s.connector?.provider;
-
-  if (provider) {
-    if (
-      [ConnectionType.INJECTED, ConnectionType.WALLET_CONNECT, ConnectionType.WALLET_CONNECT_NOTQR, ConnectionType.GATEWALLET].includes(s.currentWallet as ConnectionType) &&
-      !(provider instanceof Web3Provider)
-    ) {
-      provider = new Web3Provider(provider);
-    }
-
-    store = {
-      ...store,
-      ...s,
-      provider,
-    };
-  } else {
-    store = {
-      ...store,
-      ...s,
-    };
-  }
-
-  emitChange();
+export function updateStore(update: Partial<IWeb3Store>) {
+  if (isServer) return;
+  store.updateStore(update);
 }
 
 export function resetStore() {
-  store = initialStore;
-  emitChange();
+  if (isServer) return;
+  store.reset();
 }
 
-function emitChange() {
-  for (let listener of listeners) {
-    listener();
-  }
-}
-
-export function useWeb3React() {
-  const store = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+export const useWeb3React = () => {
   return store;
-}
+};
 
-export function useNonEVMReact() {
-  const store = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-
+export const useNonEVMReact = () => {
+  const web3Store = useWeb3React();
+  
   return {
-    isConnected: store.isActive,
-    isConnecting: store.isActivating,
-    address: store.account,
-    gateAcountInfo: store.gateAccountInfo,
-    chainId: store.chainId,
-    connector: store.connector,
-    connectiorName: store.currentWallet,
-    connect: connectWallet,
-    disconnect: disconnect,
+    isConnected: web3Store.isActive,
+    isConnecting: web3Store.isActivating,
+    address: web3Store.account,
+    gateAcountInfo: web3Store.gateAccountInfo,
+    chainId: web3Store.chainId,
+    connector: web3Store.connector,
+    connectiorName: web3Store.currentWallet,
+    connect: web3Store.connect.bind(web3Store),
+    disconnect: web3Store.disconnect.bind(web3Store),
   };
-}
+};

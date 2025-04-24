@@ -10,6 +10,7 @@ import { AbstractWallet } from "./connectors/AbstractWallet";
 import WalletConnect from "./connectors/WalletConnect";
 import WalletConnectNoQr from "./connectors/WalletConnectNoQr";
 export { useWeb3React, useNonEVMReact } from "./useWeb3ReactHook";
+export { useWeb3State, Web3StateProvider } from "./hooks/useWeb3State";
 
 export { ConnectionType };
 

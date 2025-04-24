@@ -1,0 +1,21 @@
+import type { IRootStore } from './types';
+import { rootStore } from './RootStore';
+import './config';
+export declare const StoreProvider: import("react").Provider<IRootStore | null>;
+export declare function useStore(): IRootStore;
+export declare function useWeb3Store(): import("./types").IWeb3Store | {
+    provider: null;
+    account: null;
+    chainId: null;
+    connected: boolean;
+    isActivating: boolean;
+    currentWallet: null;
+    connectWallet: () => Promise<void>;
+    disconnect: () => void;
+    setProvider: () => void;
+    setAccount: () => void;
+    setChainId: () => void;
+    setConnected: () => void;
+    reset: () => void;
+};
+export { rootStore };
