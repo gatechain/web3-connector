@@ -28,13 +28,10 @@ importers:
         version: 6.13.7
       mobx-react-lite:
         specifier: ^4.1.0
-        version: 4.1.0(mobx@6.13.7)(react@18.2.0)
-      react:
-        specifier: 18.2.0
-        version: 18.2.0
-      react-dom:
-        specifier: '>=18.2.0'
-        version: 18.2.0(react@18.2.0)
+        version: 4.1.0(mobx@6.13.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      zustand:
+        specifier: ^3.7.2
+        version: 3.7.2(react@18.2.0)
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^26.0.1
@@ -51,12 +48,21 @@ importers:
       '@tsconfig/recommended':
         specifier: ^1.0.1
         version: 1.0.8
+      '@types/node':
+        specifier: ^22.14.1
+        version: 22.14.1
       '@types/react':
         specifier: ^18.3.4
         version: 18.3.20
       '@web3-react/types':
         specifier: ^8.2.3
         version: 8.2.3(@types/react@18.3.20)(react@18.2.0)
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
       rollup:
         specifier: ^4.21.0
         version: 4.40.0
@@ -1545,6 +1551,15 @@ packages:
 
   zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
+
+  zustand@3.7.2:
+    resolution: {integrity: sha512-PIJDIZKtokhof+9+60cpockVOq05sJzHCriyvaLBmEJixseQ1a5Kdov6fWZfWOu5SK9c+FhH1jU0tntLxRJYMA==}
+    engines: {node: '>=12.7.0'}
+    peerDependencies:
+      react: '>=16.8'
+    peerDependenciesMeta:
+      react:
+        optional: true
 
   zustand@4.4.0:
     resolution: {integrity: sha512-2dq6wq4dSxbiPTamGar0NlIG/av0wpyWZJGeQYtUOLegIUvhM2Bf86ekPlmgpUtS5uR7HyetSiktYrGsdsyZgQ==}
@@ -3147,11 +3162,13 @@ snapshots:
 
   minipass@7.1.2: {}
 
-  mobx-react-lite@4.1.0(mobx@6.13.7)(react@18.2.0):
+  mobx-react-lite@4.1.0(mobx@6.13.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       mobx: 6.13.7
       react: 18.2.0
       use-sync-external-store: 1.5.0(react@18.2.0)
+    optionalDependencies:
+      react-dom: 18.2.0(react@18.2.0)
 
   mobx@6.13.7: {}
 
@@ -3655,6 +3672,10 @@ snapshots:
       yargs-parser: 18.1.3
 
   zod@3.22.4: {}
+
+  zustand@3.7.2(react@18.2.0):
+    optionalDependencies:
+      react: 18.2.0
 
   zustand@4.4.0(@types/react@18.3.20)(react@18.2.0):
     dependencies:

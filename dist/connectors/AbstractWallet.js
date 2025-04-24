@@ -1,0 +1,4 @@
+class AbstractWallet {
+}
+
+export { AbstractWallet };

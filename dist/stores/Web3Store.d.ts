@@ -1,8 +1,6 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { ConnectionType, Network } from '../types';
-import type { IWeb3Store, IRootStore } from './types';
-export declare class Web3Store implements IWeb3Store {
-    private rootStore;
+export interface Web3State {
     chainId?: number;
     isActive: boolean;
     isActivating: boolean;
@@ -13,11 +11,14 @@ export declare class Web3Store implements IWeb3Store {
     connector?: any;
     network?: Network;
     provider: Web3Provider | null;
-    constructor(rootStore: IRootStore);
-    private hydrate;
-    private persist;
-    updateStore: (update: Partial<Web3Store>) => void;
+}
+export interface Web3Actions {
+    updateStore: (update: Partial<Web3State>) => void;
     reset: () => void;
     connect: (connectionType: ConnectionType) => Promise<void>;
     disconnect: () => void;
 }
+type StoreState = Web3State & Web3Actions;
+export declare const store: import("zustand/vanilla").StoreApi<StoreState>;
+export declare const useWeb3Store: () => StoreState;
+export {};

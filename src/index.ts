@@ -9,8 +9,7 @@ import { store, updateStore } from "./useWeb3ReactHook";
 import { AbstractWallet } from "./connectors/AbstractWallet";
 import WalletConnect from "./connectors/WalletConnect";
 import WalletConnectNoQr from "./connectors/WalletConnectNoQr";
-export { useWeb3React, useNonEVMReact } from "./useWeb3ReactHook";
-export { useWeb3State, Web3StateProvider } from "./hooks/useWeb3State";
+export { useWeb3React } from "./useWeb3ReactHook";
 
 export { ConnectionType };
 
@@ -19,7 +18,7 @@ export function connectWallet(
   resolve?: (uri: string) => void,
   reject?: (err: Error) => void
 ) {
-  const { currentWallet, connector } = store;
+  const { currentWallet, connector } = store.getState();
 
   if (currentWallet && connectionType !== ConnectionType.WALLET_CONNECT_NOTQR) {
     connector?.deactivate();
@@ -68,9 +67,10 @@ function getConnector(
 }
 
 export function disconnect() {
-  const { currentWallet } = store;
+  const { currentWallet } = store.getState();
+  if (!currentWallet) return;
 
-  const connector = getConnector(currentWallet as ConnectionType);
+  const connector = getConnector(currentWallet);
   localStorage.removeItem(selectedWalletKey);
 
   connector?.deactivate();

@@ -1,115 +1,138 @@
-import { makeAutoObservable } from 'mobx';
-import { Web3Provider } from '@ethersproject/providers';
-import { ConnectionType, Network } from '../types';
-import { connectWallet as connectWalletUtil, disconnect as disconnectUtil } from '../index';
-import type { IWeb3Store, IRootStore } from './types';
-import { isServer } from '../utils/env';
-import { cookieStorage, createStorage } from '../stores/storage';
+import create from 'zustand/vanilla'
+import { Web3Provider } from '@ethersproject/providers'
+import { ConnectionType, Network } from '../types'
+import { connectWallet as connectWalletUtil, disconnect as disconnectUtil } from '../index'
+import { isServer } from '../utils/env'
 
-const storage = createStorage({
-  storage: cookieStorage,
-  key: 'web3_store_state'
-});
+export interface Web3State {
+  chainId?: number
+  isActive: boolean
+  isActivating: boolean
+  account?: string
+  accounts: string[]
+  gateAccountInfo?: any
+  currentWallet?: ConnectionType
+  connector?: any
+  network?: Network
+  provider: Web3Provider | null
+}
 
-export class Web3Store implements IWeb3Store {
-  chainId?: number = undefined;
-  isActive: boolean = false;
-  isActivating: boolean = false;
-  account?: string = undefined;
-  accounts: string[] = [];
-  gateAccountInfo?: any = undefined;
-  currentWallet?: ConnectionType = undefined;
-  connector?: any = undefined;
-  network?: Network = undefined;
-  provider: Web3Provider | null = null;
+export interface Web3Actions {
+  updateStore: (update: Partial<Web3State>) => void
+  reset: () => void
+  connect: (connectionType: ConnectionType) => Promise<void>
+  disconnect: () => void
+}
 
-  constructor(private rootStore: IRootStore) {
-    // 只在客户端进行 observable 初始化
-    if (!isServer) {
-      makeAutoObservable(this, {}, { autoBind: true });
-      
-      // 从 cookie 中恢复状态
-      this.hydrate();
-    }
-  }
+type StoreState = Web3State & Web3Actions
 
-  private hydrate = async () => {
-    try {
-      const state = await storage.getItem('web3_store_state');
-      if (state) {
-        Object.assign(this, JSON.parse(state));
+const initialState: Web3State = {
+  chainId: undefined,
+  isActive: false,
+  isActivating: false,
+  account: undefined,
+  accounts: [],
+  gateAccountInfo: undefined,
+  currentWallet: undefined,
+  connector: undefined,
+  network: undefined,
+  provider: null,
+}
+
+// 创建原始 store
+export const store = create<StoreState>((set, get) => ({
+  ...initialState,
+
+  updateStore: (update: Partial<Web3State>) => {
+    if (isServer) return
+
+    set((state) => {
+      const newState = { ...state, ...update }
+
+      // 特殊处理 provider
+      if (update.connector?.provider) {
+        const provider = update.connector.provider
+        if (
+          [
+            ConnectionType.INJECTED,
+            ConnectionType.WALLET_CONNECT,
+            ConnectionType.WALLET_CONNECT_NOTQR,
+            ConnectionType.GATEWALLET,
+          ].includes(update.currentWallet as ConnectionType) &&
+          typeof provider.request === 'function'
+        ) {
+          newState.provider = new Web3Provider(provider)
+        } else {
+          newState.provider = provider
+        }
       }
-    } catch (error) {
-      console.error('Failed to hydrate web3 store:', error);
-    }
-  }
 
-  private persist = async () => {
-    if (isServer) return;
-    
+      return newState
+    })
+  },
+
+  reset: () => {
+    if (isServer) return
+    set(initialState)
+  },
+
+  connect: async (connectionType: ConnectionType) => {
+    if (isServer) return
+    set({ isActivating: true })
     try {
-      const state = {
-        chainId: this.chainId,
-        isActive: this.isActive,
-        account: this.account,
-        accounts: this.accounts,
-        currentWallet: this.currentWallet,
-        network: this.network,
-      };
-      await storage.setItem('web3_store_state', JSON.stringify(state));
-    } catch (error) {
-      console.error('Failed to persist web3 store:', error);
+      await connectWalletUtil(connectionType)
+    } finally {
+      set({ isActivating: false })
+    }
+  },
+
+  disconnect: () => {
+    if (isServer) return
+    disconnectUtil()
+    set(initialState)
+  },
+}))
+
+// 添加持久化
+if (!isServer) {
+  const key = 'web3-store'
+  const savedState = localStorage.getItem(key)
+  if (savedState) {
+    try {
+      const state = JSON.parse(savedState)
+      store.setState(state)
+    } catch (e) {
+      console.error('Failed to restore web3 store state:', e)
     }
   }
 
-  updateStore = (update: Partial<Web3Store>) => {
-    if (isServer) return;
-
-    Object.assign(this, update);
-
-    // 特殊处理 provider
-    if (update.connector?.provider) {
-      const provider = update.connector.provider;
-      if (
-        [ConnectionType.INJECTED, ConnectionType.WALLET_CONNECT, ConnectionType.WALLET_CONNECT_NOTQR, ConnectionType.GATEWALLET].includes(update.currentWallet as ConnectionType) &&
-        typeof provider.request === 'function'
-      ) {
-        this.provider = new Web3Provider(provider);
-      } else {
-        this.provider = provider;
+  store.subscribe((state) => {
+    try {
+      const saveState = {
+        chainId: state.chainId,
+        isActive: state.isActive,
+        account: state.account,
+        accounts: state.accounts,
+        currentWallet: state.currentWallet,
+        network: state.network,
       }
+      localStorage.setItem(key, JSON.stringify(saveState))
+    } catch (e) {
+      console.error('Failed to persist web3 store state:', e)
     }
+  })
+}
 
-    // 持久化状态到 cookie
-    this.persist();
-  };
+// 创建 React hook
+import { useEffect, useState } from 'react'
 
-  reset = () => {
-    if (isServer) return;
+export const useWeb3Store = () => {
+  const [state, setState] = useState(() => store.getState())
 
-    this.chainId = undefined;
-    this.isActive = false;
-    this.isActivating = false;
-    this.account = undefined;
-    this.accounts = [];
-    this.gateAccountInfo = undefined;
-    this.currentWallet = undefined;
-    this.connector = undefined;
-    this.network = undefined;
-    this.provider = null;
+  useEffect(() => {
+    const unsubscribe = store.subscribe(setState)
+    return unsubscribe
+  }, [])
 
-    // 清除持久化的状态
-    storage.removeItem('web3_store_state');
-  };
-
-  connect = async (connectionType: ConnectionType) => {
-    if (isServer) return;
-    await connectWalletUtil(connectionType);
-  };
-
-  disconnect = () => {
-    if (isServer) return;
-    disconnectUtil();
-    this.reset();
-  };
+  return state
 } 

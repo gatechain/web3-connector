@@ -1,37 +1,22 @@
-import { observer } from 'mobx-react-lite';
-import { ConnectionType } from "./types";
-import { rootStore } from './stores/RootStore';
-import { isServer } from "./utils/env";
-import type { IWeb3Store } from './stores/types';
+import { store, useWeb3Store, type Web3State, type Web3Actions } from './stores/Web3Store'
+import { isServer } from './utils/env'
 
-export const store = rootStore.web3Store;
+// 导出完整的 store state 和 actions 类型
+export type { Web3State, Web3Actions }
 
-export function updateStore(update: Partial<IWeb3Store>) {
-  if (isServer) return;
-  store.updateStore(update);
+// 导出 store 实例
+export { store }
+
+// React hook
+export const useWeb3React = () => useWeb3Store()
+
+// 兼容性函数
+export function updateStore(update: Partial<Web3State>) {
+  if (isServer) return
+  store.getState().updateStore(update)
 }
 
 export function resetStore() {
-  if (isServer) return;
-  store.reset();
+  if (isServer) return
+  store.getState().reset()
 }
-
-export const useWeb3React = () => {
-  return store;
-};
-
-export const useNonEVMReact = () => {
-  const web3Store = useWeb3React();
-  
-  return {
-    isConnected: web3Store.isActive,
-    isConnecting: web3Store.isActivating,
-    address: web3Store.account,
-    gateAcountInfo: web3Store.gateAccountInfo,
-    chainId: web3Store.chainId,
-    connector: web3Store.connector,
-    connectiorName: web3Store.currentWallet,
-    connect: web3Store.connect.bind(web3Store),
-    disconnect: web3Store.disconnect.bind(web3Store),
-  };
-};
