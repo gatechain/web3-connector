@@ -1,59 +1,51 @@
-import detectEthereumProvider from "@metamask/detect-provider";
-import { AbstractWallet } from "./AbstractWallet";
-import { resetStore, updateStore } from "../useWeb3ReactHook";
-import { ConnectionType } from "../types";
-import { selectedWalletKey } from "../constant";
-import { AddEthereumChainParameter, ProviderRpcError } from "@web3-react/types";
-import { parseChainId } from "../utils";
-import { isServer, runOnlyInBrowser } from "../utils/env";
+import detectEthereumProvider from '@metamask/detect-provider';
+import { AddEthereumChainParameter, ProviderRpcError } from '@web3-react/types';
+import { ConnectionType } from '../types';
+import { resetStore, updateStore } from '../useWeb3ReactHook';
+import { parseChainId } from '../utils';
+import { runOnlyInBrowser } from '../utils/env';
+import { AbstractWallet } from './AbstractWallet';
 
 class MetaMaskWallet extends AbstractWallet {
+  declare public provider: any;
+
   constructor() {
     super();
-    if (!isServer) {
-      this.handleConnectEvent = this.handleConnectEvent.bind(this);
-      this.handleChainChanged = this.handleChainChanged.bind(this);
-      this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
-      this.deactivate = this.deactivate.bind(this);
-    }
+    this.handleConnectEvent = this.handleConnectEvent.bind(this);
+    this.handleChainChanged = this.handleChainChanged.bind(this);
+    this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
+    this.deactivate = this.deactivate.bind(this);
   }
-  public provider: any;
 
   public detectProvider() {
     return runOnlyInBrowser(
-      () => detectEthereumProvider()
-        .then((provider$1: any) => {
-          const provider = provider$1?.providers?.length
-            ? provider$1?.providers.find((p: any) => p.isMetaMask) ??
-              provider$1.providers[0]
-            : provider$1;
-
-          this.provider = provider;
-        })
-        .catch((error) => {
-          console.error(error);
-        }),
+      () =>
+        detectEthereumProvider()
+          .then((provider$1: any) => {
+            const provider = provider$1?.providers?.length
+              ? (provider$1?.providers.find((p: any) => p.isMetaMask) ?? provider$1.providers[0])
+              : provider$1;
+            this.provider = provider;
+          })
+          .catch((error) => {
+            console.error(error);
+          }),
       Promise.resolve()
     );
   }
 
   private async initialize() {
-    if (isServer) return;
-    
     await this.detectProvider();
     const provider = this.provider;
-
     if (!provider) return;
 
-    provider.on("connect", this.handleConnectEvent);
-    provider.on("chainChanged", this.handleChainChanged);
-    provider.on("accountsChanged", this.handleAccountsChanged);
-    provider.on("disconnect", this.deactivate);
+    provider.on('connect', this.handleConnectEvent);
+    provider.on('chainChanged', this.handleChainChanged);
+    provider.on('accountsChanged', this.handleAccountsChanged);
+    provider.on('disconnect', this.deactivate);
   }
 
   private handleAccountsChanged(accounts: string[]) {
-    if (isServer) return;
-    
     if (accounts.length === 0) {
       this.deactivate();
     } else {
@@ -66,36 +58,26 @@ class MetaMaskWallet extends AbstractWallet {
   }
 
   private handleConnectEvent({ chainId }: any) {
-    if (isServer) return;
-    
-    console.log("connect chainId", chainId);
+    console.log('connect chainId', chainId);
     updateStore({ chainId: parseChainId(chainId) });
   }
 
   private handleChainChanged(chainId: string) {
-    if (isServer) return;
-    
-    console.log("chainChanged chainId", chainId);
+    console.log('chainChanged chainId', chainId);
     updateStore({ chainId: parseChainId(chainId) });
   }
 
-  public activate(
-    desiredChainIdOrChainParameters?: number | AddEthereumChainParameter
-  ) {
-    if (isServer) return Promise.resolve();
-
+  public activate(desiredChainIdOrChainParameters?: number | AddEthereumChainParameter) {
     return this.initialize().then(() => {
       const provider = this.provider;
-
       if (!provider) return;
-
       return Promise.all([
-        this.provider.request({ method: "eth_chainId" }) as Promise<string>,
-        this.provider.request({ method: "eth_requestAccounts" }) as Promise<string[]>,
+        this.provider.request({ method: 'eth_chainId' }) as Promise<string>,
+        this.provider.request({ method: 'eth_requestAccounts' }) as Promise<string[]>,
       ]).then(([chainId, accounts]) => {
         const receivedChainId = parseChainId(chainId);
         const desiredChainId =
-          typeof desiredChainIdOrChainParameters === "number"
+          typeof desiredChainIdOrChainParameters === 'number'
             ? desiredChainIdOrChainParameters
             : desiredChainIdOrChainParameters?.chainId;
 
@@ -114,16 +96,13 @@ class MetaMaskWallet extends AbstractWallet {
         const desiredChainIdHex = `0x${desiredChainId.toString(16)}`;
 
         return this.provider!.request({
-          method: "wallet_switchEthereumChain",
+          method: 'wallet_switchEthereumChain',
           params: [{ chainId: desiredChainIdHex }],
         })
           .catch((error: ProviderRpcError) => {
-            if (
-              error.code === 4902 &&
-              typeof desiredChainIdOrChainParameters !== "number"
-            ) {
+            if (error.code === 4902 && typeof desiredChainIdOrChainParameters !== 'number') {
               return this.provider!.request({
-                method: "wallet_addEthereumChain",
+                method: 'wallet_addEthereumChain',
                 params: [
                   {
                     ...desiredChainIdOrChainParameters,
@@ -140,8 +119,6 @@ class MetaMaskWallet extends AbstractWallet {
   }
 
   public async connectEagerly() {
-    if (isServer) return;
-
     await this.initialize();
     const provider = this.provider;
 
@@ -149,8 +126,8 @@ class MetaMaskWallet extends AbstractWallet {
 
     try {
       const [chainId, accounts] = await Promise.all([
-        this.provider.request({ method: "eth_chainId" }) as Promise<string>,
-        this.provider.request({ method: "eth_requestAccounts" }) as Promise<string[]>,
+        this.provider.request({ method: 'eth_chainId' }) as Promise<string>,
+        this.provider.request({ method: 'eth_requestAccounts' }) as Promise<string[]>,
       ]);
 
       updateStore({
@@ -167,17 +144,12 @@ class MetaMaskWallet extends AbstractWallet {
   }
 
   public deactivate() {
-    if (isServer) return;
-
     const provider = this.provider;
     if (!provider) return;
-
-    provider.removeListener("connect", this.handleConnectEvent);
-    provider.removeListener("chainChanged", this.handleChainChanged);
-    provider.removeListener("accountsChanged", this.handleAccountsChanged);
-    provider.removeListener("disconnect", this.deactivate);
-    
-    localStorage.removeItem(selectedWalletKey);
+    provider.removeListener('connect', this.handleConnectEvent);
+    provider.removeListener('chainChanged', this.handleChainChanged);
+    provider.removeListener('accountsChanged', this.handleAccountsChanged);
+    provider.removeListener('disconnect', this.deactivate);
     resetStore();
   }
 

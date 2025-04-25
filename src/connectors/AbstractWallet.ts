@@ -1,4 +1,4 @@
-import { AddEthereumChainParameter } from "@web3-react/types";
+import { AddEthereumChainParameter } from '@web3-react/types';
 
 export abstract class AbstractWallet {
   declare public provider: any;

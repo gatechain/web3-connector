@@ -21,6 +21,8 @@ export default {
     'js-cookie',
     'zustand',
     'zustand/vanilla',
+    'zustand/middleware',
+    'zustand/shallow',
   ],
   plugins: [
     commonjs({

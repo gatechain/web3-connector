@@ -5,7 +5,6 @@ import { parseChainId } from '../utils/index.js';
 import { AbstractWallet } from './AbstractWallet.js';
 
 class GateWallet extends AbstractWallet {
-    provider;
     constructor() {
         super();
         this.handleGateAccountChange = this.handleGateAccountChange.bind(this);
@@ -35,8 +34,8 @@ class GateWallet extends AbstractWallet {
                     resolve(gatewallet);
                 }
                 else {
-                    const message = "Unable to detect window.gatewallet.";
-                    console.error("detect-provider:", message);
+                    const message = 'Unable to detect window.gatewallet.';
+                    console.error('detect-provider:', message);
                     resolve(null);
                 }
             }
@@ -47,11 +46,11 @@ class GateWallet extends AbstractWallet {
         const provider = this.provider;
         if (!provider)
             return;
-        provider.on("connect", this.handleConnectEvent);
-        provider.on("gateAccountChange", this.handleGateAccountChange);
-        provider.on("chainChanged", this.handleChainChanged);
-        provider.on("accountsChanged", this.handleAccountsChanged);
-        provider.on("disconnect", this.deactivate);
+        provider.on('accountsChanged', this.handleAccountsChanged);
+        provider.on('chainChanged', this.handleChainChanged);
+        provider.on('connect', this.handleConnectEvent);
+        provider.on('gateAccountChange', this.handleGateAccountChange);
+        provider.on('disconnect', this.deactivate);
     }
     async connectEagerly() {
         await this.initialize();
@@ -71,29 +70,57 @@ class GateWallet extends AbstractWallet {
             console.error(error);
         }
     }
-    async activate() {
+    async activate(desiredChainIdOrChainParameters) {
         await this.initialize();
         const provider = this.provider;
         if (!provider)
             return;
-        try {
-            const gateAccountInfo = await provider.connect();
-            updateStore({
-                chainId: parseChainId(provider.chainId),
-                account: provider.selectedAddress,
-                isActive: true,
-                gateAccountInfo,
-                connector: this,
-                currentWallet: ConnectionType.GATEWALLET,
-            });
-        }
-        catch (error) {
-            console.error(error);
-        }
+        const gateAccountInfo = await provider.connect();
+        return Promise.all([
+            this.provider.request({ method: 'eth_chainId' }),
+            this.provider.request({ method: 'eth_requestAccounts' }),
+        ]).then(([chainId, accounts]) => {
+            const receivedChainId = parseChainId(chainId);
+            const desiredChainId = typeof desiredChainIdOrChainParameters === 'number'
+                ? desiredChainIdOrChainParameters
+                : desiredChainIdOrChainParameters?.chainId;
+            if (!desiredChainId || receivedChainId === desiredChainId) {
+                updateStore({
+                    isActive: true,
+                    chainId: parseChainId(chainId),
+                    gateAccountInfo,
+                    accounts,
+                    account: accounts?.[0],
+                    currentWallet: ConnectionType.GATEWALLET,
+                    connector: this,
+                });
+                return;
+            }
+            const desiredChainIdHex = `0x${desiredChainId.toString(16)}`;
+            return this.provider.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: desiredChainIdHex }],
+            })
+                .catch((error) => {
+                if (error.code === 4902 && typeof desiredChainIdOrChainParameters !== 'number') {
+                    return this.provider.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [
+                            {
+                                ...desiredChainIdOrChainParameters,
+                                chainId: desiredChainIdHex,
+                            },
+                        ],
+                    });
+                }
+                throw error;
+            })
+                .then(() => this.activate(desiredChainId));
+        });
     }
     handleGateAccountChange = (gateWallet) => {
-        console.log("gateAccountChange", gateWallet, JSON.stringify(gateWallet) === "{}");
-        if (!gateWallet || JSON.stringify(gateWallet) === "{}") {
+        console.log('gateAccountChange', gateWallet, JSON.stringify(gateWallet) === '{}');
+        if (!gateWallet || JSON.stringify(gateWallet) === '{}') {
             this.deactivate?.();
         }
         else {
@@ -117,21 +144,24 @@ class GateWallet extends AbstractWallet {
         }
     }
     handleConnectEvent({ chainId }) {
-        console.log("chainId", chainId);
+        console.log('chainId', chainId);
         updateStore({ chainId: parseChainId(chainId), isActive: true });
     }
-    handleChainChanged(chainId) {
-        updateStore({ chainId: parseChainId(chainId) });
-    }
+    handleChainChanged = (chainId) => {
+        updateStore({
+            chainId: parseChainId(chainId),
+        });
+    };
     deactivate() {
         const provider = this.provider;
+        console.log('provider deactivate', provider);
         if (!provider)
             return;
-        provider.removeListener("connect", this.handleConnectEvent);
-        provider.removeListener("gateAccountChange", this.handleGateAccountChange);
-        provider.removeListener("chainChanged", this.handleChainChanged);
-        provider.removeListener("accountsChanged", this.handleAccountsChanged);
-        provider.removeListener("disconnect", this.deactivate);
+        provider.removeListener('connect', this.handleConnectEvent);
+        provider.removeListener('gateAccountChange', this.handleGateAccountChange);
+        provider.removeListener('chainChanged', this.handleChainChanged);
+        provider.removeListener('accountsChanged', this.handleAccountsChanged);
+        provider.removeListener('disconnect', this.deactivate);
         localStorage.removeItem(selectedWalletKey);
         resetStore();
     }
@@ -144,4 +174,4 @@ class GateWallet extends AbstractWallet {
     }
 }
 
-export { GateWallet as default };
+export { GateWallet, GateWallet as default };

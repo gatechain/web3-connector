@@ -19,6 +19,34 @@ export interface Web3Actions {
     disconnect: () => void;
 }
 type StoreState = Web3State & Web3Actions;
-export declare const store: import("zustand/vanilla").StoreApi<StoreState>;
-export declare const useWeb3Store: () => StoreState;
+export declare const store: import("zustand").UseBoundStore<Omit<import("zustand").StoreApi<StoreState>, "persist"> & {
+    persist: {
+        setOptions: (options: Partial<import("zustand/middleware").PersistOptions<StoreState, unknown>>) => void;
+        clearStorage: () => void;
+        rehydrate: () => Promise<void> | void;
+        hasHydrated: () => boolean;
+        onHydrate: (fn: (state: StoreState) => void) => () => void;
+        onFinishHydration: (fn: (state: StoreState) => void) => () => void;
+        getOptions: () => Partial<import("zustand/middleware").PersistOptions<StoreState, unknown>>;
+    };
+}>;
+export declare const useWeb3Store: import("zustand").UseBoundStore<Omit<import("zustand").StoreApi<StoreState>, "persist"> & {
+    persist: {
+        setOptions: (options: Partial<import("zustand/middleware").PersistOptions<StoreState, unknown>>) => void;
+        clearStorage: () => void;
+        rehydrate: () => Promise<void> | void;
+        hasHydrated: () => boolean;
+        onHydrate: (fn: (state: StoreState) => void) => () => void;
+        onFinishHydration: (fn: (state: StoreState) => void) => () => void;
+        getOptions: () => Partial<import("zustand/middleware").PersistOptions<StoreState, unknown>>;
+    };
+}>;
+export declare const useWallet: () => {
+    account: string | undefined;
+    isActive: boolean;
+    isActivating: boolean;
+    chainId: number | undefined;
+    currentWallet: ConnectionType | undefined;
+};
+export declare const useWeb3Provider: () => Web3Provider | null;
 export {};

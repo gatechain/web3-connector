@@ -1,4 +1,4 @@
-import { AbstractWallet } from "./AbstractWallet";
+import { AbstractWallet } from './AbstractWallet';
 declare class GateAppWallet extends AbstractWallet {
     provider: any;
     constructor();

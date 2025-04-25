@@ -1,11 +1,12 @@
-import { selectedWalletKey } from "../constant";
-import { ConnectionType } from "../types";
-import { resetStore, updateStore } from "../useWeb3ReactHook";
-import { parseChainId } from "../utils";
-import { AbstractWallet } from "./AbstractWallet";
+import { AddEthereumChainParameter, ProviderRpcError } from '@web3-react/types';
+import { selectedWalletKey } from '../constant';
+import { ConnectionType } from '../types';
+import { resetStore, updateStore } from '../useWeb3ReactHook';
+import { parseChainId } from '../utils';
+import { AbstractWallet } from './AbstractWallet';
 
-class GateWallet extends AbstractWallet {
-  public provider: any;
+export class GateWallet extends AbstractWallet {
+  declare public provider: any;
 
   constructor() {
     super();
@@ -40,9 +41,9 @@ class GateWallet extends AbstractWallet {
           that.provider = gatewallet;
           resolve(gatewallet as any);
         } else {
-          const message = "Unable to detect window.gatewallet.";
+          const message = 'Unable to detect window.gatewallet.';
 
-          console.error("detect-provider:", message);
+          console.error('detect-provider:', message);
           resolve(null);
         }
       }
@@ -55,14 +56,13 @@ class GateWallet extends AbstractWallet {
 
     if (!provider) return;
 
-    provider.on("connect", this.handleConnectEvent);
+    provider.on('accountsChanged', this.handleAccountsChanged);
+    provider.on('chainChanged', this.handleChainChanged);
+    provider.on('connect', this.handleConnectEvent);
 
-    provider.on("gateAccountChange", this.handleGateAccountChange);
+    provider.on('gateAccountChange', this.handleGateAccountChange);
 
-    provider.on("chainChanged", this.handleChainChanged);
-    provider.on("accountsChanged", this.handleAccountsChanged);
-
-    provider.on("disconnect", this.deactivate);
+    provider.on('disconnect', this.deactivate);
   }
 
   async connectEagerly() {
@@ -85,36 +85,62 @@ class GateWallet extends AbstractWallet {
     }
   }
 
-  public async activate() {
+  public async activate(desiredChainIdOrChainParameters?: number | AddEthereumChainParameter) {
     await this.initialize();
     const provider = this.provider;
-
     if (!provider) return;
+    const gateAccountInfo = await provider.connect();
+    return Promise.all([
+      this.provider.request({ method: 'eth_chainId' }) as Promise<string>,
+      this.provider.request({ method: 'eth_requestAccounts' }) as Promise<string[]>,
+    ]).then(([chainId, accounts]) => {
+      const receivedChainId = parseChainId(chainId);
+      const desiredChainId =
+        typeof desiredChainIdOrChainParameters === 'number'
+          ? desiredChainIdOrChainParameters
+          : desiredChainIdOrChainParameters?.chainId;
 
-    try {
-      const gateAccountInfo = await provider.connect();
+      if (!desiredChainId || receivedChainId === desiredChainId) {
+        updateStore({
+          isActive: true,
+          chainId: parseChainId(chainId),
+          gateAccountInfo,
+          accounts,
+          account: accounts?.[0],
+          currentWallet: ConnectionType.GATEWALLET,
+          connector: this,
+        });
+        return;
+      }
 
-      updateStore({
-        chainId: parseChainId(provider.chainId),
-        account: provider.selectedAddress,
-        isActive: true,
-        gateAccountInfo,
-        connector: this,
-        currentWallet: ConnectionType.GATEWALLET,
-      });
-    } catch (error) {
-      console.error(error);
-    }
+      const desiredChainIdHex = `0x${desiredChainId.toString(16)}`;
+
+      return this.provider!.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: desiredChainIdHex }],
+      })
+        .catch((error: ProviderRpcError) => {
+          if (error.code === 4902 && typeof desiredChainIdOrChainParameters !== 'number') {
+            return this.provider!.request({
+              method: 'wallet_addEthereumChain',
+              params: [
+                {
+                  ...desiredChainIdOrChainParameters,
+                  chainId: desiredChainIdHex,
+                },
+              ],
+            });
+          }
+          throw error;
+        })
+        .then(() => this.activate(desiredChainId));
+    });
   }
 
   private handleGateAccountChange = (gateWallet: any) => {
-    console.log(
-      "gateAccountChange",
-      gateWallet,
-      JSON.stringify(gateWallet) === "{}"
-    );
+    console.log('gateAccountChange', gateWallet, JSON.stringify(gateWallet) === '{}');
 
-    if (!gateWallet || JSON.stringify(gateWallet) === "{}") {
+    if (!gateWallet || JSON.stringify(gateWallet) === '{}') {
       this.deactivate?.();
     } else {
       updateStore({
@@ -138,25 +164,28 @@ class GateWallet extends AbstractWallet {
   }
 
   private handleConnectEvent({ chainId }: any) {
-    console.log("chainId", chainId);
+    console.log('chainId', chainId);
     updateStore({ chainId: parseChainId(chainId), isActive: true });
   }
 
-  private handleChainChanged(chainId: string) {
-    updateStore({ chainId: parseChainId(chainId) });
-  }
+  private handleChainChanged = (chainId: string) => {
+    updateStore({
+      chainId: parseChainId(chainId),
+    });
+  };
 
   public deactivate() {
     const provider = this.provider;
+    console.log('provider deactivate', provider);
     if (!provider) return;
-    provider.removeListener("connect", this.handleConnectEvent);
+    provider.removeListener('connect', this.handleConnectEvent);
 
-    provider.removeListener("gateAccountChange", this.handleGateAccountChange);
+    provider.removeListener('gateAccountChange', this.handleGateAccountChange);
 
-    provider.removeListener("chainChanged", this.handleChainChanged);
-    provider.removeListener("accountsChanged", this.handleAccountsChanged);
+    provider.removeListener('chainChanged', this.handleChainChanged);
+    provider.removeListener('accountsChanged', this.handleAccountsChanged);
 
-    provider.removeListener("disconnect", this.deactivate);
+    provider.removeListener('disconnect', this.deactivate);
     localStorage.removeItem(selectedWalletKey);
     resetStore();
   }

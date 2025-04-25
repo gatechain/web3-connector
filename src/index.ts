@@ -1,15 +1,15 @@
-import { useEffect } from "react";
-import GateWallet from "./connectors/GateWallet";
-import MetaMaskWallet from "./connectors/MetaMaskWallet";
-import PhantomWallet from "./connectors/PhantomWallet";
-import UnisatWallet from "./connectors/UnisatWallet";
-import { selectedWalletKey } from "./constant";
-import { ConnectionType } from "./types";
-import { store, updateStore } from "./useWeb3ReactHook";
-import { AbstractWallet } from "./connectors/AbstractWallet";
-import WalletConnect from "./connectors/WalletConnect";
-import WalletConnectNoQr from "./connectors/WalletConnectNoQr";
-export { useWeb3React } from "./useWeb3ReactHook";
+import { useEffect } from 'react';
+import { AbstractWallet } from './connectors/AbstractWallet';
+import GateWallet from './connectors/GateWallet';
+import MetaMaskWallet from './connectors/MetaMaskWallet';
+import PhantomWallet from './connectors/PhantomWallet';
+import UnisatWallet from './connectors/UnisatWallet';
+import WalletConnect from './connectors/WalletConnect';
+import WalletConnectNoQr from './connectors/WalletConnectNoQr';
+import { selectedWalletKey } from './constant';
+import { ConnectionType } from './types';
+import { store, updateStore } from './useWeb3ReactHook';
+export { useWeb3React } from './useWeb3ReactHook';
 
 export { ConnectionType };
 
@@ -44,10 +44,7 @@ export function connectWallet(
     });
 }
 
-function getConnector(
-  connectionType: ConnectionType,
-  resolve?: (uri: string) => void
-) {
+function getConnector(connectionType: ConnectionType, resolve?: (uri: string) => void) {
   const map: any = {
     [ConnectionType.GATEWALLET]: GateWallet,
     [ConnectionType.INJECTED]: MetaMaskWallet,
@@ -72,25 +69,22 @@ export function disconnect() {
 
   const connector = getConnector(currentWallet);
   localStorage.removeItem(selectedWalletKey);
-
+  localStorage.removeItem('web3-storage');
   connector?.deactivate();
 }
 
 export function useEagerlyConnect(onError?: Function) {
   useEffect(() => {
-    const selectedWalletString$1 = localStorage.getItem(selectedWalletKey);
+    const web3Storage = localStorage.getItem('web3-storage');
+    const web3StorageString = JSON?.parse(web3Storage || '{}');
+    const selectedWalletType = (web3StorageString?.state?.currentWallet as ConnectionType) || '';
 
     try {
-      if (!selectedWalletString$1) {
+      if (!selectedWalletType) {
         onError?.();
         return;
       }
-      const selectedWalletString = JSON.parse(selectedWalletString$1);
-
-      const selectedWallet = getConnector(
-        selectedWalletString as ConnectionType
-      );
-
+      const selectedWallet = getConnector(selectedWalletType as ConnectionType);
       selectedWallet.connectEagerly();
     } catch (error) {
       console.error(error);
@@ -98,7 +92,7 @@ export function useEagerlyConnect(onError?: Function) {
   }, []);
 }
 
-type ISWalletType = "MetaMask" | "TokenPocket";
+type ISWalletType = 'MetaMask' | 'TokenPocket';
 export interface EthereumProvider {
   isMetaMask?: boolean;
   isTokenPocket?: boolean;
@@ -107,11 +101,11 @@ export interface EthereumProvider {
 export const isWallet = (params: ISWalletType): boolean => {
   const ethereum = (window as any)?.ethereum as EthereumProvider;
 
-  if (params === "MetaMask") {
+  if (params === 'MetaMask') {
     return ethereum?.isMetaMask || false;
   }
 
-  if (params === "TokenPocket") {
+  if (params === 'TokenPocket') {
     return ethereum?.isTokenPocket || false;
   }
 

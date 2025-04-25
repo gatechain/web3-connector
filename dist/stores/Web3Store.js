@@ -1,9 +1,10 @@
-import create from 'zustand/vanilla';
 import { Web3Provider } from '@ethersproject/providers';
-import { ConnectionType } from '../types.js';
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import 'zustand/shallow';
 import { disconnect, connectWallet } from '../index.js';
+import { ConnectionType } from '../types.js';
 import { isServer } from '../utils/env.js';
-import { useState, useEffect } from 'react';
 
 const initialState = {
     chainId: undefined,
@@ -17,12 +18,10 @@ const initialState = {
     network: undefined,
     provider: null,
 };
-// 创建原始 store
-const store = create((set, get) => ({
+// 创建 store
+const store = create()(persist((set, get) => ({
     ...initialState,
     updateStore: (update) => {
-        if (isServer)
-            return;
         set((state) => {
             const newState = { ...state, ...update };
             // 特殊处理 provider
@@ -33,8 +32,7 @@ const store = create((set, get) => ({
                     ConnectionType.WALLET_CONNECT,
                     ConnectionType.WALLET_CONNECT_NOTQR,
                     ConnectionType.GATEWALLET,
-                ].includes(update.currentWallet) &&
-                    typeof provider.request === 'function') {
+                ].includes(update.currentWallet)) {
                     newState.provider = new Web3Provider(provider);
                 }
                 else {
@@ -45,13 +43,9 @@ const store = create((set, get) => ({
         });
     },
     reset: () => {
-        if (isServer)
-            return;
         set(initialState);
     },
     connect: async (connectionType) => {
-        if (isServer)
-            return;
         set({ isActivating: true });
         try {
             await connectWallet(connectionType);
@@ -61,49 +55,42 @@ const store = create((set, get) => ({
         }
     },
     disconnect: () => {
-        if (isServer)
-            return;
         disconnect();
         set(initialState);
     },
+}), {
+    name: 'web3-storage',
+    storage: createJSONStorage(() => ({
+        getItem: (name) => {
+            return localStorage.getItem(name);
+        },
+        setItem: (name, value) => {
+            if (!isServer) {
+                localStorage.setItem(name, value);
+            }
+        },
+        removeItem: (name) => {
+            if (!isServer) {
+                localStorage.removeItem(name);
+            }
+        },
+    })),
+    partialize: (state) => {
+        if (!state.isActive) {
+            return {};
+        }
+        return {
+            chainId: state.chainId,
+            account: state.account,
+            accounts: state.accounts,
+            currentWallet: state.currentWallet,
+            isActive: state.isActive,
+            network: state.network,
+        };
+    },
+    version: 1,
 }));
-// 添加持久化
-if (!isServer) {
-    const key = 'web3-store';
-    const savedState = localStorage.getItem(key);
-    if (savedState) {
-        try {
-            const state = JSON.parse(savedState);
-            store.setState(state);
-        }
-        catch (e) {
-            console.error('Failed to restore web3 store state:', e);
-        }
-    }
-    store.subscribe((state) => {
-        try {
-            const saveState = {
-                chainId: state.chainId,
-                isActive: state.isActive,
-                account: state.account,
-                accounts: state.accounts,
-                currentWallet: state.currentWallet,
-                network: state.network,
-            };
-            localStorage.setItem(key, JSON.stringify(saveState));
-        }
-        catch (e) {
-            console.error('Failed to persist web3 store state:', e);
-        }
-    });
-}
-const useWeb3Store = () => {
-    const [state, setState] = useState(() => store.getState());
-    useEffect(() => {
-        const unsubscribe = store.subscribe(setState);
-        return unsubscribe;
-    }, []);
-    return state;
-};
+// 基础 hook
+const useWeb3Store = store;
 
 export { store, useWeb3Store };

@@ -1,8 +1,8 @@
-import { selectedWalletKey } from "../constant";
-import { ConnectionType } from "../types";
-import { resetStore, updateStore } from "../useWeb3ReactHook";
-import { parseChainId } from "../utils";
-import { AbstractWallet } from "./AbstractWallet";
+import { selectedWalletKey } from '../constant';
+import { ConnectionType } from '../types';
+import { resetStore, updateStore } from '../useWeb3ReactHook';
+import { parseChainId } from '../utils';
+import { AbstractWallet } from './AbstractWallet';
 
 class GateAppWallet extends AbstractWallet {
   public provider: any;
@@ -24,7 +24,7 @@ class GateAppWallet extends AbstractWallet {
         handleGateBridgeWallet();
       } else {
         setTimeout(() => {
-            handleGateBridgeWallet();
+          handleGateBridgeWallet();
         }, timeout);
       }
 
@@ -33,16 +33,16 @@ class GateAppWallet extends AbstractWallet {
           return;
         }
         handled = true;
-       
+
         const { gatewallet } = window as any;
 
         if (gatewallet && gatewallet.isWeb3Wallet) {
           that.provider = gatewallet;
           resolve(gatewallet as any);
         } else {
-          const message = "Unable to detect window.gatewallet.";
+          const message = 'Unable to detect window.gatewallet.';
 
-          console.error("detect-provider:", message);
+          console.error('detect-provider:', message);
           resolve(null);
         }
       }
@@ -55,18 +55,17 @@ class GateAppWallet extends AbstractWallet {
 
     if (!provider) return;
 
-    provider.on("connect", this.handleConnectEvent);
+    provider.on('connect', this.handleConnectEvent);
 
-    provider.on("gateAccountChange", this.handleGateAccountChange);
+    provider.on('gateAccountChange', this.handleGateAccountChange);
 
-    provider.on("chainChanged", this.handleChainChanged);
-    provider.on("accountsChanged", this.handleAccountsChanged);
+    provider.on('chainChanged', this.handleChainChanged);
+    provider.on('accountsChanged', this.handleAccountsChanged);
 
-    provider.on("disconnect", this.deactivate);
+    provider.on('disconnect', this.deactivate);
   }
 
   async connectEagerly() {
-  
     await this.initialize();
     const provider = this.provider;
 
@@ -109,13 +108,9 @@ class GateAppWallet extends AbstractWallet {
   }
 
   private handleGateAccountChange = (gateWallet: any) => {
-    console.log(
-      "gateAccountChange",
-      gateWallet,
-      JSON.stringify(gateWallet) === "{}"
-    );
+    console.log('gateAccountChange', gateWallet, JSON.stringify(gateWallet) === '{}');
 
-    if (!gateWallet || JSON.stringify(gateWallet) === "{}") {
+    if (!gateWallet || JSON.stringify(gateWallet) === '{}') {
       this.deactivate?.();
     } else {
       updateStore({
@@ -139,7 +134,7 @@ class GateAppWallet extends AbstractWallet {
   }
 
   private handleConnectEvent({ chainId }: any) {
-    console.log("chainId", chainId);
+    console.log('chainId', chainId);
     updateStore({ chainId: parseChainId(chainId), isActive: true });
   }
 
@@ -150,14 +145,14 @@ class GateAppWallet extends AbstractWallet {
   public deactivate() {
     const provider = this.provider;
     if (!provider) return;
-    provider.removeListener("connect", this.handleConnectEvent);
+    provider.removeListener('connect', this.handleConnectEvent);
 
-    provider.removeListener("gateAccountChange", this.handleGateAccountChange);
+    provider.removeListener('gateAccountChange', this.handleGateAccountChange);
 
-    provider.removeListener("chainChanged", this.handleChainChanged);
-    provider.removeListener("accountsChanged", this.handleAccountsChanged);
+    provider.removeListener('chainChanged', this.handleChainChanged);
+    provider.removeListener('accountsChanged', this.handleAccountsChanged);
 
-    provider.removeListener("disconnect", this.deactivate);
+    provider.removeListener('disconnect', this.deactivate);
     localStorage.removeItem(selectedWalletKey);
     resetStore();
   }

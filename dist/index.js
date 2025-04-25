@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
-import GateWallet from './connectors/GateWallet.js';
+import { GateWallet } from './connectors/GateWallet.js';
 import MetaMaskWallet from './connectors/MetaMaskWallet.js';
 import PhantomWallet from './connectors/PhantomWallet.js';
 import UnisatWallet from './connectors/UnisatWallet.js';
+import WalletConnect from './connectors/WalletConnect.js';
+import WalletConnectNoQr from './connectors/WalletConnectNoQr.js';
 import { selectedWalletKey } from './constant.js';
 import { ConnectionType } from './types.js';
 import { updateStore } from './useWeb3ReactHook.js';
 export { useWeb3React } from './useWeb3ReactHook.js';
-import WalletConnect from './connectors/WalletConnect.js';
-import WalletConnectNoQr from './connectors/WalletConnectNoQr.js';
 import { store } from './stores/Web3Store.js';
 
 function connectWallet(connectionType, resolve, reject) {
@@ -57,18 +57,20 @@ function disconnect() {
         return;
     const connector = getConnector(currentWallet);
     localStorage.removeItem(selectedWalletKey);
+    localStorage.removeItem('web3-storage');
     connector?.deactivate();
 }
 function useEagerlyConnect(onError) {
     useEffect(() => {
-        const selectedWalletString$1 = localStorage.getItem(selectedWalletKey);
+        const web3Storage = localStorage.getItem('web3-storage');
+        const web3StorageString = JSON?.parse(web3Storage || '{}');
+        const selectedWalletType = web3StorageString?.state?.currentWallet || '';
         try {
-            if (!selectedWalletString$1) {
+            if (!selectedWalletType) {
                 onError?.();
                 return;
             }
-            const selectedWalletString = JSON.parse(selectedWalletString$1);
-            const selectedWallet = getConnector(selectedWalletString);
+            const selectedWallet = getConnector(selectedWalletType);
             selectedWallet.connectEagerly();
         }
         catch (error) {
@@ -78,10 +80,10 @@ function useEagerlyConnect(onError) {
 }
 const isWallet = (params) => {
     const ethereum = window?.ethereum;
-    if (params === "MetaMask") {
+    if (params === 'MetaMask') {
         return ethereum?.isMetaMask || false;
     }
-    if (params === "TokenPocket") {
+    if (params === 'TokenPocket') {
         return ethereum?.isTokenPocket || false;
     }
     return false;

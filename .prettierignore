@@ -1,0 +1,30 @@
+# 构建输出
+dist/
+build/
+
+# 依赖
+node_modules/
+
+# 其他
+.DS_Store
+.env
+.env.*
+*.log
+
+# 包管理器文件
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 缓存
+.cache/
+.npm/
+.pnpm-store/
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# 测试覆盖率报告
+coverage/ 

@@ -1,8 +1,8 @@
-import { AbstractWallet } from "./AbstractWallet";
-import { AddEthereumChainParameter } from "@web3-react/types";
+import { AddEthereumChainParameter } from '@web3-react/types';
+import { AbstractWallet } from './AbstractWallet';
 declare class MetaMaskWallet extends AbstractWallet {
-    constructor();
     provider: any;
+    constructor();
     detectProvider(): Promise<void>;
     private initialize;
     private handleAccountsChanged;

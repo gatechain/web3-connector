@@ -17,7 +17,13 @@
   },
   "scripts": {
     "dev": "rm -rf dist/ && rollup -c rollup.config.js --bundleConfigAsCjs --watch",
-    "build": "rm -rf dist/ && rollup -c rollup.config.js --bundleConfigAsCjs"
+    "build": "rm -rf dist/ && rollup -c rollup.config.js --bundleConfigAsCjs",
+    "dev:watch": "npm run build && node scripts/update-consumer.js && rollup -c rollup.config.js --bundleConfigAsCjs --watch & node scripts/watch-and-update.js",
+    "update-consumer": "node scripts/update-consumer.js",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "format:staged": "prettier --write \"$(git diff --staged --name-only --diff-filter=ACMR | grep -E \"\\.(js|jsx|ts|tsx|json|css|scss|md)$\" | xargs)\"",
+    "prepare": "husky install"
   },
   "peerDependencies": {
     "react": "^18.2.0",
@@ -31,7 +37,7 @@
     "js-cookie": "^3.0.5",
     "mobx": "^6.13.7",
     "mobx-react-lite": "^4.1.0",
-    "zustand": "^3.7.2"
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^26.0.1",
@@ -42,10 +48,18 @@
     "@types/node": "^22.14.1",
     "@types/react": "^18.3.4",
     "@web3-react/types": "^8.2.3",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.5.1",
+    "prettier": "^3.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rollup": "^4.21.0",
     "ts-loader": "^9.4.2",
     "typescript": "^5.0.4"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "prettier --write"
+    ]
   }
 }
