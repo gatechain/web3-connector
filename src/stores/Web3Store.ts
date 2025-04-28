@@ -52,7 +52,7 @@ export const store = create<StoreState>()(
         set((state) => {
           const newState = { ...state, ...update };
 
-          // 特殊处理 provider
+          // 统一封装为ethers标准Provider,方便按ethers标准使用
           if (update.connector?.provider) {
             const provider = update.connector.provider;
             if (
@@ -61,6 +61,7 @@ export const store = create<StoreState>()(
                 ConnectionType.WALLET_CONNECT,
                 ConnectionType.WALLET_CONNECT_NOTQR,
                 ConnectionType.GATEWALLET,
+                ConnectionType.GATEAPPWALLET,
               ].includes(update.currentWallet as ConnectionType)
             ) {
               newState.provider = new Web3Provider(provider);

@@ -7,6 +7,7 @@ var ConnectionType;
     ConnectionType["WALLET_CONNECT_NOTQR"] = "WALLET_CONNECT_NOTQR";
     ConnectionType["Unisat"] = "UNISAT";
     ConnectionType["SUI"] = "SUI";
+    ConnectionType["GATEAPPWALLET"] = "GATE_APP_WALLET";
 })(ConnectionType || (ConnectionType = {}));
 
 export { ConnectionType };

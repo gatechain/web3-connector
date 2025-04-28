@@ -1,9 +1,10 @@
-import { ConnectionType } from "../types";
-import { resetStore, updateStore } from "../useWeb3ReactHook";
-import WalletConnect from "./WalletConnect";
+import { ConnectionType } from '../types';
+import { resetStore, updateStore } from '../useWeb3ReactHook';
+import WalletConnect from './WalletConnect';
 
 type UriCallback = (uri: string) => void;
 
+//扫码连接gate钱包
 class WalletConnectNoQr extends WalletConnect {
   constructor(options: { setUri?: UriCallback }) {
     super({ ...options, showQrModal: false });
@@ -27,10 +28,9 @@ class WalletConnectNoQr extends WalletConnect {
     if (provider.session) {
       if (!desiredChainId || desiredChainId === provider.chainId) return;
       // WalletConnect exposes connected accounts, not chains: `eip155:${chainId}:${address}`
-      const isConnectedToDesiredChain =
-        provider.session.namespaces.eip155.accounts.some((account: any) =>
-          account.startsWith(`eip155:${desiredChainId}:`)
-        );
+      const isConnectedToDesiredChain = provider.session.namespaces.eip155.accounts.some(
+        (account: any) => account.startsWith(`eip155:${desiredChainId}:`)
+      );
       if (!isConnectedToDesiredChain) {
         if (this.options.optionalChains?.includes(desiredChainId)) {
           throw new Error(
@@ -42,7 +42,7 @@ class WalletConnectNoQr extends WalletConnect {
         );
       }
       return provider.request({
-        method: "wallet_switchEthereumChain",
+        method: 'wallet_switchEthereumChain',
         params: [{ chainId: `0x${desiredChainId.toString(16)}` }],
       });
     }

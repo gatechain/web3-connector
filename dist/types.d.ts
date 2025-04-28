@@ -5,6 +5,7 @@ export declare enum ConnectionType {
     WALLET_CONNECT = "WALLET_CONNECT",
     WALLET_CONNECT_NOTQR = "WALLET_CONNECT_NOTQR",
     Unisat = "UNISAT",
-    SUI = "SUI"
+    SUI = "SUI",
+    GATEAPPWALLET = "GATE_APP_WALLET"
 }
-export type Network = "livenet" | "testnet";
+export type Network = 'livenet' | 'testnet';

@@ -2,6 +2,7 @@ import { ConnectionType } from '../types.js';
 import { updateStore, resetStore } from '../useWeb3ReactHook.js';
 import WalletConnect from './WalletConnect.js';
 
+//扫码连接gate钱包
 class WalletConnectNoQr extends WalletConnect {
     constructor(options) {
         super({ ...options, showQrModal: false });
@@ -30,7 +31,7 @@ class WalletConnectNoQr extends WalletConnect {
                 throw new Error(`Unknown chain (${desiredChainId}). Make sure to include any chains you might connect to in the "chains" or "optionalChains" parameters when initializing WalletConnect.`);
             }
             return provider.request({
-                method: "wallet_switchEthereumChain",
+                method: 'wallet_switchEthereumChain',
                 params: [{ chainId: `0x${desiredChainId.toString(16)}` }],
             });
         }

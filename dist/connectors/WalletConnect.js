@@ -1,6 +1,7 @@
+import { EthereumProvider } from '@walletconnect/ethereum-provider';
 import { SELECTED_WALLET_KEY } from '../constant.js';
 import { ConnectionType } from '../types.js';
-import { updateStore, resetStore } from '../useWeb3ReactHook.js';
+import { resetStore, updateStore } from '../useWeb3ReactHook.js';
 import { parseChainId } from '../utils/index.js';
 import { isServer } from '../utils/env.js';
 import { AbstractWallet } from './AbstractWallet.js';
@@ -86,21 +87,21 @@ class WalletConnect extends AbstractWallet {
             return Promise.resolve();
         if (this.provider)
             return Promise.resolve();
-        const ethProviderModule = await getEthProviderModule();
-        if (!ethProviderModule)
-            return Promise.resolve();
-        const chainProps = this.getChainProps(this.chains, this.optionalChains, desiredChainId);
-        return ethProviderModule
-            .init({
-            ...this.options,
-            ...chainProps,
-        })
-            .then((provider) => {
+        try {
+            const chainProps = this.getChainProps(this.chains, this.optionalChains, desiredChainId);
+            const provider = EthereumProvider.init({
+                ...this.options,
+                ...chainProps,
+            });
+            const ethProviderModule = await getEthProviderModule();
+            if (!ethProviderModule)
+                return Promise.resolve();
             this.provider = provider;
-        })
-            .catch((err) => {
-            console.error(err);
-        });
+        }
+        catch (error) {
+            console.error(error);
+            resetStore();
+        }
     }
     async initialize(desiredChainId = this.defaultChainId) {
         if (isServer)
@@ -175,6 +176,7 @@ class WalletConnect extends AbstractWallet {
         }
     }
     handleAccountsChanged(accounts) {
+        console.log('handleAccountsChanged', accounts);
         if (isServer)
             return;
         if (accounts.length === 0) {

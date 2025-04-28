@@ -1,4 +1,4 @@
-import WalletConnect from "./WalletConnect";
+import WalletConnect from './WalletConnect';
 type UriCallback = (uri: string) => void;
 declare class WalletConnectNoQr extends WalletConnect {
     constructor(options: {

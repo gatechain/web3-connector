@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { AbstractWallet } from './connectors/AbstractWallet';
+import GateAppWallet from './connectors/GateAppWallet';
 import GateWallet from './connectors/GateWallet';
 import MetaMaskWallet from './connectors/MetaMaskWallet';
 import PhantomWallet from './connectors/PhantomWallet';
@@ -9,6 +10,7 @@ import WalletConnectNoQr from './connectors/WalletConnectNoQr';
 import { SELECTED_WALLET_KEY } from './constant';
 import { ConnectionType } from './types';
 import { store, updateStore } from './useWeb3ReactHook';
+import { getQueryParams, isApp } from './utils';
 export { useWeb3React } from './useWeb3ReactHook';
 
 export { ConnectionType };
@@ -52,6 +54,7 @@ function getConnector(connectionType: ConnectionType, resolve?: (uri: string) =>
     [ConnectionType.Unisat]: UnisatWallet,
     [ConnectionType.WALLET_CONNECT_NOTQR]: WalletConnectNoQr,
     [ConnectionType.WALLET_CONNECT]: WalletConnect,
+    [ConnectionType.GATEAPPWALLET]: GateAppWallet,
   };
 
   if (connectionType === ConnectionType.WALLET_CONNECT_NOTQR) {
@@ -75,6 +78,12 @@ export function disconnect() {
 
 export function useEagerlyConnect(onError?: Function) {
   useEffect(() => {
+    // 如果当前在dapp浏览器内，自动进行gateappwallet连接
+    const isGateApp = isApp(getQueryParams());
+    if (isGateApp) {
+      connectWallet(ConnectionType.GATEAPPWALLET);
+      return;
+    }
     const web3Storage = localStorage.getItem('web3-storage');
     const web3StorageString = JSON?.parse(web3Storage || '{}');
     const selectedWalletType = (web3StorageString?.state?.currentWallet as ConnectionType) || '';

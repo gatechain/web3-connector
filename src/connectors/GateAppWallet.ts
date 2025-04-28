@@ -1,9 +1,11 @@
+import { AddEthereumChainParameter, ProviderRpcError } from '@web3-react/types';
 import { SELECTED_WALLET_KEY } from '../constant';
 import { ConnectionType } from '../types';
 import { resetStore, updateStore } from '../useWeb3ReactHook';
 import { parseChainId } from '../utils';
 import { AbstractWallet } from './AbstractWallet';
 
+//在webview中直连gate钱包
 class GateAppWallet extends AbstractWallet {
   public provider: any;
 
@@ -20,25 +22,25 @@ class GateAppWallet extends AbstractWallet {
     let that = this;
 
     return new Promise((resolve) => {
-      if ((window as any)?.gateBridgeWallet) {
-        handleGateBridgeWallet();
+      if ((window as any)?.gatewallet) {
+        handleGateAppWallet();
       } else {
         setTimeout(() => {
-          handleGateBridgeWallet();
+          handleGateAppWallet();
         }, timeout);
       }
 
-      function handleGateBridgeWallet() {
+      function handleGateAppWallet() {
         if (handled) {
           return;
         }
         handled = true;
 
         const { gatewallet } = window as any;
-
-        if (gatewallet && gatewallet.isWeb3Wallet) {
-          that.provider = gatewallet;
-          resolve(gatewallet as any);
+        console.log('gatewallet', gatewallet);
+        if (gatewallet?.ethereum) {
+          that.provider = gatewallet.ethereum;
+          resolve(gatewallet.ethereum as any);
         } else {
           const message = 'Unable to detect window.gatewallet.';
 
@@ -70,41 +72,70 @@ class GateAppWallet extends AbstractWallet {
     const provider = this.provider;
 
     if (!provider) return;
+    const [chainId, accounts] = await Promise.all([
+      this.provider.request({ method: 'eth_chainId' }) as Promise<string>,
+      this.provider.request({ method: 'eth_requestAccounts' }) as Promise<string[]>,
+    ]);
 
-    try {
-      const gateAccountInfo = await provider.getAccount();
-
-      updateStore({
-        isActive: true,
-        gateAccountInfo,
-        connector: this,
-        currentWallet: ConnectionType.GATEWALLET,
-      });
-    } catch (error) {
-      console.error(error);
-    }
+    updateStore({
+      isActive: true,
+      chainId: parseChainId(chainId),
+      accounts,
+      account: accounts?.[0],
+      currentWallet: ConnectionType.GATEAPPWALLET,
+      connector: this,
+    });
   }
 
-  public async activate() {
-    await this.initialize();
-    const provider = this.provider;
+  public activate(desiredChainIdOrChainParameters?: number | AddEthereumChainParameter) {
+    return this.initialize().then(() => {
+      const provider = this.provider;
+      if (!provider) return;
+      return Promise.all([
+        this.provider.request({ method: 'eth_chainId' }) as Promise<string>,
+        this.provider.request({ method: 'eth_requestAccounts' }) as Promise<string[]>,
+      ]).then(([chainId, accounts]) => {
+        const receivedChainId = parseChainId(chainId);
+        const desiredChainId =
+          typeof desiredChainIdOrChainParameters === 'number'
+            ? desiredChainIdOrChainParameters
+            : desiredChainIdOrChainParameters?.chainId;
 
-    if (!provider) return;
+        if (!desiredChainId || receivedChainId === desiredChainId) {
+          updateStore({
+            isActive: true,
+            chainId: parseChainId(chainId),
+            accounts,
+            account: accounts?.[0],
+            currentWallet: ConnectionType.GATEAPPWALLET,
+            connector: this,
+          });
+          return;
+        }
 
-    try {
-      const gateAccountInfo = await provider.connect();
+        const desiredChainIdHex = `0x${desiredChainId.toString(16)}`;
 
-      updateStore({
-        chainId: parseChainId(provider.chainId),
-        account: provider.selectedAddress,
-        isActive: true,
-        gateAccountInfo,
-        connector: this,
-        currentWallet: ConnectionType.GATEWALLET,
+        return this.provider!.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: desiredChainIdHex }],
+        })
+          .catch((error: ProviderRpcError) => {
+            if (error.code === 4902 && typeof desiredChainIdOrChainParameters !== 'number') {
+              return this.provider!.request({
+                method: 'wallet_addEthereumChain',
+                params: [
+                  {
+                    ...desiredChainIdOrChainParameters,
+                    chainId: desiredChainIdHex,
+                  },
+                ],
+              });
+            }
+            throw error;
+          })
+          .then(() => this.activate(desiredChainId));
       });
-    } catch (error) {
-      console.error(error);
-    }
+    });
   }
 
   private handleGateAccountChange = (gateWallet: any) => {

@@ -25,7 +25,7 @@ const store = create()(persist((set, get) => ({
     updateStore: (update) => {
         set((state) => {
             const newState = { ...state, ...update };
-            // 特殊处理 provider
+            // 统一封装为ethers标准Provider,方便按ethers标准使用
             if (update.connector?.provider) {
                 const provider = update.connector.provider;
                 if ([
@@ -33,6 +33,7 @@ const store = create()(persist((set, get) => ({
                     ConnectionType.WALLET_CONNECT,
                     ConnectionType.WALLET_CONNECT_NOTQR,
                     ConnectionType.GATEWALLET,
+                    ConnectionType.GATEAPPWALLET,
                 ].includes(update.currentWallet)) {
                     newState.provider = new Web3Provider(provider);
                 }
@@ -44,7 +45,6 @@ const store = create()(persist((set, get) => ({
         });
     },
     reset: () => {
-        console.log('reset');
         localStorage.removeItem(SELECTED_WALLET_KEY);
         localStorage.removeItem('web3-storage');
         set(initialState);
