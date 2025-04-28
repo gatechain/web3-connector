@@ -1,9 +1,9 @@
-import { selectedWalletKey } from '../constant.js';
+import { SELECTED_WALLET_KEY } from '../constant.js';
 import { ConnectionType } from '../types.js';
 import { updateStore, resetStore } from '../useWeb3ReactHook.js';
 import { parseChainId } from '../utils/index.js';
-import { AbstractWallet } from './AbstractWallet.js';
 import { isServer } from '../utils/env.js';
+import { AbstractWallet } from './AbstractWallet.js';
 
 // 动态导入 WalletConnect provider
 const getEthProviderModule = async () => {
@@ -46,25 +46,25 @@ class WalletConnect extends AbstractWallet {
     optionalChains;
     options = {
         metadata: {
-            name: "GateWallet",
-            description: "GateWallet WalletConnect",
-            url: "https://www.gate.io/web3",
-            icons: ["https://www.gate.io/images/apple-touch-icon-120x120.png"],
+            name: 'GateWallet',
+            description: 'GateWallet WalletConnect',
+            url: 'https://www.gate.io/web3',
+            icons: ['https://www.gate.io/images/apple-touch-icon-120x120.png'],
         },
-        projectId: "49cf6ec6179f8d21bf525adc78d6900a",
+        projectId: '49cf6ec6179f8d21bf525adc78d6900a',
         chains: [this.defaultChainId || 1],
         optionalChains: [1, 10, 56, 86, 137, 324, 42161, 43114, 81457],
         showQrModal: true,
-        optionalMethods: ["eth_signTypedData", "eth_signTypedData_v4", "eth_sign"],
+        optionalMethods: ['eth_signTypedData', 'eth_signTypedData_v4', 'eth_sign'],
         qrModalOptions: {
             explorerRecommendedWalletIds: [
-                "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96",
-                "1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369",
-                "ef333840daf915aafdc4a004525502d6d49d77bd9c65e0642dbaefb3c2893bef",
-                "20459438007b75f4f4acb98bf29aa3b800550309646d375da5fd4aac6c2a2c66",
+                'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96',
+                '1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369',
+                'ef333840daf915aafdc4a004525502d6d49d77bd9c65e0642dbaefb3c2893bef',
+                '20459438007b75f4f4acb98bf29aa3b800550309646d375da5fd4aac6c2a2c66',
             ],
             themeVariables: {
-                "--wcm-z-index": "10000",
+                '--wcm-z-index': '10000',
             },
         },
     };
@@ -79,7 +79,7 @@ class WalletConnect extends AbstractWallet {
         else if (isArrayOneOrMore(orderedOptionalChains)) {
             return { chains: orderedChains, optionalChains: orderedOptionalChains };
         }
-        throw new Error("Either chains or optionalChains must have at least one item.");
+        throw new Error('Either chains or optionalChains must have at least one item.');
     }
     async detectProvider(desiredChainId = this.defaultChainId) {
         if (isServer)
@@ -109,10 +109,10 @@ class WalletConnect extends AbstractWallet {
         const provider = this.provider;
         if (!provider)
             return;
-        provider.on("disconnect", this.deactivate);
-        provider.on("chainChanged", this.handleChainChange);
-        provider.on("accountsChanged", this.handleAccountsChanged);
-        provider.on("display_uri", this.handleDisplayURI);
+        provider.on('disconnect', this.deactivate);
+        provider.on('chainChanged', this.handleChainChange);
+        provider.on('accountsChanged', this.handleAccountsChanged);
+        provider.on('display_uri', this.handleDisplayURI);
     }
     handleChainChange(chainId) {
         if (isServer)
@@ -124,7 +124,7 @@ class WalletConnect extends AbstractWallet {
     handleDisplayURI(url) {
         if (isServer)
             return;
-        console.log("url", url);
+        console.log('url', url);
     }
     async connectEagerly() {
         if (isServer)
@@ -132,7 +132,7 @@ class WalletConnect extends AbstractWallet {
         await this.initialize();
         const provider = this.provider;
         if (!provider?.session) {
-            console.error(new Error("No active session found. Connect your wallet first."));
+            console.error(new Error('No active session found. Connect your wallet first.'));
             return;
         }
         updateStore({
@@ -167,7 +167,7 @@ class WalletConnect extends AbstractWallet {
             });
         }
         catch (error) {
-            console.error("Failed to activate:", error);
+            console.error('Failed to activate:', error);
             this.deactivate();
         }
         finally {
@@ -192,13 +192,13 @@ class WalletConnect extends AbstractWallet {
             return;
         const provider = this.provider;
         if (provider) {
-            provider.removeListener("disconnect", this.deactivate);
-            provider.removeListener("chainChanged", this.handleChainChange);
-            provider.removeListener("accountsChanged", this.handleAccountsChanged);
-            provider.removeListener("display_uri", this.handleDisplayURI);
+            provider.removeListener('disconnect', this.deactivate);
+            provider.removeListener('chainChanged', this.handleChainChange);
+            provider.removeListener('accountsChanged', this.handleAccountsChanged);
+            provider.removeListener('display_uri', this.handleDisplayURI);
             provider.disconnect();
         }
-        localStorage.removeItem(selectedWalletKey);
+        localStorage.removeItem(SELECTED_WALLET_KEY);
         resetStore();
         this.provider = null;
     }

@@ -1,4 +1,4 @@
-import { selectedWalletKey } from '../constant';
+import { SELECTED_WALLET_KEY } from '../constant';
 import { ConnectionType } from '../types';
 import { resetStore, updateStore } from '../useWeb3ReactHook';
 import { parseChainId } from '../utils';
@@ -153,7 +153,7 @@ class GateAppWallet extends AbstractWallet {
     provider.removeListener('accountsChanged', this.handleAccountsChanged);
 
     provider.removeListener('disconnect', this.deactivate);
-    localStorage.removeItem(selectedWalletKey);
+    localStorage.removeItem(SELECTED_WALLET_KEY);
     resetStore();
   }
 

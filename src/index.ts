@@ -6,7 +6,7 @@ import PhantomWallet from './connectors/PhantomWallet';
 import UnisatWallet from './connectors/UnisatWallet';
 import WalletConnect from './connectors/WalletConnect';
 import WalletConnectNoQr from './connectors/WalletConnectNoQr';
-import { selectedWalletKey } from './constant';
+import { SELECTED_WALLET_KEY } from './constant';
 import { ConnectionType } from './types';
 import { store, updateStore } from './useWeb3ReactHook';
 export { useWeb3React } from './useWeb3ReactHook';
@@ -33,7 +33,7 @@ export function connectWallet(
   connector$1
     .activate()
     .then(() => {
-      localStorage.setItem(selectedWalletKey, JSON.stringify(connectionType));
+      localStorage.setItem(SELECTED_WALLET_KEY, JSON.stringify(connectionType));
     })
     .catch((err: Error) => {
       console.error(err);
@@ -68,7 +68,7 @@ export function disconnect() {
   if (!currentWallet) return;
 
   const connector = getConnector(currentWallet);
-  localStorage.removeItem(selectedWalletKey);
+  localStorage.removeItem(SELECTED_WALLET_KEY);
   localStorage.removeItem('web3-storage');
   connector?.deactivate();
 }

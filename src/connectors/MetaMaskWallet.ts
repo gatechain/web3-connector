@@ -3,7 +3,6 @@ import { AddEthereumChainParameter, ProviderRpcError } from '@web3-react/types';
 import { ConnectionType } from '../types';
 import { resetStore, updateStore } from '../useWeb3ReactHook';
 import { parseChainId } from '../utils';
-import { runOnlyInBrowser } from '../utils/env';
 import { AbstractWallet } from './AbstractWallet';
 
 class MetaMaskWallet extends AbstractWallet {
@@ -17,27 +16,33 @@ class MetaMaskWallet extends AbstractWallet {
     this.deactivate = this.deactivate.bind(this);
   }
 
-  public detectProvider() {
-    return runOnlyInBrowser(
-      () =>
-        detectEthereumProvider()
-          .then((provider$1: any) => {
-            const provider = provider$1?.providers?.length
-              ? (provider$1?.providers.find((p: any) => p.isMetaMask) ?? provider$1.providers[0])
-              : provider$1;
-            this.provider = provider;
-          })
-          .catch((error) => {
-            console.error(error);
-          }),
-      Promise.resolve()
-    );
+  public async detectProvider() {
+    try {
+      const provider$1: any = await detectEthereumProvider({
+        timeout: 1000,
+      });
+      if (!provider$1) {
+        resetStore();
+        return;
+      }
+      console.log('detectProvider provider$1', provider$1);
+      const provider = provider$1?.providers?.length
+        ? (provider$1?.providers.find((p: any) => p.isMetaMask) ?? provider$1.providers[0])
+        : provider$1;
+      this.provider = provider;
+      this.provider = provider$1;
+    } catch (error) {
+      console.error(error);
+      resetStore();
+    }
   }
 
   private async initialize() {
     await this.detectProvider();
     const provider = this.provider;
-    if (!provider) return;
+    if (!provider) {
+      return;
+    }
 
     provider.on('connect', this.handleConnectEvent);
     provider.on('chainChanged', this.handleChainChanged);
@@ -145,11 +150,12 @@ class MetaMaskWallet extends AbstractWallet {
 
   public deactivate() {
     const provider = this.provider;
-    if (!provider) return;
-    provider.removeListener('connect', this.handleConnectEvent);
-    provider.removeListener('chainChanged', this.handleChainChanged);
-    provider.removeListener('accountsChanged', this.handleAccountsChanged);
-    provider.removeListener('disconnect', this.deactivate);
+    if (provider) {
+      provider.removeListener('connect', this.handleConnectEvent);
+      provider.removeListener('chainChanged', this.handleChainChanged);
+      provider.removeListener('accountsChanged', this.handleAccountsChanged);
+      provider.removeListener('disconnect', this.deactivate);
+    }
     resetStore();
   }
 

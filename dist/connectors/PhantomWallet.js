@@ -1,4 +1,3 @@
-import { selectedWalletKey } from '../constant.js';
 import { ConnectionType } from '../types.js';
 import { updateStore, resetStore } from '../useWeb3ReactHook.js';
 import { AbstractWallet } from './AbstractWallet.js';
@@ -34,8 +33,8 @@ class PhantomWallet extends AbstractWallet {
                     resolve(phantom);
                 }
                 else {
-                    const message = "Unable to detect window.phantom.solana.";
-                    console.error("detect-provider:", message);
+                    const message = 'Unable to detect window.phantom.solana.';
+                    console.error('detect-provider:', message);
                     reject();
                 }
             }
@@ -46,9 +45,9 @@ class PhantomWallet extends AbstractWallet {
         const provider = this.provider;
         if (!provider)
             return;
-        provider.on("connect", this.handleConnectEvent);
-        provider.on("accountChanged", this.handleAccountsChanged);
-        provider.on("disconnect", this.deactivate);
+        provider.on('connect', this.handleConnectEvent);
+        provider.on('accountChanged', this.handleAccountsChanged);
+        provider.on('disconnect', this.deactivate);
     }
     async activate() {
         await this.initialize();
@@ -83,12 +82,11 @@ class PhantomWallet extends AbstractWallet {
     }
     deactivate() {
         const provider = this.provider;
-        if (!provider)
-            return;
-        provider.removeListener("connect", this.handleConnectEvent);
-        provider.removeListener("accountChanged", this.handleAccountsChanged);
-        provider.removeListener("disconnect", this.deactivate);
-        localStorage.removeItem(selectedWalletKey);
+        if (provider) {
+            provider.removeListener('connect', this.handleConnectEvent);
+            provider.removeListener('accountChanged', this.handleAccountsChanged);
+            provider.removeListener('disconnect', this.deactivate);
+        }
         resetStore();
     }
     static instance;

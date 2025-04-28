@@ -1,4 +1,4 @@
-import { AbstractWallet } from "./AbstractWallet";
+import { AbstractWallet } from './AbstractWallet';
 declare class PhantomWallet extends AbstractWallet {
     provider: any;
     constructor();

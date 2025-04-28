@@ -1,1 +1,1 @@
-export declare const selectedWalletKey = "web3.selectedWallet";
+export declare const SELECTED_WALLET_KEY = "web3.selectedWallet";

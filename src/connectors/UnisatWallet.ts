@@ -1,7 +1,7 @@
-import { selectedWalletKey } from "../constant";
-import { ConnectionType } from "../types";
-import { resetStore, updateStore } from "../useWeb3ReactHook";
-import { AbstractWallet } from "./AbstractWallet";
+import { SELECTED_WALLET_KEY } from '../constant';
+import { ConnectionType } from '../types';
+import { resetStore, updateStore } from '../useWeb3ReactHook';
+import { AbstractWallet } from './AbstractWallet';
 
 class UnisatWallet extends AbstractWallet {
   public provider: any;
@@ -39,9 +39,9 @@ class UnisatWallet extends AbstractWallet {
           that.provider = unisat;
           resolve(unisat as any);
         } else {
-          const message = "Unable to detect window.unisat.";
+          const message = 'Unable to detect window.unisat.';
 
-          console.error("detect-provider:", message);
+          console.error('detect-provider:', message);
           resolve(null);
         }
       }
@@ -54,9 +54,9 @@ class UnisatWallet extends AbstractWallet {
 
     if (!provider) return;
 
-    provider.on("networkChanged", this.handleNetworkChanged);
+    provider.on('networkChanged', this.handleNetworkChanged);
 
-    provider.on("accountsChanged", this.handleAccountsChanged);
+    provider.on('accountsChanged', this.handleAccountsChanged);
   }
 
   private handleNetworkChanged(network: any) {
@@ -111,10 +111,10 @@ class UnisatWallet extends AbstractWallet {
     const provider = this.provider;
 
     if (!provider) return;
-    provider.removeListener("networkChanged", this.handleNetworkChanged);
+    provider.removeListener('networkChanged', this.handleNetworkChanged);
 
-    provider.removeListener("accountsChanged", this.handleAccountsChanged);
-    localStorage.removeItem(selectedWalletKey);
+    provider.removeListener('accountsChanged', this.handleAccountsChanged);
+    localStorage.removeItem(SELECTED_WALLET_KEY);
     resetStore();
   }
 

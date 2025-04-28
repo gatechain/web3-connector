@@ -1,6 +1,5 @@
-import { selectedWalletKey } from '../constant.js';
 import { ConnectionType } from '../types.js';
-import { updateStore, resetStore } from '../useWeb3ReactHook.js';
+import { resetStore, updateStore } from '../useWeb3ReactHook.js';
 import { parseChainId } from '../utils/index.js';
 import { AbstractWallet } from './AbstractWallet.js';
 
@@ -11,7 +10,7 @@ class GateWallet extends AbstractWallet {
         this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
         this.deactivate = this.deactivate.bind(this);
     }
-    detectProvider(timeout = 3000) {
+    detectProvider(timeout = 1000) {
         let handled = false;
         let that = this;
         return new Promise((resolve) => {
@@ -44,8 +43,10 @@ class GateWallet extends AbstractWallet {
     async initialize() {
         await this.detectProvider();
         const provider = this.provider;
-        if (!provider)
+        if (!provider) {
+            resetStore();
             return;
+        }
         provider.on('accountsChanged', this.handleAccountsChanged);
         provider.on('chainChanged', this.handleChainChanged);
         provider.on('connect', this.handleConnectEvent);
@@ -155,14 +156,13 @@ class GateWallet extends AbstractWallet {
     deactivate() {
         const provider = this.provider;
         console.log('provider deactivate', provider);
-        if (!provider)
-            return;
-        provider.removeListener('connect', this.handleConnectEvent);
-        provider.removeListener('gateAccountChange', this.handleGateAccountChange);
-        provider.removeListener('chainChanged', this.handleChainChanged);
-        provider.removeListener('accountsChanged', this.handleAccountsChanged);
-        provider.removeListener('disconnect', this.deactivate);
-        localStorage.removeItem(selectedWalletKey);
+        if (provider) {
+            provider.removeListener('connect', this.handleConnectEvent);
+            provider.removeListener('gateAccountChange', this.handleGateAccountChange);
+            provider.removeListener('chainChanged', this.handleChainChanged);
+            provider.removeListener('accountsChanged', this.handleAccountsChanged);
+            provider.removeListener('disconnect', this.deactivate);
+        }
         resetStore();
     }
     static instance;

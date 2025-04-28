@@ -1,7 +1,6 @@
-import { selectedWalletKey } from "../constant";
-import { ConnectionType } from "../types";
-import { resetStore, updateStore } from "../useWeb3ReactHook";
-import { AbstractWallet } from "./AbstractWallet";
+import { ConnectionType } from '../types';
+import { resetStore, updateStore } from '../useWeb3ReactHook';
+import { AbstractWallet } from './AbstractWallet';
 
 class PhantomWallet extends AbstractWallet {
   public provider: any;
@@ -39,9 +38,9 @@ class PhantomWallet extends AbstractWallet {
           that.provider = phantom.solana;
           resolve(phantom as any);
         } else {
-          const message = "Unable to detect window.phantom.solana.";
+          const message = 'Unable to detect window.phantom.solana.';
 
-          console.error("detect-provider:", message);
+          console.error('detect-provider:', message);
           reject();
         }
       }
@@ -54,11 +53,11 @@ class PhantomWallet extends AbstractWallet {
 
     if (!provider) return;
 
-    provider.on("connect", this.handleConnectEvent);
+    provider.on('connect', this.handleConnectEvent);
 
-    provider.on("accountChanged", this.handleAccountsChanged);
+    provider.on('accountChanged', this.handleAccountsChanged);
 
-    provider.on("disconnect", this.deactivate);
+    provider.on('disconnect', this.deactivate);
   }
 
   public async activate() {
@@ -101,14 +100,14 @@ class PhantomWallet extends AbstractWallet {
 
   public deactivate() {
     const provider = this.provider;
+    if (provider) {
+      provider.removeListener('connect', this.handleConnectEvent);
 
-    if (!provider) return;
-    provider.removeListener("connect", this.handleConnectEvent);
+      provider.removeListener('accountChanged', this.handleAccountsChanged);
 
-    provider.removeListener("accountChanged", this.handleAccountsChanged);
+      provider.removeListener('disconnect', this.deactivate);
+    }
 
-    provider.removeListener("disconnect", this.deactivate);
-    localStorage.removeItem(selectedWalletKey);
     resetStore();
   }
 

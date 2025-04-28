@@ -1,8 +1,7 @@
 import detectEthereumProvider from '@metamask/detect-provider';
 import { ConnectionType } from '../types.js';
-import { updateStore, resetStore } from '../useWeb3ReactHook.js';
+import { resetStore, updateStore } from '../useWeb3ReactHook.js';
 import { parseChainId } from '../utils/index.js';
-import { runOnlyInBrowser } from '../utils/env.js';
 import { AbstractWallet } from './AbstractWallet.js';
 
 class MetaMaskWallet extends AbstractWallet {
@@ -13,23 +12,33 @@ class MetaMaskWallet extends AbstractWallet {
         this.handleAccountsChanged = this.handleAccountsChanged.bind(this);
         this.deactivate = this.deactivate.bind(this);
     }
-    detectProvider() {
-        return runOnlyInBrowser(() => detectEthereumProvider()
-            .then((provider$1) => {
+    async detectProvider() {
+        try {
+            const provider$1 = await detectEthereumProvider({
+                timeout: 1000,
+            });
+            if (!provider$1) {
+                resetStore();
+                return;
+            }
+            console.log('detectProvider provider$1', provider$1);
             const provider = provider$1?.providers?.length
                 ? (provider$1?.providers.find((p) => p.isMetaMask) ?? provider$1.providers[0])
                 : provider$1;
             this.provider = provider;
-        })
-            .catch((error) => {
+            this.provider = provider$1;
+        }
+        catch (error) {
             console.error(error);
-        }), Promise.resolve());
+            resetStore();
+        }
     }
     async initialize() {
         await this.detectProvider();
         const provider = this.provider;
-        if (!provider)
+        if (!provider) {
             return;
+        }
         provider.on('connect', this.handleConnectEvent);
         provider.on('chainChanged', this.handleChainChanged);
         provider.on('accountsChanged', this.handleAccountsChanged);
@@ -127,12 +136,12 @@ class MetaMaskWallet extends AbstractWallet {
     }
     deactivate() {
         const provider = this.provider;
-        if (!provider)
-            return;
-        provider.removeListener('connect', this.handleConnectEvent);
-        provider.removeListener('chainChanged', this.handleChainChanged);
-        provider.removeListener('accountsChanged', this.handleAccountsChanged);
-        provider.removeListener('disconnect', this.deactivate);
+        if (provider) {
+            provider.removeListener('connect', this.handleConnectEvent);
+            provider.removeListener('chainChanged', this.handleChainChanged);
+            provider.removeListener('accountsChanged', this.handleAccountsChanged);
+            provider.removeListener('disconnect', this.deactivate);
+        }
         resetStore();
     }
     static instance;

@@ -1,5 +1,4 @@
-import { AddEthereumChainParameter, ProviderRpcError } from '@web3-react/types';
-import { selectedWalletKey } from '../constant';
+import { AddEthereumChainParameter } from '@web3-react/types';
 import { ConnectionType } from '../types';
 import { resetStore, updateStore } from '../useWeb3ReactHook';
 import { parseChainId } from '../utils';
@@ -15,7 +14,7 @@ export class GateWallet extends AbstractWallet {
     this.deactivate = this.deactivate.bind(this);
   }
 
-  public detectProvider(timeout = 3000): Promise<unknown> {
+  public detectProvider(timeout = 1000): Promise<unknown> {
     let handled = false;
 
     let that = this;
@@ -54,7 +53,10 @@ export class GateWallet extends AbstractWallet {
     await this.detectProvider();
     const provider = this.provider;
 
-    if (!provider) return;
+    if (!provider) {
+      resetStore();
+      return;
+    }
 
     provider.on('accountsChanged', this.handleAccountsChanged);
     provider.on('chainChanged', this.handleChainChanged);
@@ -177,16 +179,16 @@ export class GateWallet extends AbstractWallet {
   public deactivate() {
     const provider = this.provider;
     console.log('provider deactivate', provider);
-    if (!provider) return;
-    provider.removeListener('connect', this.handleConnectEvent);
+    if (provider) {
+      provider.removeListener('connect', this.handleConnectEvent);
 
-    provider.removeListener('gateAccountChange', this.handleGateAccountChange);
+      provider.removeListener('gateAccountChange', this.handleGateAccountChange);
 
-    provider.removeListener('chainChanged', this.handleChainChanged);
-    provider.removeListener('accountsChanged', this.handleAccountsChanged);
+      provider.removeListener('chainChanged', this.handleChainChanged);
+      provider.removeListener('accountsChanged', this.handleAccountsChanged);
 
-    provider.removeListener('disconnect', this.deactivate);
-    localStorage.removeItem(selectedWalletKey);
+      provider.removeListener('disconnect', this.deactivate);
+    }
     resetStore();
   }
 

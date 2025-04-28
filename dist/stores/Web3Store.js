@@ -2,6 +2,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import 'zustand/shallow';
+import { SELECTED_WALLET_KEY } from '../constant.js';
 import { disconnect, connectWallet } from '../index.js';
 import { ConnectionType } from '../types.js';
 import { isServer } from '../utils/env.js';
@@ -43,6 +44,9 @@ const store = create()(persist((set, get) => ({
         });
     },
     reset: () => {
+        console.log('reset');
+        localStorage.removeItem(SELECTED_WALLET_KEY);
+        localStorage.removeItem('web3-storage');
         set(initialState);
     },
     connect: async (connectionType) => {

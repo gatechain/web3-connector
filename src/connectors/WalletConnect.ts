@@ -1,14 +1,15 @@
-import { selectedWalletKey } from "../constant";
-import { ConnectionType } from "../types";
-import { resetStore, updateStore } from "../useWeb3ReactHook";
-import { parseChainId } from "../utils";
-import { AbstractWallet } from "./AbstractWallet";
-import { isServer, runOnlyInBrowser } from "../utils/env";
+import { EthereumProvider } from '@walletconnect/ethereum-provider';
+import { SELECTED_WALLET_KEY } from '../constant';
+import { ConnectionType } from '../types';
+import { resetStore, updateStore } from '../useWeb3ReactHook';
+import { parseChainId } from '../utils';
+import { isServer } from '../utils/env';
+import { AbstractWallet } from './AbstractWallet';
 
 // 动态导入 WalletConnect provider
 const getEthProviderModule = async () => {
   if (isServer) return null;
-  const module = await import("@walletconnect/ethereum-provider");
+  const module = await import('@walletconnect/ethereum-provider');
   return module.default;
 };
 
@@ -26,9 +27,7 @@ type ChainsProps =
       optionalChains: ArrayOneOrMore<number>;
     };
 
-export function isArrayOneOrMore<T>(
-  input: T[] = []
-): input is ArrayOneOrMore<T> {
+export function isArrayOneOrMore<T>(input: T[] = []): input is ArrayOneOrMore<T> {
   return input.length > 0;
 }
 
@@ -82,25 +81,25 @@ class WalletConnect extends AbstractWallet {
 
   protected options = {
     metadata: {
-      name: "GateWallet",
-      description: "GateWallet WalletConnect",
-      url: "https://www.gate.io/web3",
-      icons: ["https://www.gate.io/images/apple-touch-icon-120x120.png"],
+      name: 'GateWallet',
+      description: 'GateWallet WalletConnect',
+      url: 'https://www.gate.io/web3',
+      icons: ['https://www.gate.io/images/apple-touch-icon-120x120.png'],
     },
-    projectId: "49cf6ec6179f8d21bf525adc78d6900a",
+    projectId: '49cf6ec6179f8d21bf525adc78d6900a',
     chains: [this.defaultChainId || 1],
     optionalChains: [1, 10, 56, 86, 137, 324, 42161, 43114, 81457],
     showQrModal: true,
-    optionalMethods: ["eth_signTypedData", "eth_signTypedData_v4", "eth_sign"],
+    optionalMethods: ['eth_signTypedData', 'eth_signTypedData_v4', 'eth_sign'],
     qrModalOptions: {
       explorerRecommendedWalletIds: [
-        "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96",
-        "1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369",
-        "ef333840daf915aafdc4a004525502d6d49d77bd9c65e0642dbaefb3c2893bef",
-        "20459438007b75f4f4acb98bf29aa3b800550309646d375da5fd4aac6c2a2c66",
+        'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96',
+        '1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369',
+        'ef333840daf915aafdc4a004525502d6d49d77bd9c65e0642dbaefb3c2893bef',
+        '20459438007b75f4f4acb98bf29aa3b800550309646d375da5fd4aac6c2a2c66',
       ],
       themeVariables: {
-        "--wcm-z-index": "10000",
+        '--wcm-z-index': '10000',
       },
     },
   };
@@ -113,10 +112,7 @@ class WalletConnect extends AbstractWallet {
     if (isServer) return { chains: [1], optionalChains: [1] };
 
     const orderedChains = getChainsWithDefault(chains, desiredChainId);
-    const orderedOptionalChains = getChainsWithDefault(
-      optionalChains,
-      desiredChainId
-    );
+    const orderedOptionalChains = getChainsWithDefault(optionalChains, desiredChainId);
 
     if (isArrayOneOrMore(orderedChains)) {
       return { chains: orderedChains, optionalChains: orderedOptionalChains };
@@ -124,9 +120,7 @@ class WalletConnect extends AbstractWallet {
       return { chains: orderedChains, optionalChains: orderedOptionalChains };
     }
 
-    throw new Error(
-      "Either chains or optionalChains must have at least one item."
-    );
+    throw new Error('Either chains or optionalChains must have at least one item.');
   }
 
   public async detectProvider(
@@ -134,32 +128,23 @@ class WalletConnect extends AbstractWallet {
   ): Promise<unknown> {
     if (isServer) return Promise.resolve();
     if (this.provider) return Promise.resolve();
-
-    const ethProviderModule = await getEthProviderModule();
-    if (!ethProviderModule) return Promise.resolve();
-
-    const chainProps = this.getChainProps(
-      this.chains,
-      this.optionalChains,
-      desiredChainId
-    );
-
-    return ethProviderModule
-      .init({
+    try {
+      const chainProps = this.getChainProps(this.chains, this.optionalChains, desiredChainId);
+      const provider = EthereumProvider.init({
         ...this.options,
         ...chainProps,
-      })
-      .then((provider) => {
-        this.provider = provider;
-      })
-      .catch((err) => {
-        console.error(err);
       });
+      const ethProviderModule = await getEthProviderModule();
+      if (!ethProviderModule) return Promise.resolve();
+
+      this.provider = provider;
+    } catch (error) {
+      console.error(error);
+      resetStore();
+    }
   }
 
-  protected async initialize(
-    desiredChainId: number | undefined = this.defaultChainId
-  ) {
+  protected async initialize(desiredChainId: number | undefined = this.defaultChainId) {
     if (isServer) return;
 
     await this.detectProvider(desiredChainId);
@@ -167,10 +152,10 @@ class WalletConnect extends AbstractWallet {
 
     if (!provider) return;
 
-    provider.on("disconnect", this.deactivate);
-    provider.on("chainChanged", this.handleChainChange);
-    provider.on("accountsChanged", this.handleAccountsChanged);
-    provider.on("display_uri", this.handleDisplayURI);
+    provider.on('disconnect', this.deactivate);
+    provider.on('chainChanged', this.handleChainChange);
+    provider.on('accountsChanged', this.handleAccountsChanged);
+    provider.on('display_uri', this.handleDisplayURI);
   }
 
   private handleChainChange(chainId: string) {
@@ -182,7 +167,7 @@ class WalletConnect extends AbstractWallet {
 
   protected handleDisplayURI(url: string) {
     if (isServer) return;
-    console.log("url", url);
+    console.log('url', url);
   }
 
   public async connectEagerly() {
@@ -191,9 +176,7 @@ class WalletConnect extends AbstractWallet {
     await this.initialize();
     const provider = this.provider;
     if (!provider?.session) {
-      console.error(
-        new Error("No active session found. Connect your wallet first.")
-      );
+      console.error(new Error('No active session found. Connect your wallet first.'));
       return;
     }
     updateStore({
@@ -229,7 +212,7 @@ class WalletConnect extends AbstractWallet {
         currentWallet: ConnectionType.WALLET_CONNECT,
       });
     } catch (error) {
-      console.error("Failed to activate:", error);
+      console.error('Failed to activate:', error);
       this.deactivate();
     } finally {
       this.isLoading = false;
@@ -237,6 +220,7 @@ class WalletConnect extends AbstractWallet {
   }
 
   private handleAccountsChanged(accounts: string[]) {
+    console.log('handleAccountsChanged', accounts);
     if (isServer) return;
     if (accounts.length === 0) {
       this.deactivate();
@@ -253,14 +237,14 @@ class WalletConnect extends AbstractWallet {
 
     const provider = this.provider;
     if (provider) {
-      provider.removeListener("disconnect", this.deactivate);
-      provider.removeListener("chainChanged", this.handleChainChange);
-      provider.removeListener("accountsChanged", this.handleAccountsChanged);
-      provider.removeListener("display_uri", this.handleDisplayURI);
+      provider.removeListener('disconnect', this.deactivate);
+      provider.removeListener('chainChanged', this.handleChainChange);
+      provider.removeListener('accountsChanged', this.handleAccountsChanged);
+      provider.removeListener('display_uri', this.handleDisplayURI);
       provider.disconnect();
     }
 
-    localStorage.removeItem(selectedWalletKey);
+    localStorage.removeItem(SELECTED_WALLET_KEY);
     resetStore();
     this.provider = null;
   }

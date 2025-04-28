@@ -1,4 +1,4 @@
-import { AbstractWallet } from "./AbstractWallet";
+import { AbstractWallet } from './AbstractWallet';
 export type ArrayOneOrMore<T> = {
     0: T;
 } & Array<T>;
@@ -26,7 +26,7 @@ declare class WalletConnect extends AbstractWallet {
         qrModalOptions: {
             explorerRecommendedWalletIds: string[];
             themeVariables: {
-                "--wcm-z-index": string;
+                '--wcm-z-index': string;
             };
         };
     };
