@@ -9,5 +9,10 @@ var ConnectionType;
     ConnectionType["SUI"] = "SUI";
     ConnectionType["GATEAPPWALLET"] = "GATE_APP_WALLET";
 })(ConnectionType || (ConnectionType = {}));
+var ChainType;
+(function (ChainType) {
+    ChainType["EVM"] = "EVM";
+    ChainType["SUI"] = "SUI";
+})(ChainType || (ChainType = {}));
 
-export { ConnectionType };
+export { ChainType, ConnectionType };

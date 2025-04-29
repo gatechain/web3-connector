@@ -1,4 +1,4 @@
-import { store, useWeb3Store } from './stores/Web3Store.js';
+import { useWeb3Store, store } from './stores/Web3Store.js';
 import { isServer } from './utils/env.js';
 
 // React hook

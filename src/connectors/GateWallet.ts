@@ -1,5 +1,5 @@
-import { AddEthereumChainParameter } from '@web3-react/types';
-import { ConnectionType } from '../types';
+import { AddEthereumChainParameter, ProviderRpcError } from '@web3-react/types';
+import { ChainType, ConnectionType } from '../types';
 import { resetStore, updateStore } from '../useWeb3ReactHook';
 import { parseChainId } from '../utils';
 import { AbstractWallet } from './AbstractWallet';
@@ -92,51 +92,64 @@ export class GateWallet extends AbstractWallet {
     const provider = this.provider;
     if (!provider) return;
     const gateAccountInfo = await provider.connect();
-    return Promise.all([
-      this.provider.request({ method: 'eth_chainId' }) as Promise<string>,
-      this.provider.request({ method: 'eth_requestAccounts' }) as Promise<string[]>,
-    ]).then(([chainId, accounts]) => {
-      const receivedChainId = parseChainId(chainId);
-      const desiredChainId =
-        typeof desiredChainIdOrChainParameters === 'number'
-          ? desiredChainIdOrChainParameters
-          : desiredChainIdOrChainParameters?.chainId;
+    const { accountNetworkArr } = gateAccountInfo;
+    if (accountNetworkArr.find((item) => item.network === ChainType.EVM)) {
+      return Promise.all([
+        this.provider.request({ method: 'eth_chainId' }) as Promise<string>,
+        this.provider.request({ method: 'eth_requestAccounts' }) as Promise<string[]>,
+      ]).then(([chainId, accounts]) => {
+        const receivedChainId = parseChainId(chainId);
+        const desiredChainId =
+          typeof desiredChainIdOrChainParameters === 'number'
+            ? desiredChainIdOrChainParameters
+            : desiredChainIdOrChainParameters?.chainId;
 
-      if (!desiredChainId || receivedChainId === desiredChainId) {
-        updateStore({
-          isActive: true,
-          chainId: parseChainId(chainId),
-          gateAccountInfo,
-          accounts,
-          account: accounts?.[0],
-          currentWallet: ConnectionType.GATEWALLET,
-          connector: this,
-        });
-        return;
-      }
+        if (!desiredChainId || receivedChainId === desiredChainId) {
+          updateStore({
+            isActive: true,
+            chainId: parseChainId(chainId),
+            gateAccountInfo,
+            accounts,
+            account: accounts?.[0],
+            currentWallet: ConnectionType.GATEWALLET,
+            connector: this,
+          });
+          return;
+        }
 
-      const desiredChainIdHex = `0x${desiredChainId.toString(16)}`;
+        const desiredChainIdHex = `0x${desiredChainId.toString(16)}`;
 
-      return this.provider!.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: desiredChainIdHex }],
-      })
-        .catch((error: ProviderRpcError) => {
-          if (error.code === 4902 && typeof desiredChainIdOrChainParameters !== 'number') {
-            return this.provider!.request({
-              method: 'wallet_addEthereumChain',
-              params: [
-                {
-                  ...desiredChainIdOrChainParameters,
-                  chainId: desiredChainIdHex,
-                },
-              ],
-            });
-          }
-          throw error;
+        return this.provider!.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: desiredChainIdHex }],
         })
-        .then(() => this.activate(desiredChainId));
-    });
+          .catch((error: ProviderRpcError) => {
+            if (error.code === 4902 && typeof desiredChainIdOrChainParameters !== 'number') {
+              return this.provider!.request({
+                method: 'wallet_addEthereumChain',
+                params: [
+                  {
+                    ...desiredChainIdOrChainParameters,
+                    chainId: desiredChainIdHex,
+                  },
+                ],
+              });
+            }
+            throw error;
+          })
+          .then(() => this.activate(desiredChainId));
+      });
+    } else {
+      updateStore({
+        isActive: true,
+        gateAccountInfo,
+        account: accountNetworkArr?.[0]?.address,
+        currentWallet: ConnectionType.GATEWALLET,
+        connector: this,
+      });
+    }
+
+    //TODO:多链兼容
   }
 
   private handleGateAccountChange = (gateWallet: any) => {

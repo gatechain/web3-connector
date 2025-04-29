@@ -1,4 +1,4 @@
-import { ConnectionType } from '../types.js';
+import { ConnectionType, ChainType } from '../types.js';
 import { resetStore, updateStore } from '../useWeb3ReactHook.js';
 import { parseChainId } from '../utils/index.js';
 import { AbstractWallet } from './AbstractWallet.js';
@@ -77,47 +77,60 @@ class GateWallet extends AbstractWallet {
         if (!provider)
             return;
         const gateAccountInfo = await provider.connect();
-        return Promise.all([
-            this.provider.request({ method: 'eth_chainId' }),
-            this.provider.request({ method: 'eth_requestAccounts' }),
-        ]).then(([chainId, accounts]) => {
-            const receivedChainId = parseChainId(chainId);
-            const desiredChainId = typeof desiredChainIdOrChainParameters === 'number'
-                ? desiredChainIdOrChainParameters
-                : desiredChainIdOrChainParameters?.chainId;
-            if (!desiredChainId || receivedChainId === desiredChainId) {
-                updateStore({
-                    isActive: true,
-                    chainId: parseChainId(chainId),
-                    gateAccountInfo,
-                    accounts,
-                    account: accounts?.[0],
-                    currentWallet: ConnectionType.GATEWALLET,
-                    connector: this,
-                });
-                return;
-            }
-            const desiredChainIdHex = `0x${desiredChainId.toString(16)}`;
-            return this.provider.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: desiredChainIdHex }],
-            })
-                .catch((error) => {
-                if (error.code === 4902 && typeof desiredChainIdOrChainParameters !== 'number') {
-                    return this.provider.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [
-                            {
-                                ...desiredChainIdOrChainParameters,
-                                chainId: desiredChainIdHex,
-                            },
-                        ],
+        const { accountNetworkArr } = gateAccountInfo;
+        if (accountNetworkArr.find((item) => item.network === ChainType.EVM)) {
+            return Promise.all([
+                this.provider.request({ method: 'eth_chainId' }),
+                this.provider.request({ method: 'eth_requestAccounts' }),
+            ]).then(([chainId, accounts]) => {
+                const receivedChainId = parseChainId(chainId);
+                const desiredChainId = typeof desiredChainIdOrChainParameters === 'number'
+                    ? desiredChainIdOrChainParameters
+                    : desiredChainIdOrChainParameters?.chainId;
+                if (!desiredChainId || receivedChainId === desiredChainId) {
+                    updateStore({
+                        isActive: true,
+                        chainId: parseChainId(chainId),
+                        gateAccountInfo,
+                        accounts,
+                        account: accounts?.[0],
+                        currentWallet: ConnectionType.GATEWALLET,
+                        connector: this,
                     });
+                    return;
                 }
-                throw error;
-            })
-                .then(() => this.activate(desiredChainId));
-        });
+                const desiredChainIdHex = `0x${desiredChainId.toString(16)}`;
+                return this.provider.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: desiredChainIdHex }],
+                })
+                    .catch((error) => {
+                    if (error.code === 4902 && typeof desiredChainIdOrChainParameters !== 'number') {
+                        return this.provider.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [
+                                {
+                                    ...desiredChainIdOrChainParameters,
+                                    chainId: desiredChainIdHex,
+                                },
+                            ],
+                        });
+                    }
+                    throw error;
+                })
+                    .then(() => this.activate(desiredChainId));
+            });
+        }
+        else {
+            updateStore({
+                isActive: true,
+                gateAccountInfo,
+                account: accountNetworkArr?.[0]?.address,
+                currentWallet: ConnectionType.GATEWALLET,
+                connector: this,
+            });
+        }
+        //TODO:多链兼容
     }
     handleGateAccountChange = (gateWallet) => {
         console.log('gateAccountChange', gateWallet, JSON.stringify(gateWallet) === '{}');

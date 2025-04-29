@@ -15,8 +15,6 @@ export interface Web3State {
 export interface Web3Actions {
     updateStore: (update: Partial<Web3State>) => void;
     reset: () => void;
-    connect: (connectionType: ConnectionType) => Promise<void>;
-    disconnect: () => void;
 }
 type StoreState = Web3State & Web3Actions;
 export declare const store: import("zustand").UseBoundStore<Omit<import("zustand").StoreApi<StoreState>, "persist"> & {
@@ -41,12 +39,4 @@ export declare const useWeb3Store: import("zustand").UseBoundStore<Omit<import("
         getOptions: () => Partial<import("zustand/middleware").PersistOptions<StoreState, unknown>>;
     };
 }>;
-export declare const useWallet: () => {
-    account: string | undefined;
-    isActive: boolean;
-    isActivating: boolean;
-    chainId: number | undefined;
-    currentWallet: ConnectionType | undefined;
-};
-export declare const useWeb3Provider: () => Web3Provider | null;
 export {};

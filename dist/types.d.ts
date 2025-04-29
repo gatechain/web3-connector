@@ -9,3 +9,7 @@ export declare enum ConnectionType {
     GATEAPPWALLET = "GATE_APP_WALLET"
 }
 export type Network = 'livenet' | 'testnet';
+export declare enum ChainType {
+    EVM = "EVM",
+    SUI = "SUI"
+}
