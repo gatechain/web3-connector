@@ -11,5 +11,10 @@ export declare enum ConnectionType {
 export type Network = 'livenet' | 'testnet';
 export declare enum ChainType {
     EVM = "EVM",
-    SUI = "SUI"
+    SUI = "SUI",
+    SOL = "SOL",
+    TRX = "TRX",
+    TON = "TON",
+    SEI = "SEI",
+    BTC = "BTC"
 }

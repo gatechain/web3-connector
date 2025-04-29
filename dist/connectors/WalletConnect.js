@@ -1,4 +1,3 @@
-import { EthereumProvider } from '@walletconnect/ethereum-provider';
 import { SELECTED_WALLET_KEY } from '../constant.js';
 import { ConnectionType } from '../types.js';
 import { resetStore, updateStore } from '../useWeb3ReactHook.js';
@@ -10,8 +9,8 @@ import { AbstractWallet } from './AbstractWallet.js';
 const getEthProviderModule = async () => {
     if (isServer)
         return null;
-    const module = await import('@walletconnect/ethereum-provider');
-    return module.default;
+    const { EthereumProvider } = await import('@walletconnect/ethereum-provider');
+    return EthereumProvider;
 };
 function isArrayOneOrMore(input = []) {
     return input.length > 0;
@@ -89,13 +88,13 @@ class WalletConnect extends AbstractWallet {
             return Promise.resolve();
         try {
             const chainProps = this.getChainProps(this.chains, this.optionalChains, desiredChainId);
-            const provider = EthereumProvider.init({
+            const EthereumProvider = await getEthProviderModule();
+            if (!EthereumProvider)
+                return Promise.resolve();
+            const provider = await EthereumProvider.init({
                 ...this.options,
                 ...chainProps,
             });
-            const ethProviderModule = await getEthProviderModule();
-            if (!ethProviderModule)
-                return Promise.resolve();
             this.provider = provider;
         }
         catch (error) {

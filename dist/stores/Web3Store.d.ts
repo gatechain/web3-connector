@@ -21,7 +21,7 @@ export declare const store: import("zustand").UseBoundStore<Omit<import("zustand
     persist: {
         setOptions: (options: Partial<import("zustand/middleware").PersistOptions<StoreState, unknown>>) => void;
         clearStorage: () => void;
-        rehydrate: () => Promise<void> | void;
+        rehydrate: () => void | Promise<void>;
         hasHydrated: () => boolean;
         onHydrate: (fn: (state: StoreState) => void) => () => void;
         onFinishHydration: (fn: (state: StoreState) => void) => () => void;
@@ -32,7 +32,7 @@ export declare const useWeb3Store: import("zustand").UseBoundStore<Omit<import("
     persist: {
         setOptions: (options: Partial<import("zustand/middleware").PersistOptions<StoreState, unknown>>) => void;
         clearStorage: () => void;
-        rehydrate: () => Promise<void> | void;
+        rehydrate: () => void | Promise<void>;
         hasHydrated: () => boolean;
         onHydrate: (fn: (state: StoreState) => void) => () => void;
         onFinishHydration: (fn: (state: StoreState) => void) => () => void;

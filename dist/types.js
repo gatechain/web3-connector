@@ -13,6 +13,11 @@ var ChainType;
 (function (ChainType) {
     ChainType["EVM"] = "EVM";
     ChainType["SUI"] = "SUI";
+    ChainType["SOL"] = "SOL";
+    ChainType["TRX"] = "TRX";
+    ChainType["TON"] = "TON";
+    ChainType["SEI"] = "SEI";
+    ChainType["BTC"] = "BTC";
 })(ChainType || (ChainType = {}));
 
 export { ChainType, ConnectionType };
