@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { AbstractWallet } from './connectors/AbstractWallet';
 import GateAppWallet from './connectors/GateAppWallet';
 import GateWallet from './connectors/GateWallet';
@@ -7,13 +6,12 @@ import PhantomWallet from './connectors/PhantomWallet';
 import UnisatWallet from './connectors/UnisatWallet';
 import WalletConnect from './connectors/WalletConnect';
 import WalletConnectNoQr from './connectors/WalletConnectNoQr';
-import { SELECTED_WALLET_KEY } from './constant';
+import { SELECTED_WALLET_KEY, WEB3_WALLET_INFO_KEY } from './constant';
+import { store, updateStore } from './hooks/useWalletStatus';
 import { ConnectionType } from './types';
-import { store, updateStore } from './useWeb3ReactHook';
 import { getQueryParams, isApp } from './utils';
-export { useWeb3React } from './useWeb3ReactHook';
 
-export { ConnectionType };
+export { useWalletStatus } from './hooks/useWalletStatus';
 
 export function connectWallet(
   connectionType: ConnectionType,
@@ -46,6 +44,8 @@ export function connectWallet(
     });
 }
 
+export { getConnector };
+
 function getConnector(connectionType: ConnectionType, resolve?: (uri: string) => void) {
   const map: any = {
     [ConnectionType.GATEWALLET]: GateWallet,
@@ -72,33 +72,8 @@ export function disconnect() {
 
   const connector = getConnector(currentWallet);
   localStorage.removeItem(SELECTED_WALLET_KEY);
-  localStorage.removeItem('web3-storage');
+  localStorage.removeItem(WEB3_WALLET_INFO_KEY);
   connector?.deactivate();
-}
-
-export function useEagerlyConnect(onError?: Function) {
-  useEffect(() => {
-    // 如果当前在dapp浏览器内，自动进行gateappwallet连接
-    const isGateApp = isApp(getQueryParams());
-    if (isGateApp) {
-      connectWallet(ConnectionType.GATEAPPWALLET);
-      return;
-    }
-    const web3Storage = localStorage.getItem('web3-storage');
-    const web3StorageString = JSON?.parse(web3Storage || '{}');
-    const selectedWalletType = (web3StorageString?.state?.currentWallet as ConnectionType) || '';
-
-    try {
-      if (!selectedWalletType) {
-        onError?.();
-        return;
-      }
-      const selectedWallet = getConnector(selectedWalletType as ConnectionType);
-      selectedWallet.connectEagerly();
-    } catch (error) {
-      console.error(error);
-    }
-  }, []);
 }
 
 type ISWalletType = 'MetaMask' | 'TokenPocket';
@@ -120,3 +95,25 @@ export const isWallet = (params: ISWalletType): boolean => {
 
   return false;
 };
+
+// ---- autoConnect 逻辑开始 ----
+(function autoConnect() {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return;
+  }
+  const isGateApp = isApp(getQueryParams());
+  if (isGateApp) {
+    connectWallet(ConnectionType.GATEAPPWALLET);
+    return;
+  }
+  const selectedWalletType = localStorage.getItem(SELECTED_WALLET_KEY)?.replace(/"/g, '');
+  if (selectedWalletType) {
+    const selectedWallet = getConnector(selectedWalletType as ConnectionType);
+    if (typeof selectedWallet.autoConnect === 'function') {
+      selectedWallet.autoConnect();
+    }
+  }
+})();
+// ---- autoConnect 逻辑结束 ----
+
+export { ConnectionType };

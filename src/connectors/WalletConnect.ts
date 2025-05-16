@@ -1,6 +1,6 @@
 import { SELECTED_WALLET_KEY } from '../constant';
+import { resetStore, updateStore } from '../hooks/useWalletStatus';
 import { ConnectionType } from '../types';
-import { resetStore, updateStore } from '../useWeb3ReactHook';
 import { parseChainId } from '../utils';
 import { isServer } from '../utils/env';
 import { AbstractWallet } from './AbstractWallet';
@@ -170,7 +170,7 @@ class WalletConnect extends AbstractWallet {
     console.log('url', url);
   }
 
-  public async connectEagerly() {
+  public async autoConnect() {
     if (isServer) return;
 
     await this.initialize();
@@ -194,7 +194,6 @@ class WalletConnect extends AbstractWallet {
   public async activate(desiredChainId: number = this.defaultChainId) {
     if (isServer) return;
     if (this.isLoading) return;
-
     this.isLoading = true;
     await this.initialize(desiredChainId);
     const provider = this.provider;
@@ -251,7 +250,7 @@ class WalletConnect extends AbstractWallet {
 
   static instance: WalletConnect;
 
-  static getInstance(showQrModal = true) {
+  static getInstance(showQrModal: any = true) {
     if (WalletConnect.instance) return WalletConnect.instance;
     WalletConnect.instance = new WalletConnect({ showQrModal });
     return WalletConnect.instance;

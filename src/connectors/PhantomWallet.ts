@@ -1,9 +1,9 @@
+import { resetStore, updateStore } from '../hooks/useWalletStatus';
 import { ConnectionType } from '../types';
-import { resetStore, updateStore } from '../useWeb3ReactHook';
 import { AbstractWallet } from './AbstractWallet';
 
 class PhantomWallet extends AbstractWallet {
-  public provider: any;
+  declare public provider: any;
 
   constructor() {
     super();
@@ -84,7 +84,7 @@ class PhantomWallet extends AbstractWallet {
     }
   }
 
-  public async connectEagerly(): Promise<void> {
+  public async autoConnect(): Promise<void> {
     this.activate();
   }
 

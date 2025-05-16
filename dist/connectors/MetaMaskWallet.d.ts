@@ -9,7 +9,7 @@ declare class MetaMaskWallet extends AbstractWallet {
     private handleConnectEvent;
     private handleChainChanged;
     activate(desiredChainIdOrChainParameters?: number | AddEthereumChainParameter): Promise<any>;
-    connectEagerly(): Promise<void>;
+    autoConnect(): Promise<void>;
     deactivate(): void;
     static instance: MetaMaskWallet;
     static getInstance(): MetaMaskWallet;

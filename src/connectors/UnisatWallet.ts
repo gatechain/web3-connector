@@ -1,10 +1,10 @@
 import { SELECTED_WALLET_KEY } from '../constant';
+import { resetStore, updateStore } from '../hooks/useWalletStatus';
 import { ConnectionType } from '../types';
-import { resetStore, updateStore } from '../useWeb3ReactHook';
 import { AbstractWallet } from './AbstractWallet';
 
 class UnisatWallet extends AbstractWallet {
-  public provider: any;
+  declare public provider: any;
 
   constructor() {
     super();
@@ -65,7 +65,7 @@ class UnisatWallet extends AbstractWallet {
     });
   }
 
-  public async connectEagerly() {
+  public async autoConnect() {
     this.activate();
   }
 

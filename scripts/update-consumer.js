@@ -7,10 +7,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // 配置使用方项目路径，这里假设是相对于当前项目的上级目录的 webfront
-const CONSUMER_PROJECT_PATH = path.resolve(__dirname, '../../web3-connector-test');
+const CONSUMER_PROJECT_PATH = path.resolve(__dirname, '../../web3next');
 
 function updateConsumerPackage() {
-  const packagePath = path.resolve(CONSUMER_PROJECT_PATH, 'node_modules/web3-connector');
+  const packagePath = path.resolve(CONSUMER_PROJECT_PATH, 'node_modules/web3-connector-v4');
 
   // 确保目标目录存在
   if (!fs.existsSync(packagePath)) {

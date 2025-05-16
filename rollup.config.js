@@ -1,7 +1,8 @@
-import typescript from '@rollup/plugin-typescript';
-import resolve from '@rollup/plugin-node-resolve';
+import babel from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
+import resolve from '@rollup/plugin-node-resolve';
+import typescript from '@rollup/plugin-typescript';
 
 export default {
   input: 'src/index.ts',
@@ -16,6 +17,7 @@ export default {
     'react-dom',
     'react/jsx-runtime',
     '@ethersproject/providers',
+    '@ethersproject/address',
     '@metamask/detect-provider',
     '@walletconnect/ethereum-provider',
     'js-cookie',
@@ -34,5 +36,10 @@ export default {
     }),
     typescript(),
     json(),
+    babel({
+      babelHelpers: 'bundled',
+      extensions: ['.js', '.ts', '.tsx'],
+      include: ['src/**/*'],
+    }),
   ],
 };

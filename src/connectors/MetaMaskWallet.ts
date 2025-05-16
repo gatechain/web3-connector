@@ -1,7 +1,8 @@
+import { getAddress } from '@ethersproject/address';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { AddEthereumChainParameter, ProviderRpcError } from '@web3-react/types';
+import { resetStore, updateStore } from '../hooks/useWalletStatus';
 import { ConnectionType } from '../types';
-import { resetStore, updateStore } from '../useWeb3ReactHook';
 import { parseChainId } from '../utils';
 import { AbstractWallet } from './AbstractWallet';
 
@@ -38,6 +39,7 @@ class MetaMaskWallet extends AbstractWallet {
   }
 
   private async initialize() {
+    console.log('first initialize');
     await this.detectProvider();
     const provider = this.provider;
     if (!provider) {
@@ -54,9 +56,10 @@ class MetaMaskWallet extends AbstractWallet {
     if (accounts.length === 0) {
       this.deactivate();
     } else {
-      const currentAccount = accounts[0];
+      const formattedAccounts = accounts.map((account) => getAddress(account));
+      const currentAccount = formattedAccounts[0];
       updateStore({
-        accounts: accounts,
+        accounts: formattedAccounts,
         account: currentAccount,
       });
     }
@@ -85,13 +88,13 @@ class MetaMaskWallet extends AbstractWallet {
           typeof desiredChainIdOrChainParameters === 'number'
             ? desiredChainIdOrChainParameters
             : desiredChainIdOrChainParameters?.chainId;
-
+        const formattedAccounts = accounts.map((account) => getAddress(account));
         if (!desiredChainId || receivedChainId === desiredChainId) {
           updateStore({
             isActive: true,
             chainId: parseChainId(chainId),
-            accounts,
-            account: accounts?.[0],
+            accounts: formattedAccounts,
+            account: formattedAccounts?.[0],
             currentWallet: ConnectionType.INJECTED,
             connector: this,
           });
@@ -123,7 +126,7 @@ class MetaMaskWallet extends AbstractWallet {
     });
   }
 
-  public async connectEagerly() {
+  public async autoConnect() {
     await this.initialize();
     const provider = this.provider;
 
@@ -135,11 +138,12 @@ class MetaMaskWallet extends AbstractWallet {
         this.provider.request({ method: 'eth_requestAccounts' }) as Promise<string[]>,
       ]);
 
+      const formattedAccounts = accounts.map((account) => getAddress(account));
       updateStore({
         isActive: true,
         chainId: parseChainId(chainId),
-        accounts,
-        account: accounts?.[0],
+        accounts: formattedAccounts,
+        account: formattedAccounts?.[0],
         currentWallet: ConnectionType.INJECTED,
         connector: this,
       });

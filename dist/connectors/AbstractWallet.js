@@ -1,4 +1,3 @@
-class AbstractWallet {
-}
+class AbstractWallet {}
 
 export { AbstractWallet };

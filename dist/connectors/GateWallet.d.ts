@@ -5,7 +5,7 @@ export declare class GateWallet extends AbstractWallet {
     constructor();
     detectProvider(timeout?: number): Promise<unknown>;
     private initialize;
-    connectEagerly(): Promise<void>;
+    autoConnect(): Promise<void>;
     activate(desiredChainIdOrChainParameters?: number | AddEthereumChainParameter): Promise<any>;
     private handleGateAccountChange;
     private handleAccountsChanged;

@@ -5,7 +5,7 @@ declare class UnisatWallet extends AbstractWallet {
     detectProvider(timeout?: number): Promise<unknown>;
     private initialize;
     private handleNetworkChanged;
-    connectEagerly(): Promise<void>;
+    autoConnect(): Promise<void>;
     activate(): Promise<void>;
     private handleAccountsChanged;
     deactivate(): void;

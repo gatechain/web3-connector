@@ -1,9 +1,10 @@
+import { AbstractWallet } from './connectors/AbstractWallet';
 import { ConnectionType } from './types';
-export { useWeb3React } from './useWeb3ReactHook';
-export { ConnectionType };
+export { useWalletStatus } from './hooks/useWalletStatus';
 export declare function connectWallet(connectionType: ConnectionType, resolve?: (uri: string) => void, reject?: (err: Error) => void): void;
+export { getConnector };
+declare function getConnector(connectionType: ConnectionType, resolve?: (uri: string) => void): AbstractWallet;
 export declare function disconnect(): void;
-export declare function useEagerlyConnect(onError?: Function): void;
 type ISWalletType = 'MetaMask' | 'TokenPocket';
 export interface EthereumProvider {
     isMetaMask?: boolean;
@@ -11,3 +12,4 @@ export interface EthereumProvider {
     [key: string]: any;
 }
 export declare const isWallet: (params: ISWalletType) => boolean;
+export { ConnectionType };

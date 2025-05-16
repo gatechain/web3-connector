@@ -1,7 +1,7 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { SELECTED_WALLET_KEY } from '../constant';
+import { SELECTED_WALLET_KEY, WEB3_WALLET_INFO_KEY } from '../constant';
 import { ConnectionType, Network } from '../types';
 import { isServer } from '../utils/env';
 
@@ -72,12 +72,12 @@ export const store = create<StoreState>()(
 
       reset: () => {
         localStorage.removeItem(SELECTED_WALLET_KEY);
-        localStorage.removeItem('web3-storage');
+        localStorage.removeItem(WEB3_WALLET_INFO_KEY);
         set(initialState);
       },
     }),
     {
-      name: 'web3-storage',
+      name: WEB3_WALLET_INFO_KEY,
       storage: createJSONStorage(() => ({
         getItem: (name) => {
           return localStorage.getItem(name);

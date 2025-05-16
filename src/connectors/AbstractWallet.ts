@@ -8,7 +8,7 @@ export abstract class AbstractWallet {
     desiredChainIdOrChainParameters?: number | AddEthereumChainParameter
   ): Promise<unknown>;
 
-  public abstract connectEagerly(): Promise<void>;
+  public abstract autoConnect(): Promise<void>;
 
   public abstract deactivate(): void;
 }

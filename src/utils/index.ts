@@ -1,4 +1,5 @@
 export function parseChainId(chainId: string) {
+  console.log('parseChainId', chainId);
   return Number.parseInt(chainId, 16);
 }
 

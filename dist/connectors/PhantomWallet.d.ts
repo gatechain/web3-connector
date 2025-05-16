@@ -5,7 +5,7 @@ declare class PhantomWallet extends AbstractWallet {
     detectProvider(timeout?: number): Promise<unknown>;
     private initialize;
     activate(): Promise<void>;
-    connectEagerly(): Promise<void>;
+    autoConnect(): Promise<void>;
     private handleAccountsChanged;
     private handleConnectEvent;
     deactivate(): void;

@@ -1,10 +1,11 @@
+import { resetStore, updateStore } from '../hooks/useWalletStatus';
 import { ConnectionType } from '../types';
-import { resetStore, updateStore } from '../useWeb3ReactHook';
 import WalletConnect from './WalletConnect';
 
 type UriCallback = (uri: string) => void;
 
 //扫码连接gate钱包
+
 class WalletConnectNoQr extends WalletConnect {
   constructor(options: { setUri?: UriCallback }) {
     super({ ...options, showQrModal: false });

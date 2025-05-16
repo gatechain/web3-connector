@@ -1,83 +1,79 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { SELECTED_WALLET_KEY } from '../constant.js';
+import { SELECTED_WALLET_KEY, WEB3_WALLET_INFO_KEY } from '../constant.js';
 import { ConnectionType } from '../types.js';
 import { isServer } from '../utils/env.js';
 
 const initialState = {
-    chainId: undefined,
-    isActive: false,
-    isActivating: false,
-    account: undefined,
-    accounts: [],
-    gateAccountInfo: undefined,
-    currentWallet: undefined,
-    connector: undefined,
-    network: undefined,
-    provider: null,
+  chainId: undefined,
+  isActive: false,
+  isActivating: false,
+  account: undefined,
+  accounts: [],
+  gateAccountInfo: undefined,
+  currentWallet: undefined,
+  connector: undefined,
+  network: undefined,
+  provider: null
 };
 // 创建 store
 const store = create()(persist((set, get) => ({
-    ...initialState,
-    updateStore: (update) => {
-        set((state) => {
-            const newState = { ...state, ...update };
-            // 统一封装为ethers标准Provider,方便按ethers标准使用
-            if (update.connector?.provider) {
-                const provider = update.connector.provider;
-                if ([
-                    ConnectionType.INJECTED,
-                    ConnectionType.WALLET_CONNECT,
-                    ConnectionType.WALLET_CONNECT_NOTQR,
-                    ConnectionType.GATEWALLET,
-                    ConnectionType.GATEAPPWALLET,
-                ].includes(update.currentWallet)) {
-                    newState.provider = new Web3Provider(provider);
-                }
-                else {
-                    newState.provider = provider;
-                }
-            }
-            return newState;
-        });
-    },
-    reset: () => {
-        localStorage.removeItem(SELECTED_WALLET_KEY);
-        localStorage.removeItem('web3-storage');
-        set(initialState);
-    },
-}), {
-    name: 'web3-storage',
-    storage: createJSONStorage(() => ({
-        getItem: (name) => {
-            return localStorage.getItem(name);
-        },
-        setItem: (name, value) => {
-            if (!isServer) {
-                localStorage.setItem(name, value);
-            }
-        },
-        removeItem: (name) => {
-            if (!isServer) {
-                localStorage.removeItem(name);
-            }
-        },
-    })),
-    partialize: (state) => {
-        if (!state.isActive) {
-            return {};
+  ...initialState,
+  updateStore: update => {
+    set(state => {
+      const newState = {
+        ...state,
+        ...update
+      };
+      // 统一封装为ethers标准Provider,方便按ethers标准使用
+      if (update.connector?.provider) {
+        const provider = update.connector.provider;
+        if ([ConnectionType.INJECTED, ConnectionType.WALLET_CONNECT, ConnectionType.WALLET_CONNECT_NOTQR, ConnectionType.GATEWALLET, ConnectionType.GATEAPPWALLET].includes(update.currentWallet)) {
+          newState.provider = new Web3Provider(provider);
+        } else {
+          newState.provider = provider;
         }
-        return {
-            chainId: state.chainId,
-            account: state.account,
-            accounts: state.accounts,
-            currentWallet: state.currentWallet,
-            isActive: state.isActive,
-            network: state.network,
-        };
+      }
+      return newState;
+    });
+  },
+  reset: () => {
+    localStorage.removeItem(SELECTED_WALLET_KEY);
+    localStorage.removeItem(WEB3_WALLET_INFO_KEY);
+    set(initialState);
+  }
+}), {
+  name: WEB3_WALLET_INFO_KEY,
+  storage: createJSONStorage(() => ({
+    getItem: name => {
+      return localStorage.getItem(name);
     },
-    version: 1,
+    setItem: (name, value) => {
+      if (!isServer) {
+        localStorage.setItem(name, value);
+      }
+    },
+    removeItem: name => {
+      if (!isServer) {
+        localStorage.removeItem(name);
+      }
+    }
+  })),
+  partialize: state => {
+    if (!state.isActive) {
+      return {};
+    }
+    return {
+      chainId: state.chainId,
+      account: state.account,
+      accounts: state.accounts,
+      currentWallet: state.currentWallet,
+      isActive: state.isActive,
+      network: state.network
+    };
+  },
+  version: 1
 }));
 // 基础 hook
 const useWeb3Store = store;
