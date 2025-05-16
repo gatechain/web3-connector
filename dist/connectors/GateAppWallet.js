@@ -110,6 +110,7 @@ class GateAppWallet extends AbstractWallet {
       }
     });
   }
+  async autoConnect() {}
   handleGateAccountChange = gateWallet => {
     console.log('gateAccountChange1', gateWallet, JSON.stringify(gateWallet) === '{}');
     if (!gateWallet || JSON.stringify(gateWallet) === '{}') {

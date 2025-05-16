@@ -4,6 +4,8 @@ import json from '@rollup/plugin-json';
 import resolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 
+const isRemoveLog = process.env.NODE_ENV === 'production';
+
 export default {
   input: 'src/index.ts',
   output: {
@@ -20,11 +22,8 @@ export default {
     '@ethersproject/address',
     '@metamask/detect-provider',
     '@walletconnect/ethereum-provider',
-    'js-cookie',
     'zustand',
-    'zustand/vanilla',
     'zustand/middleware',
-    'zustand/shallow',
   ],
   plugins: [
     commonjs({
@@ -40,6 +39,9 @@ export default {
       babelHelpers: 'bundled',
       extensions: ['.js', '.ts', '.tsx'],
       include: ['src/**/*'],
+      plugins: isRemoveLog
+        ? [['transform-remove-console', { exclude: ['error', 'warn', 'info'] }]]
+        : [],
     }),
   ],
 };

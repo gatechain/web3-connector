@@ -1,8 +1,7 @@
 import { getAddress } from '@ethersproject/address';
 import detectEthereumProvider from '@metamask/detect-provider';
-import { AddEthereumChainParameter, ProviderRpcError } from '@web3-react/types';
 import { resetStore, updateStore } from '../hooks/useWalletStatus';
-import { ConnectionType } from '../types';
+import { AddEthereumChainParameter, ConnectionType, ProviderRpcError } from '../types';
 import { parseChainId } from '../utils';
 import { AbstractWallet } from './AbstractWallet';
 

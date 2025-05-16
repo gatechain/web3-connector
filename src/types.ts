@@ -1,3 +1,22 @@
+export interface ProviderRpcError extends Error {
+  message: string;
+  code: number;
+  data?: unknown;
+}
+
+export interface AddEthereumChainParameter {
+  chainId: number;
+  chainName: string;
+  nativeCurrency: {
+    name: string;
+    symbol: string;
+    decimals: 18;
+  };
+  rpcUrls: string[];
+  blockExplorerUrls?: string[];
+  iconUrls?: string[];
+}
+
 export enum ConnectionType {
   INJECTED = 'INJECTED',
   GATEWALLET = 'GATEWALLET',

@@ -1,7 +1,6 @@
 import { getAddress } from '@ethersproject/address';
-import { AddEthereumChainParameter, ProviderRpcError } from '@web3-react/types';
 import { resetStore, updateStore } from '../hooks/useWalletStatus';
-import { ChainType, ConnectionType } from '../types';
+import { AddEthereumChainParameter, ChainType, ConnectionType, ProviderRpcError } from '../types';
 import { parseChainId } from '../utils';
 import { AbstractWallet } from './AbstractWallet';
 

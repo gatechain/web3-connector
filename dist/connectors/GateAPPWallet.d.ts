@@ -1,4 +1,4 @@
-import { AddEthereumChainParameter } from '@web3-react/types';
+import { AddEthereumChainParameter } from '../types';
 import { AbstractWallet } from './AbstractWallet';
 declare class GateAppWallet extends AbstractWallet {
     provider: any;
@@ -6,6 +6,7 @@ declare class GateAppWallet extends AbstractWallet {
     detectProvider(timeout?: number): Promise<unknown>;
     private initialize;
     activate(desiredChainIdOrChainParameters?: number | AddEthereumChainParameter): Promise<any>;
+    autoConnect(): Promise<void>;
     private handleGateAccountChange;
     private handleAccountsChanged;
     private handleConnectEvent;

@@ -136,7 +136,6 @@ class WalletConnect extends AbstractWallet {
         ...this.options,
         ...chainProps,
       });
-
       this.provider = provider;
     } catch (error) {
       console.error(error);

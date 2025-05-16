@@ -1,7 +1,6 @@
-import { AddEthereumChainParameter, ProviderRpcError } from '@web3-react/types';
 import { SELECTED_WALLET_KEY } from '../constant';
 import { resetStore, updateStore } from '../hooks/useWalletStatus';
-import { ConnectionType } from '../types';
+import { AddEthereumChainParameter, ConnectionType, ProviderRpcError } from '../types';
 import { parseChainId } from '../utils';
 import { AppAccountsService } from '../utils/appAccountsService';
 import { AbstractWallet } from './AbstractWallet';
@@ -132,6 +131,8 @@ class GateAppWallet extends AbstractWallet {
       }
     });
   }
+
+  async autoConnect() {}
 
   private handleGateAccountChange = (gateWallet: any) => {
     console.log('gateAccountChange1', gateWallet, JSON.stringify(gateWallet) === '{}');

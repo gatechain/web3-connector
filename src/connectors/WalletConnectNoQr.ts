@@ -24,7 +24,6 @@ class WalletConnectNoQr extends WalletConnect {
     const provider = this.provider;
 
     (window as any).wc = provider;
-
     if (!provider) return;
     if (provider.session) {
       if (!desiredChainId || desiredChainId === provider.chainId) return;

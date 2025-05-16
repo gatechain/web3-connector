@@ -1,4 +1,4 @@
-import { AddEthereumChainParameter } from '@web3-react/types';
+import { AddEthereumChainParameter } from '../types';
 import { AbstractWallet } from './AbstractWallet';
 export declare class GateWallet extends AbstractWallet {
     provider: any;

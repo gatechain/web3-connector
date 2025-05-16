@@ -17,8 +17,8 @@
   },
   "scripts": {
     "dev": "rm -rf dist/ && rollup -c rollup.config.js --bundleConfigAsCjs --watch",
-    "build": "rm -rf dist/ && rollup -c rollup.config.js --bundleConfigAsCjs",
-    "dev:watch": "pnpm run build && node scripts/update-consumer.js && rollup -c rollup.config.js --bundleConfigAsCjs --watch & node scripts/watch-and-update.js",
+    "dev:watch": "pnpm run dev & node scripts/watch-and-update.js",
+    "build": "rm -rf dist/ && cross-env NODE_ENV=production rollup -c rollup.config.js --bundleConfigAsCjs",
     "update-consumer": "node scripts/update-consumer.js",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
@@ -30,9 +30,9 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
+    "@ethersproject/address": "^5.8.0",
     "@ethersproject/providers": "^5.7.2",
     "@metamask/detect-provider": "^2.0.0",
-    "@types/js-cookie": "^3.0.6",
     "@walletconnect/ethereum-provider": "^2.15.1",
     "js-cookie": "^3.0.5",
     "zustand": "^4.4.7"
@@ -47,8 +47,8 @@
     "@tsconfig/recommended": "^1.0.1",
     "@types/node": "^22.14.1",
     "@types/react": "^18.3.4",
-    "@web3-react/types": "^8.2.3",
     "babel-plugin-transform-remove-console": "^6.9.4",
+    "cross-env": "^7.0.3",
     "husky": "^8.0.0",
     "lint-staged": "^15.5.1",
     "prettier": "^3.5.3",
