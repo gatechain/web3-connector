@@ -1,3 +1,0 @@
-class AbstractWallet {}
-
-export { AbstractWallet };

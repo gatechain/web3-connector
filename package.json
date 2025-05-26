@@ -1,6 +1,6 @@
 {
-  "name": "web3-connector-v4",
-  "version": "v4.0.0",
+  "name": "@gateweb3/web3-connector",
+  "version": "4.0.0",
   "description": "This is a tool for connecting Web3 wallets.",
   "author": "Thone Liu <thorne_lew@126.com>",
   "homepage": "",
@@ -23,7 +23,10 @@
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "format:staged": "prettier --write \"$(git diff --staged --name-only --diff-filter=ACMR | grep -E \"\\.(js|jsx|ts|tsx|json|css|scss|md)$\" | xargs)\"",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "bump": "npm version patch --no-git-tag-version",
+    "commit-version": "git add package.json pnpm-lock.yaml && git commit -m \"chore: bump version to v$(node -p \"require('./package.json').version\")\"",
+    "prepub": "pnpm run bump && pnpm run commit-version && pnpm build"
   },
   "peerDependencies": {
     "react": "^18.2.0",
