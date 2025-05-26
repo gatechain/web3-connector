@@ -1,5 +1,5 @@
 import { resetStore, updateStore } from '../hooks/useWalletStatus';
-import { ConnectionType } from '../types';
+import { AddEthereumChainParameter, ConnectionType } from '../types';
 import WalletConnect from './WalletConnect';
 
 type UriCallback = (uri: string) => void;
@@ -19,7 +19,13 @@ class WalletConnectNoQr extends WalletConnect {
     this.setUri(url);
   }
 
-  public async activate(desiredChainId: number = this.defaultChainId) {
+  public async activate(
+    desiredChainIdOrChainParameters: number | AddEthereumChainParameter = this.defaultChainId
+  ) {
+    const desiredChainId =
+      typeof desiredChainIdOrChainParameters === 'number'
+        ? desiredChainIdOrChainParameters
+        : desiredChainIdOrChainParameters?.chainId;
     await this.initialize(desiredChainId);
     const provider = this.provider;
 
@@ -41,7 +47,7 @@ class WalletConnectNoQr extends WalletConnect {
           `Unknown chain (${desiredChainId}). Make sure to include any chains you might connect to in the "chains" or "optionalChains" parameters when initializing WalletConnect.`
         );
       }
-      return provider.request({
+      await provider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: `0x${desiredChainId.toString(16)}` }],
       });
