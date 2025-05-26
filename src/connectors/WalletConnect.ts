@@ -87,7 +87,9 @@ class WalletConnect extends AbstractWallet {
     },
     projectId: '49cf6ec6179f8d21bf525adc78d6900a',
     chains: [this.defaultChainId || 1],
-    optionalChains: [1, 10, 56, 86, 137, 324, 42161, 43114, 81457],
+    optionalChains: [
+      1, 10, 56, 86, 137, 195, 250, 324, 501, 4200, 8453, 42161, 43114, 59144, 81457,
+    ],
     showQrModal: true,
     optionalMethods: ['eth_signTypedData', 'eth_signTypedData_v4', 'eth_sign'],
     qrModalOptions: {
@@ -158,6 +160,7 @@ class WalletConnect extends AbstractWallet {
   }
 
   private handleChainChange(chainId: string) {
+    console.log('handleChainChange', chainId);
     if (isServer) return;
     updateStore({
       chainId: parseChainId(chainId),
@@ -198,7 +201,29 @@ class WalletConnect extends AbstractWallet {
     const provider = this.provider;
 
     if (!provider) return;
-
+    (window as any).wc = provider;
+    if (!provider) return;
+    if (provider.session) {
+      if (!desiredChainId || desiredChainId === provider.chainId) return;
+      // WalletConnect exposes connected accounts, not chains: `eip155:${chainId}:${address}`
+      const isConnectedToDesiredChain = provider.session.namespaces.eip155.accounts.some(
+        (account: any) => account.startsWith(`eip155:${desiredChainId}:`)
+      );
+      if (!isConnectedToDesiredChain) {
+        if (this.options.optionalChains?.includes(desiredChainId)) {
+          throw new Error(
+            `Cannot activate an optional chain (${desiredChainId}), as the wallet is not connected to it.\n\tYou should handle this error in application code, as there is no guarantee that a wallet is connected to a chain configured in "optionalChains".`
+          );
+        }
+        throw new Error(
+          `Unknown chain (${desiredChainId}). Make sure to include any chains you might connect to in the "chains" or "optionalChains" parameters when initializing WalletConnect.`
+        );
+      }
+      return provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${desiredChainId.toString(16)}` }],
+      });
+    }
     try {
       const accounts = await provider.enable();
       updateStore({
