@@ -50,6 +50,9 @@ export class WalletConnectV2 extends WalletConnect {
             "--wcm-z-index": "10000",
           },
         },
+        rpcMap:{
+          [2741]: 'https://api.mainnet.abs.xyz',
+        }
       },
       onError,
     });
