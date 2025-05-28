@@ -2,13 +2,11 @@
   "name": "@gateweb3/web3-connector",
   "version": "4.0.0",
   "description": "This is a tool for connecting Web3 wallets.",
-  "author": "Thone Liu <thorne_lew@126.com>",
-  "homepage": "",
+  "homepage": "https://github.com/gatechain/web3-connector",
   "license": "ISC",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
-  "directories": {},
   "files": [
     "dist"
   ],
@@ -37,7 +35,6 @@
     "@ethersproject/providers": "^5.7.2",
     "@metamask/detect-provider": "^2.0.0",
     "@walletconnect/ethereum-provider": "^2.15.1",
-    "js-cookie": "^3.0.5",
     "zustand": "^4.4.7"
   },
   "devDependencies": {
@@ -58,7 +55,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rollup": "^4.21.0",
-    "ts-loader": "^9.4.2",
     "typescript": "^5.0.4"
   },
   "lint-staged": {
